@@ -14,8 +14,11 @@ corgi: $(shell find . -iname "*.go") # Build the main binary
 			    -mod=vendor \
 			    -o $@ .
 
+.PHONY: build # Build the main binary
+build: corgi
+
 .PHONY: test
-test: corgi # Build and run the tests
+test: build # Build and run the tests
 	$(GO) test -mod=vendor ./...
 
 .PHONY: lint

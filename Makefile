@@ -1,5 +1,6 @@
 GO ?= go
 GO_BUILD_FLAGS ?=
+GO_LINT_FLAGS := --modules-download-mode=vendor --verbose
 DOCKER_BUILD_FLAGS ?=
 IMAGE_TAG ?= latest
 
@@ -16,6 +17,14 @@ corgi: $(shell find . -iname "*.go") # Build the main binary
 .PHONY: test
 test: corgi # Build and run the tests
 	$(GO) test -mod=vendor ./...
+
+.PHONY: lint
+lint:
+	golangci-lint run $(GO_LINT_FLAGS)
+
+.PHONY: lint-fix
+lint-fix:
+	golangci-lint run $(GO_LINT_FLAGS) --fix
 
 .PHONY: clean
 clean: # Clean the local generated artifacts

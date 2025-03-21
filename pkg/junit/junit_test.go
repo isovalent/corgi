@@ -51,30 +51,49 @@ func (t testFile) Open() (io.ReadCloser, error) {
 	return t.File, nil
 }
 
-func TestParseFileSuccess(t *testing.T) {
-	path := "testdata/ci-eks-passed.xml"
+func TestParseFile(t *testing.T) {
+	tests := []struct {
+		path          string
+		tests         int
+		failures      int
+		expectedError error
+	}{
+		{
+			"testdata/ci-eks-passed.xml",
+			114,
+			0,
+			nil,
+		},
+		{
+			"testdata/ci-eks-failed.xml",
+			114,
+			1,
+			nil,
+		},
+		{
+			"testdata/ci-eks-failed-no-owners.xml",
+			114,
+			1,
+			nil,
+		},
+		{
+			"testdata/ci-eks-failed-invalid.xml",
+			114,
+			1,
+			nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Log("Path: " + tt.path)
+		f, err := NewTestFile(tt.path)
+		assert.NoError(t, err)
+		suites, cases, err := parseFile(f, dummyWorkflowRun, dummyConclusions, logger)
+		assert.ErrorIs(t, err, tt.expectedError)
 
-	f, err := NewTestFile(path)
-	assert.NoError(t, err)
-	suites, cases, err := parseFile(f, dummyWorkflowRun, dummyConclusions, logger)
-	assert.NoError(t, err)
-
-	assert.Greater(t, suites[0].TotalTests, 0)
-	assert.Equal(t, suites[0].TotalFailures, 0)
-	assert.Greater(t, len(cases), 0)
-}
-
-func TestParseFileFailure(t *testing.T) {
-	path := "testdata/ci-eks-failed.xml"
-
-	f, err := NewTestFile(path)
-	assert.NoError(t, err)
-	suites, cases, err := parseFile(f, dummyWorkflowRun, dummyConclusions, logger)
-	assert.NoError(t, err)
-
-	assert.Greater(t, suites[0].TotalTests, 0)
-	assert.Greater(t, suites[0].TotalFailures, 0)
-	assert.Greater(t, len(cases), 0)
+		assert.Equal(t, suites[0].TotalTests, tt.tests)
+		assert.Equal(t, len(cases), tt.tests)
+		assert.Equal(t, suites[0].TotalFailures, tt.failures)
+	}
 }
 
 func TestParseFailureData(t *testing.T) {

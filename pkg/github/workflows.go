@@ -378,7 +378,7 @@ func ParseEchoInputsLogs(logs string) map[string]string {
 		parts := strings.Split(line, " ")
 
 		// Ignore lines we don't care about.
-		if !(len(parts) >= 2) {
+		if len(parts) < 2 {
 			continue
 		}
 

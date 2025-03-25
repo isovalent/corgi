@@ -110,9 +110,8 @@ func isSupportedType(typeName types.TypeName) bool {
 }
 
 var (
-	documentCountQueryTemplate = &template.Template{}
-	failureRateParams          = &typeFailureRateParams{}
-	failureRateCmd             = &cobra.Command{
+	failureRateParams = &typeFailureRateParams{}
+	failureRateCmd    = &cobra.Command{
 		Use: "failure-rate",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			var err error

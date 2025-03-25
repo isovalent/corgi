@@ -259,7 +259,9 @@ func GetTestsForWorkflowRun(
 
 		l.Debug("err", "err", err, "status", downloadURLResp.StatusCode, "status-code", downloadURLResp.StatusCode, "equal", downloadURLResp.StatusCode == 200, "body", func() string {
 			b := []byte{}
-			downloadURLResp.Body.Read(b)
+			if _, err := downloadURLResp.Body.Read(b); err != nil {
+				return err.Error()
+			}
 			return string(b)
 		}(), "resp", downloadURLResp.Response)
 

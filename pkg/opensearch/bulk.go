@@ -16,9 +16,9 @@ type BulkEntry struct {
 	Data  []byte
 }
 
-func (b *BulkEntry) Write(target io.Writer) {
+func (b *BulkEntry) Write(target io.Writer) (int, error) {
 	if b == nil {
-		return
+		return 0, nil
 	}
 
 	builder := strings.Builder{}
@@ -30,9 +30,18 @@ func (b *BulkEntry) Write(target io.Writer) {
 	builder.WriteString(b.ID)
 	builder.WriteString("\" } }\n")
 
-	target.Write([]byte(builder.String()))
-	target.Write(b.Data)
-	target.Write([]byte("\n"))
+	total, err := target.Write([]byte(builder.String()))
+	if err != nil {
+		return total, err
+	}
+	n, err := target.Write(b.Data)
+	total = total + n
+	if err != nil {
+		return total, err
+	}
+	n, err = target.Write([]byte("\n"))
+	total = total + n
+	return total, err
 }
 
 func jsonEscapeString(i string) (string, error) {
@@ -101,12 +110,15 @@ func BulkWriteObjects[T any](objs []T, index string, target io.Writer) error {
 			return err
 		}
 
-		(&BulkEntry{
+		_, err = (&BulkEntry{
 			Index: index,
 			ID:    id,
 			Verb:  "index",
 			Data:  d,
 		}).Write(target)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

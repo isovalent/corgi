@@ -176,7 +176,7 @@ func DoFailureCountRequest(
 
 	logger.Debug("Issuing document count request", "requestBody", queryStr)
 
-	counts, err := doGenericRequest(ctx, client, countReq)
+	counts, err := doGenericRequest(ctx, logger, client, countReq)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get failure counts from OpenSearch: %w", err)
 	}

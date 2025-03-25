@@ -235,8 +235,12 @@ func GetTestsForWorkflowRun(
 	}
 	tmpFilePath := tmpFile.Name()
 	defer func() {
-		tmpFile.Close()
-		os.Remove(tmpFilePath)
+		if err2 := tmpFile.Close(); err2 != nil {
+			l.Debug("Failed to close temporary file while getting workflow tests", "error", err)
+		}
+		if err2 := os.Remove(tmpFilePath); err2 != nil {
+			l.Debug("Failed to remove temporary file while getting workflow tests", "error", err)
+		}
 	}()
 
 	l.Info("Junit artifact found for workflow run, downloading", "url", junitArtifact.GetURL())
@@ -274,7 +278,11 @@ func GetTestsForWorkflowRun(
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to download cilium-junits artifact from %s: %w", downloadURL, err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err2 := resp.Body.Close(); err2 != nil {
+			l.Debug("Failed to close HTTP connection after fetching workflow run", "error", err2)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, nil, fmt.Errorf(
@@ -293,7 +301,11 @@ func GetTestsForWorkflowRun(
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to create zip reader for file %s: %w", tmpFilePath, err)
 	}
-	defer zipReader.Close()
+	defer func() {
+		if err2 := zipReader.Close(); err2 != nil {
+			l.Debug("Failed to close zip file", "path", tmpFilePath, "error", err2)
+		}
+	}()
 
 	return junit.ParseFiles(zipReader.File, run, allowedTestConclusions, logger)
 }
@@ -333,7 +345,11 @@ func GetLogsForJob(
 	if err != nil {
 		return "", fmt.Errorf("unable to download logs for job with ID %d: %w", jobID, err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err2 := resp.Body.Close(); err2 != nil {
+			l.Debug("Failed to close HTTP connection while fetching job", "job", jobID, "error", err2)
+		}
+	}()
 
 	buf := bytes.Buffer{}
 	_, err = io.Copy(&buf, resp.Body)

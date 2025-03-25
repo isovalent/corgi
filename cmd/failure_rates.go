@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/isovalent/corgi/pkg/github"

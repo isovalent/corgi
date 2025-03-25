@@ -227,7 +227,11 @@ func parseFile(
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to open file %q: %w", fil.FileInfo().Name(), err)
 	}
-	defer fileReader.Close()
+	defer func() {
+		if err2 := fileReader.Close(); err2 != nil {
+			l.Debug("Failed to close junit file", "path", fil.FileInfo().Name(), "error", err2)
+		}
+	}()
 
 	buf := &bytes.Buffer{}
 

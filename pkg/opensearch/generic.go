@@ -6,17 +6,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 
 	opensearchgo "github.com/opensearch-project/opensearch-go"
 	"github.com/opensearch-project/opensearch-go/opensearchapi"
 )
 
-func doGenericRequest(ctx context.Context, client *opensearchgo.Client, req opensearchapi.Request) (map[string]any, error) {
+func doGenericRequest(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearchgo.Client,
+	req opensearchapi.Request,
+) (map[string]any, error) {
 	resp, err := req.Do(ctx, client)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error sending response to OpenSearch: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err2 := resp.Body.Close(); err2 != nil {
+			logger.Debug("Failed to close OpenSearch request", "error", err2)
+		}
+	}()
 
 	bodyBuf := &bytes.Buffer{}
 

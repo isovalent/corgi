@@ -36,102 +36,6 @@ type typeWorkflowRunsParams struct {
 	WorkflowID                  int64
 }
 
-func setTestedFields(
-	ctx context.Context,
-	logger *slog.Logger,
-	client *github.Client,
-	event,
-	repoOwner,
-	repoName string,
-	run *types.WorkflowRun,
-	jobs *[]types.JobRun,
-) {
-	if event != "workflow_dispatch" {
-		run.TestedCommit = run.HeadCommit
-		run.TestedSHA = run.HeadSHA
-		run.TestedBranch = run.HeadBranch
-
-		return
-	}
-
-	if !workflowRunsParams.ParseWorkflowDispatchInputs {
-		return
-	}
-
-	var echoJob *types.JobRun
-
-	for _, job := range *jobs {
-		if job.Name == "Echo Workflow Dispatch Inputs" {
-			echoJob = &job
-			break
-		}
-	}
-
-	if echoJob == nil {
-		if run.HeadBranch == "main" {
-			// The echo-inputs job is currently being backported to other stable branches.
-			// Do not fail if we are pulling jobs for a different branch.
-			logger.Error("Got workflow_dispatch event with no echo-inputs job")
-			os.Exit(1)
-		}
-		return
-	}
-
-	if echoJob.Conclusion != "success" {
-		logger.Error("echo-inputs job was not successful")
-		os.Exit(1)
-	}
-
-	logs, err := gh.GetLogsForJob(ctx, logger, client, echoJob.ID, run.Repository.Owner.Login, run.Repository.Name)
-	if err != nil {
-		logger.Error(
-			"Unable to pull logs for echo-inputs job",
-			"err", err,
-		)
-		os.Exit(1)
-	}
-
-	inputs := gh.ParseEchoInputsLogs(logs)
-
-	if len(inputs) == 0 {
-		logger.Error("Parsed no inputs for workflow_dispatch workflow")
-		os.Exit(1)
-	}
-
-	logger.Debug(
-		"Got inputs for workflow_dispatch workflow",
-		"inputs", inputs,
-	)
-	run.WorkflowDispatchInputs = inputs
-
-	sha, ok := inputs["SHA"]
-	if !ok {
-		logger.Error("Parsed inputs for workflow_dispatch workflow do not contain SHA")
-		os.Exit(1)
-	}
-
-	run.TestedSHA = sha
-
-	commit, err := gh.GetCommitBySHA(
-		ctx, logger, run.Repository.Owner.Login,
-		run.Repository.Name, client, sha,
-	)
-	if err != nil {
-		logger.Error("Unable to get commit info for sha", "sha", sha)
-		os.Exit(1)
-	}
-
-	run.TestedCommit = *commit
-
-	contextRef, ok := inputs["context-ref"]
-	if !ok {
-		logger.Error("Parsed inputs for workflow_dispatch workflow do not contain context-ref")
-		os.Exit(1)
-	}
-
-	run.TestedBranch = contextRef
-}
-
 func pullRunsWithEventAndStatus(
 	ctx context.Context,
 	logger *slog.Logger,
@@ -185,6 +89,8 @@ func pullRunsWithEventAndStatus(
 		// These fields require special, context-aware handling.
 		// TODO: Modify this function to determine if a workflow_dispatch run was scheduled by
 		// ariane or executed as part of a PR. Add a flag to ignore PRs.
+		//
+		// Use 'git log -S setTestedFields' to find a previous implementation of this.
 		// setTestedFields(ctx, runLogger, client, event, repoOwner, repoName, run, &jobs)
 
 		if err := opensearch.BulkWriteObjects[types.JobRun](jobs, rootParams.Index, os.Stdout); err != nil {

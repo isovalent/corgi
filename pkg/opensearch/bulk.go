@@ -64,23 +64,23 @@ func GetDocumentID(obj any) (string, error) {
 	case *types.WorkflowRun:
 		return fmt.Sprintf("%d-%d", o.ID, o.RunAttempt), nil
 	case types.JobRun:
-		return fmt.Sprintf("%d-%d-%d", o.WorkflowRun.ID, o.WorkflowRun.RunAttempt, o.ID), nil
+		return fmt.Sprintf("%d-%d-%d", o.WorkflowRun.ID, o.RunAttempt, o.ID), nil
 	case types.StepRun:
-		return fmt.Sprintf("%d-%d-%d-%d", o.WorkflowRun.ID, o.WorkflowRun.RunAttempt, o.ID, o.Number), nil
+		return fmt.Sprintf("%d-%d-%d-%d", o.WorkflowRun.ID, o.RunAttempt, o.ID, o.Number), nil
 	case types.Testsuite:
 		junitFilename, err := jsonEscapeString(o.JUnitFilename)
 		if err != nil {
 			return "", fmt.Errorf("unable to get document id for Testsuite: %v", err)
 		}
-		return fmt.Sprintf("%d-%d-%s", o.WorkflowRun.ID, o.WorkflowRun.RunAttempt, junitFilename), nil
+		return fmt.Sprintf("%d-%d-%s", o.ID, o.RunAttempt, junitFilename), nil
 	case types.Testcase:
-		junitFilename, err := jsonEscapeString(o.Testsuite.JUnitFilename)
+		junitFilename, err := jsonEscapeString(o.JUnitFilename)
 		if err != nil {
 			return "", fmt.Errorf("unable to get document id for Testsuite in Testcase: %v", err)
 		}
 		return fmt.Sprintf(
 			"%d-%d-%s-%s",
-			o.WorkflowRun.ID, o.WorkflowRun.RunAttempt, junitFilename, o.Name,
+			o.ID, o.RunAttempt, junitFilename, o.Name,
 		), nil
 	case types.FailureRate:
 		docIdentifier, err := jsonEscapeString(o.DocumentIdentifier)

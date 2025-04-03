@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (C) Joel Stemmer
+// Copyright (C) Isovalent, Inc.
 
 // Package junit defines a JUnit XML report and includes convenience methods
 // for working with these reports.
@@ -119,14 +120,20 @@ type Testcase struct {
 	Classname string `xml:"classname,attr"`
 
 	// optional attributes
-	Time   string `xml:"time,attr,omitempty"` // duration in seconds
-	Status string `xml:"status,attr,omitempty"`
+	Time       string      `xml:"time,attr,omitempty"` // duration in seconds
+	Status     string      `xml:"status,attr,omitempty"`
+	Properties *Properties `xml:"properties,omitempty"`
 
 	Skipped   *Result `xml:"skipped,omitempty"`
 	Error     *Result `xml:"error,omitempty"`
 	Failure   *Result `xml:"failure,omitempty"`
 	SystemOut *Output `xml:"system-out,omitempty"`
 	SystemErr *Output `xml:"system-err,omitempty"`
+}
+
+// Properties represents a slice of key/value pairs.
+type Properties struct {
+	Properties []Property `xml:"property"`
 }
 
 // Property represents a key/value pair.

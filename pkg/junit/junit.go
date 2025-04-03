@@ -40,22 +40,28 @@ func parseTestNames(data string) []string {
 	return result
 }
 
-func parseFailureData(data string) (owners, testNames []string, err error) {
+func parseOwnerProperties(data string) (owners, testNames []string, err error) {
 	// Expected input:
-	// check-log-errors/no-errors-in-logs/kind-kind/kube-system/cilium-xxxxx (cilium-agent) - Owners: @ci/owner1 (no-errors-in-logs), @ci/owner2 (no-errors-in-logs)
-	parsed := strings.Split(data, metadataDelimiter)
-	if len(parsed) <= 1 {
-		return nil, nil, ErrInvalidFailureData
-	}
-
-	owners = parseOwners(parsed[1])
-	testNames = parseTestNames(parsed[1])
+	// @cilium/sig-agent (host-to-pod)
+	owners = parseOwners(data)
+	testNames = parseTestNames(data)
 
 	if len(owners) != len(testNames) {
 		return nil, nil, fmt.Errorf("%w: found %v/%v", ErrUnbalancedOwners, owners, testNames)
 	}
 
 	return owners, testNames, nil
+}
+
+func parseFailureData(data string) (owners, testNames []string, err error) {
+	// Expected input:
+	// check-log-errors/no-errors-in-logs/kind-kind/kube-system/cilium-xxxxx (cilium-agent);metadata;Owners: @ci/owner1 (no-errors-in-logs), @ci/owner2 (no-errors-in-logs)
+	parsed := strings.Split(data, metadataDelimiter)
+	if len(parsed) <= 1 {
+		return nil, nil, ErrInvalidFailureData
+	}
+
+	return parseOwnerProperties(parsed[1])
 }
 
 func filterOwners(prefix string, owners, tests []string, match bool) []string {
@@ -169,6 +175,22 @@ func parseTestsuite(
 				}
 			} else {
 				l.Warn("Could not parse owners from testcase failure data", "data", testcase.Failure.Data, "error", err)
+			}
+		}
+
+		if testcase.Properties != nil {
+			for _, p := range testcase.Properties.Properties {
+				if p.Name == "owner" {
+					owners, testNames, err := parseOwnerProperties(p.Value)
+					if err == nil {
+						tc.Owners = filterTestOwners(owners, testNames)
+						for _, o := range filterWorkflowOwners(owners, testNames) {
+							allOwners[o] = struct{}{}
+						}
+					} else {
+						l.Warn("Could not parse owners from testcase properties", "data", p.Value, "error", err)
+					}
+				}
 			}
 		}
 

@@ -14,8 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jstemmer/go-junit-report/v2/junit"
-
 	"github.com/isovalent/corgi/pkg/types"
 	"github.com/isovalent/corgi/pkg/util"
 )
@@ -80,7 +78,7 @@ func filterTestOwners(owners, tests []string) []string {
 }
 
 func parseTestsuite(
-	suite *junit.Testsuite,
+	suite *Testsuite,
 	run *types.WorkflowRun,
 	allowedTestConclusions []string,
 	l *slog.Logger,
@@ -229,10 +227,10 @@ func parseFile(
 	// Try all options when unmarshalling.
 	// Note that the XML parser thinks the Testsuites object is a valid Testsuite object, so
 	// we have to try parsing into a Testsuites first.
-	toParse := []junit.Testsuite{}
-	s := junit.Testsuites{}
+	toParse := []Testsuite{}
+	s := Testsuites{}
 	if err := xml.Unmarshal(buf.Bytes(), &s); err != nil {
-		s := junit.Testsuite{}
+		s := Testsuite{}
 		if err2 := xml.Unmarshal(buf.Bytes(), &s); err2 != nil {
 			e := errors.Join(err, err2)
 			return nil, nil, fmt.Errorf("unable to unmarshal junit file '%s' in artifact to Testsuite or Testsuites object: %w", fil.FileInfo().Name(), e)

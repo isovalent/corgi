@@ -107,6 +107,22 @@ func TestParseTestSuiteCodeOwners(t *testing.T) {
 	assert.NotEmpty(t, failed.Owners)
 }
 
+func TestParseProperties(t *testing.T) {
+	path := "testdata/all-owners.xml"
+
+	f, err := NewTestFile(path)
+	assert.NoError(t, err)
+	_, cases, err := parseFile(f, dummyWorkflowRun, dummyConclusions, logger)
+	assert.NoError(t, err)
+
+	// Example has no workflow owners
+	//assert.NotEmpty(t, suites[0].Owners)
+
+	for _, tt := range cases {
+		assert.NotEmpty(t, tt.Owners)
+	}
+}
+
 func TestFilterOwners(t *testing.T) {
 	input := "check-log-errors/no-errors-in-logs/kind-kind/kube-system/cilium-xxxxx (cilium-agent);metadata;Owners: @ci/owner1 (no-errors-in-logs), @ci/owner2 (.github/foo)"
 

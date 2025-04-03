@@ -1,0 +1,734 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuites tests="115" disabled="114" errors="0" failures="1" time="0.343417843">
+      <testsuite name="connectivity test" id="0" package="cilium" tests="115" errors="0" failures="1" skipped="114" time="0.343417843" timestamp="0001-01-01T00:00:00">
+          <properties>
+              <property name="Args" value="--test|pod-to-pod-no-frag|--junit-file|codeowners.junit.xml|--log-code-owners"></property>
+          </properties>
+          <testcase name="no-unexpected-packet-drops" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (no-unexpected-packet-drops), @cilium/sig-datapath (no-unexpected-packet-drops)"></property>
+              </properties>
+              <skipped message="no-unexpected-packet-drops skipped"></skipped>
+          </testcase>
+          <testcase name="no-policies" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (host-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-service)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-hostport)"></property>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-host)"></property>
+              </properties>
+              <skipped message="no-policies skipped"></skipped>
+          </testcase>
+          <testcase name="no-policies-from-outside" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (from-cidr-to-pod)"></property>
+              </properties>
+              <skipped message="no-policies-from-outside skipped"></skipped>
+          </testcase>
+          <testcase name="no-policies-extra" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-remote-nodeport)"></property>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-local-nodeport)"></property>
+              </properties>
+              <skipped message="no-policies-extra skipped"></skipped>
+          </testcase>
+          <testcase name="allow-all-except-world" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-service)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-host)"></property>
+              </properties>
+              <skipped message="allow-all-except-world skipped"></skipped>
+          </testcase>
+          <testcase name="client-ingress" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+              </properties>
+              <skipped message="client-ingress skipped"></skipped>
+          </testcase>
+          <testcase name="client-ingress-knp" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+              </properties>
+              <skipped message="client-ingress-knp skipped"></skipped>
+          </testcase>
+          <testcase name="allow-all-with-metrics-check" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="allow-all-with-metrics-check skipped"></skipped>
+          </testcase>
+          <testcase name="all-ingress-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="all-ingress-deny skipped"></skipped>
+          </testcase>
+          <testcase name="all-ingress-deny-from-outside" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (from-cidr-to-pod)"></property>
+              </properties>
+              <skipped message="all-ingress-deny-from-outside skipped"></skipped>
+          </testcase>
+          <testcase name="all-ingress-deny-knp" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+              </properties>
+              <skipped message="all-ingress-deny-knp skipped"></skipped>
+          </testcase>
+          <testcase name="all-egress-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+              </properties>
+              <skipped message="all-egress-deny skipped"></skipped>
+          </testcase>
+          <testcase name="all-egress-deny-knp" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+              </properties>
+              <skipped message="all-egress-deny-knp skipped"></skipped>
+          </testcase>
+          <testcase name="all-entities-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+              </properties>
+              <skipped message="all-entities-deny skipped"></skipped>
+          </testcase>
+          <testcase name="cluster-entity" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="cluster-entity skipped"></skipped>
+          </testcase>
+          <testcase name="cluster-entity-multi-cluster" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="cluster-entity-multi-cluster skipped"></skipped>
+          </testcase>
+          <testcase name="host-entity-egress" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-host)"></property>
+              </properties>
+              <skipped message="host-entity-egress skipped"></skipped>
+          </testcase>
+          <testcase name="host-entity-ingress" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (host-to-pod)"></property>
+              </properties>
+              <skipped message="host-entity-ingress skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="echo-ingress skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-from-outside" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (from-cidr-to-pod)"></property>
+              </properties>
+              <skipped message="echo-ingress-from-outside skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-knp" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="echo-ingress-knp skipped"></skipped>
+          </testcase>
+          <testcase name="client-ingress-icmp" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+              </properties>
+              <skipped message="client-ingress-icmp skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-knp" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-knp skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-expression" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-expression skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-expression-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-expression-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-expression-knp" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-expression-knp skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-expression-knp-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-expression-knp-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-with-service-account-egress-to-echo" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-with-service-account-egress-to-echo skipped"></skipped>
+          </testcase>
+          <testcase name="client-with-service-account-egress-to-echo-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-with-service-account-egress-to-echo-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-echo-service-account" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-to-echo-service-account skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-echo-service-account-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-to-echo-service-account-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="to-entities-world" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+              </properties>
+              <skipped message="to-entities-world skipped"></skipped>
+          </testcase>
+          <testcase name="to-entities-world-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+              </properties>
+              <skipped message="to-entities-world-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="to-cidr-external" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+              </properties>
+              <skipped message="to-cidr-external skipped"></skipped>
+          </testcase>
+          <testcase name="to-cidr-external-knp" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+              </properties>
+              <skipped message="to-cidr-external-knp skipped"></skipped>
+          </testcase>
+          <testcase name="seq-from-cidr-host-netns" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (from-cidr-to-pod)"></property>
+              </properties>
+              <skipped message="seq-from-cidr-host-netns skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-from-other-client-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+              </properties>
+              <skipped message="echo-ingress-from-other-client-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-ingress-from-other-client-icmp-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+              </properties>
+              <skipped message="client-ingress-from-other-client-icmp-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-echo-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-to-echo-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-echo-deny-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/ci-structure (client-to-client)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-to-echo-deny-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-ingress-to-echo-named-port-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-ingress-to-echo-named-port-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-echo-expression-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-to-echo-expression-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-echo-expression-deny-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-to-echo-expression-deny-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-with-service-account-egress-to-echo-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-with-service-account-egress-to-echo-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-with-service-account-egress-to-echo-deny-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-with-service-account-egress-to-echo-deny-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-echo-service-account-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-to-echo-service-account-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-echo-service-account-deny-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="client-egress-to-echo-service-account-deny-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-cidr-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+              </properties>
+              <skipped message="client-egress-to-cidr-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-cidrgroup-deny" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+              </properties>
+              <skipped message="client-egress-to-cidrgroup-deny skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-cidrgroup-deny-by-label" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+              </properties>
+              <skipped message="client-egress-to-cidrgroup-deny-by-label skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-to-cidr-deny-default" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-policy (pod-to-cidr)"></property>
+              </properties>
+              <skipped message="client-egress-to-cidr-deny-default skipped"></skipped>
+          </testcase>
+          <testcase name="clustermesh-endpointslice-sync" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-clustermesh (clustermesh-endpointslice-sync)"></property>
+              </properties>
+              <skipped message="clustermesh-endpointslice-sync skipped"></skipped>
+          </testcase>
+          <testcase name="health" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (cilium-health)"></property>
+              </properties>
+              <skipped message="health skipped"></skipped>
+          </testcase>
+          <testcase name="north-south-loadbalancing" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (outside-to-nodeport)"></property>
+              </properties>
+              <skipped message="north-south-loadbalancing skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-pod-encryption" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-encryption (pod-to-pod-encryption)"></property>
+              </properties>
+              <skipped message="pod-to-pod-encryption skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-pod-with-l7-policy-encryption" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-encryption (pod-to-pod-encryption)"></property>
+              </properties>
+              <skipped message="pod-to-pod-with-l7-policy-encryption skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-pod-encryption-v2" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-encryption (pod-to-pod-encryption-v2)"></property>
+              </properties>
+              <skipped message="pod-to-pod-encryption-v2 skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-pod-with-l7-policy-encryption-v2" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-encryption (pod-to-pod-encryption-v2)"></property>
+              </properties>
+              <skipped message="pod-to-pod-with-l7-policy-encryption-v2 skipped"></skipped>
+          </testcase>
+          <testcase name="node-to-node-encryption" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-encryption (node-to-node-encryption)"></property>
+              </properties>
+              <skipped message="node-to-node-encryption skipped"></skipped>
+          </testcase>
+          <testcase name="seq-egress-gateway" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/egress-gateway (egress-gateway)"></property>
+              </properties>
+              <skipped message="seq-egress-gateway skipped"></skipped>
+          </testcase>
+          <testcase name="egress-gateway-excluded-cidrs" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/egress-gateway (egress-gateway-excluded-cidrs)"></property>
+              </properties>
+              <skipped message="egress-gateway-excluded-cidrs skipped"></skipped>
+          </testcase>
+          <testcase name="seq-egress-gateway-with-l7-policy" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/egress-gateway (egress-gateway)"></property>
+              </properties>
+              <skipped message="seq-egress-gateway-with-l7-policy skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-node-cidrpolicy" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-host)"></property>
+              </properties>
+              <skipped message="pod-to-node-cidrpolicy skipped"></skipped>
+          </testcase>
+          <testcase name="north-south-loadbalancing-with-l7-policy" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (outside-to-nodeport)"></property>
+              </properties>
+              <skipped message="north-south-loadbalancing-with-l7-policy skipped"></skipped>
+          </testcase>
+          <testcase name="north-south-loadbalancing-with-l7-policy-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (outside-to-nodeport)"></property>
+              </properties>
+              <skipped message="north-south-loadbalancing-with-l7-policy-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-l7" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+              </properties>
+              <skipped message="echo-ingress-l7 skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-l7-via-hostport" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-hostport)"></property>
+              </properties>
+              <skipped message="echo-ingress-l7-via-hostport skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-l7-named-port" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+              </properties>
+              <skipped message="echo-ingress-l7-named-port skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7-method" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+              </properties>
+              <skipped message="client-egress-l7-method skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7-method-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+              </properties>
+              <skipped message="client-egress-l7-method-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+              </properties>
+              <skipped message="client-egress-l7 skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+              </properties>
+              <skipped message="client-egress-l7-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7-named-port" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+              </properties>
+              <skipped message="client-egress-l7-named-port skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-tls-sni" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+              </properties>
+              <skipped message="client-egress-tls-sni skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-tls-sni-denied" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+              </properties>
+              <skipped message="client-egress-tls-sni-denied skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7-tls-headers-sni" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world-with-tls-intercept)"></property>
+              </properties>
+              <skipped message="client-egress-l7-tls-headers-sni skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7-tls-headers-other-sni" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world-with-tls-intercept)"></property>
+              </properties>
+              <skipped message="client-egress-l7-tls-headers-other-sni skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7-set-header" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+              </properties>
+              <skipped message="client-egress-l7-set-header skipped"></skipped>
+          </testcase>
+          <testcase name="client-egress-l7-set-header-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-with-endpoints)"></property>
+              </properties>
+              <skipped message="client-egress-l7-set-header-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-auth-always-fail" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="echo-ingress-auth-always-fail skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-auth-always-fail-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="echo-ingress-auth-always-fail-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-mutual-auth-spiffe" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="echo-ingress-mutual-auth-spiffe skipped"></skipped>
+          </testcase>
+          <testcase name="echo-ingress-mutual-auth-spiffe-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+              </properties>
+              <skipped message="echo-ingress-mutual-auth-spiffe-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-ingress-service" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-ingress-service)"></property>
+              </properties>
+              <skipped message="pod-to-ingress-service skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-ingress-service-allow-ingress-identity" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-ingress-service)"></property>
+              </properties>
+              <skipped message="pod-to-ingress-service-allow-ingress-identity skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-ingress-service-deny-all" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-ingress-service)"></property>
+              </properties>
+              <skipped message="pod-to-ingress-service-deny-all skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-ingress-service-deny-backend-service" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-ingress-service)"></property>
+              </properties>
+              <skipped message="pod-to-ingress-service-deny-backend-service skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-ingress-service-deny-ingress-identity" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-ingress-service)"></property>
+              </properties>
+              <skipped message="pod-to-ingress-service-deny-ingress-identity skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-ingress-service-deny-source-egress-other-node" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (pod-to-ingress-service)"></property>
+              </properties>
+              <skipped message="pod-to-ingress-service-deny-source-egress-other-node skipped"></skipped>
+          </testcase>
+          <testcase name="outside-to-ingress-service" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (outside-to-ingress-service)"></property>
+              </properties>
+              <skipped message="outside-to-ingress-service skipped"></skipped>
+          </testcase>
+          <testcase name="outside-to-ingress-service-deny-all-ingress" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (outside-to-ingress-service)"></property>
+              </properties>
+              <skipped message="outside-to-ingress-service-deny-all-ingress skipped"></skipped>
+          </testcase>
+          <testcase name="outside-to-ingress-service-deny-cidr" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (outside-to-ingress-service)"></property>
+              </properties>
+              <skipped message="outside-to-ingress-service-deny-cidr skipped"></skipped>
+          </testcase>
+          <testcase name="outside-to-ingress-service-deny-world-identity" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (outside-to-ingress-service)"></property>
+              </properties>
+              <skipped message="outside-to-ingress-service-deny-world-identity skipped"></skipped>
+          </testcase>
+          <testcase name="dns-only" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod)"></property>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+              </properties>
+              <skipped message="dns-only skipped"></skipped>
+          </testcase>
+          <testcase name="to-fqdns" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world)"></property>
+                  <property name="owner" value="@cilium/proxy (pod-to-world-2)"></property>
+              </properties>
+              <skipped message="to-fqdns skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-controlplane-host" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-controlplane-host)"></property>
+              </properties>
+              <skipped message="pod-to-controlplane-host skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-k8s-on-controlplane" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/ci-structure (pod-to-k8s-local)"></property>
+              </properties>
+              <skipped message="pod-to-k8s-on-controlplane skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-controlplane-host-cidr" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-controlplane-host)"></property>
+              </properties>
+              <skipped message="pod-to-controlplane-host-cidr skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-k8s-on-controlplane-cidr" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/ci-structure (pod-to-k8s-local)"></property>
+              </properties>
+              <skipped message="pod-to-k8s-on-controlplane-cidr skipped"></skipped>
+          </testcase>
+          <testcase name="local-redirect-policy" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (lrp)"></property>
+                  <property name="owner" value="@cilium/sig-lb (lrp-skip-redirect-from-backend)"></property>
+              </properties>
+              <skipped message="local-redirect-policy skipped"></skipped>
+          </testcase>
+          <testcase name="local-redirect-policy-with-node-dns" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-lb (local-redirect-policy-with-node-dns)"></property>
+              </properties>
+              <skipped message="local-redirect-policy-with-node-dns skipped"></skipped>
+          </testcase>
+          <testcase name="pod-to-pod-no-frag" classname="connectivity test" status="failed" time="0.343417843">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-no-frag)"></property>
+              </properties>
+              <failure message="pod-to-pod-no-frag failed" type="failure">pod-to-pod-no-frag/pod-to-pod-no-frag/ping-ipv4: cilium-test-1/client-59476dbc54-xxbg9 (10.244.1.83) -&gt; cilium-test-1/echo-other-node-d9bf5c4c7-97wkm (10.244.0.50:8080)&#xA;pod-to-pod-no-frag/pod-to-pod-no-frag/ping-ipv6: cilium-test-1/client-59476dbc54-xxbg9 (fd00:10:244:1::94c) -&gt; cilium-test-1/echo-other-node-d9bf5c4c7-97wkm (fd00:10:244::b1a1:8080)</failure>
+          </testcase>
+          <testcase name="seq-bgp-control-plane-v1" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-bgp (bgpv1-advertisements)"></property>
+              </properties>
+              <skipped message="seq-bgp-control-plane-v1 skipped"></skipped>
+          </testcase>
+          <testcase name="seq-bgp-control-plane-v2" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-bgp (bgpv2-advertisements)"></property>
+              </properties>
+              <skipped message="seq-bgp-control-plane-v2 skipped"></skipped>
+          </testcase>
+          <testcase name="multicast" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/ci-structure (multicast)"></property>
+              </properties>
+              <skipped message="multicast skipped"></skipped>
+          </testcase>
+          <testcase name="strict-mode-encryption" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-missing-ipcache)"></property>
+              </properties>
+              <skipped message="strict-mode-encryption skipped"></skipped>
+          </testcase>
+          <testcase name="strict-mode-encryption-v2" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-pod-missing-ipcache)"></property>
+              </properties>
+              <skipped message="strict-mode-encryption-v2 skipped"></skipped>
+          </testcase>
+          <testcase name="host-firewall-ingress" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (pod-to-host)"></property>
+              </properties>
+              <skipped message="host-firewall-ingress skipped"></skipped>
+          </testcase>
+          <testcase name="host-firewall-egress" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (host-to-pod)"></property>
+              </properties>
+              <skipped message="host-firewall-egress skipped"></skipped>
+          </testcase>
+          <testcase name="seq-client-egress-l7-tls-deny-without-headers" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world-with-tls-intercept)"></property>
+              </properties>
+              <skipped message="seq-client-egress-l7-tls-deny-without-headers skipped"></skipped>
+          </testcase>
+          <testcase name="seq-client-egress-l7-tls-headers" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world-with-tls-intercept)"></property>
+              </properties>
+              <skipped message="seq-client-egress-l7-tls-headers skipped"></skipped>
+          </testcase>
+          <testcase name="seq-client-egress-l7-extra-tls-headers" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world-with-extra-tls-intercept)"></property>
+              </properties>
+              <skipped message="seq-client-egress-l7-extra-tls-headers skipped"></skipped>
+          </testcase>
+          <testcase name="seq-client-egress-l7-tls-headers-port-range" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/proxy (pod-to-world-with-tls-intercept)"></property>
+              </properties>
+              <skipped message="seq-client-egress-l7-tls-headers-port-range skipped"></skipped>
+          </testcase>
+          <testcase name="check-log-errors" classname="connectivity test" status="skipped" time="0">
+              <properties>
+                  <property name="owner" value="@cilium/sig-agent (no-errors-in-logs), @cilium/sig-datapath (no-errors-in-logs)"></property>
+              </properties>
+              <skipped message="check-log-errors skipped"></skipped>
+          </testcase>
+      </testsuite>
+  </testsuites>

@@ -144,6 +144,20 @@ func parseTestsuite(
 	cases := []types.Testcase{}
 	allOwners := make(map[string]struct{})
 
+	if suite.Properties != nil {
+		for _, p := range *suite.Properties {
+			if p.Name == "owner" {
+				owners, _, err := parseOwnerProperties(suite.Name, p.Value)
+				if err != nil {
+					l.Warn("Could not parse owners from testsuite properties", "data", p.Value, "error", err)
+				}
+				for _, o := range owners {
+					allOwners[o] = struct{}{}
+				}
+			}
+		}
+	}
+
 	for _, testcase := range suite.Testcases {
 		tc := types.Testcase{
 			Testsuite: s,

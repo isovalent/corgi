@@ -94,6 +94,12 @@ func TestParseFile(t *testing.T) {
 			1,
 			nil,
 		},
+		{
+			"testdata/connectivity-test.xml",
+			119,
+			1,
+			nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Log("Path: " + tt.path)
@@ -117,7 +123,7 @@ func TestParseFailureData(t *testing.T) {
 	assert.Contains(t, tests, "no-errors-in-logs")
 }
 
-func TestParseTestSuiteCodeOwners(t *testing.T) {
+func TestParseTestSuiteCodeOwnersFromTestCases(t *testing.T) {
 	path := "testdata/ci-eks-failed.xml"
 
 	f, err := NewTestFile(path)
@@ -126,6 +132,30 @@ func TestParseTestSuiteCodeOwners(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.NotEmpty(t, suites[0].Owners)
+
+	var failed types.Testcase
+	for _, tt := range cases {
+		if tt.Status == "failed" {
+			failed = tt
+			break
+		}
+	}
+	assert.NotEmpty(t, failed.Owners)
+}
+
+func TestParseTestSuiteCodeOwnersFromSuites(t *testing.T) {
+	path := "testdata/connectivity-test.xml"
+
+	f, err := NewTestFile(path)
+	assert.NoError(t, err)
+	suites, cases, err := parseFile(f, dummyWorkflowRun, dummyConclusions, logger)
+	assert.NoError(t, err)
+
+	assert.Equal(t, []string{
+		"@cilium/ci-structure",
+		"@cilium/github-sec",
+		"@cilium/sig-servicemesh",
+	}, suites[0].Owners)
 
 	var failed types.Testcase
 	for _, tt := range cases {

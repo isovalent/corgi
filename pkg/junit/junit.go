@@ -83,6 +83,23 @@ func filterTestOwners(owners, tests []string) []string {
 	return filterOwners(".github", owners, tests, false)
 }
 
+func parseTime(timestamp string) (result time.Time, err error) {
+	// Expected:
+	// "2006-01-02T15:04:05"
+	// "2006-01-02T15:04:05Z"
+	// "2006-01-02T15:04:0507:00"
+	for _, fmt := range []string{
+		"2006-01-02T15:04:05",
+		time.RFC3339,
+	} {
+		result, err = time.Parse(fmt, timestamp)
+		if err == nil {
+			return result, nil
+		}
+	}
+	return result, err
+}
+
 func parseTestsuite(
 	suite *Testsuite,
 	run *types.WorkflowRun,
@@ -108,11 +125,7 @@ func parseTestsuite(
 	}
 
 	if suite.Timestamp != "" {
-		// ISO8601.
-		// Some timestamps have a "Z" at the end, and some don't.
-		// The time package complains if the given time to parse doesn't exactly
-		// match the given format, therefore we need to trim the Z if it's in the timestamp.
-		endTime, err := time.Parse("2006-01-02T15:04:05", strings.TrimSuffix(suite.Timestamp, "Z"))
+		endTime, err := parseTime(suite.Timestamp)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to parse timestamp '%s': %w", suite.Timestamp, err)
 		}

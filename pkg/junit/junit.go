@@ -40,20 +40,29 @@ func parseTestNames(data string) []string {
 	return result
 }
 
-func parseOwnerProperties(data string) (owners, testNames []string, err error) {
+func parseOwnerProperties(testname, data string) (owners, testNames []string, err error) {
 	// Expected input:
 	// @cilium/sig-agent (host-to-pod)
 	owners = parseOwners(data)
 	testNames = parseTestNames(data)
 
-	if len(owners) != len(testNames) {
+	if len(owners) == 0 {
 		return nil, nil, fmt.Errorf("%w: found %v/%v", ErrUnbalancedOwners, owners, testNames)
+	}
+
+	if len(owners) != len(testNames) {
+		// Input was missing test name; came in this form:
+		// @cilium/agent
+		testNames = make([]string, 0, len(owners))
+		for range len(owners) {
+			testNames = append(testNames, testname)
+		}
 	}
 
 	return owners, testNames, nil
 }
 
-func parseFailureData(data string) (owners, testNames []string, err error) {
+func parseFailureData(testname, data string) (owners, testNames []string, err error) {
 	// Expected input:
 	// check-log-errors/no-errors-in-logs/kind-kind/kube-system/cilium-xxxxx (cilium-agent);metadata;Owners: @ci/owner1 (no-errors-in-logs), @ci/owner2 (no-errors-in-logs)
 	parsed := strings.Split(data, metadataDelimiter)
@@ -61,7 +70,7 @@ func parseFailureData(data string) (owners, testNames []string, err error) {
 		return nil, nil, ErrInvalidFailureData
 	}
 
-	return parseOwnerProperties(parsed[1])
+	return parseOwnerProperties(testname, parsed[1])
 }
 
 func filterOwners(prefix string, owners, tests []string, match bool) []string {
@@ -180,7 +189,7 @@ func parseTestsuite(
 
 		if testcase.Failure != nil {
 			// Parse owners
-			owners, testNames, err := parseFailureData(testcase.Failure.Data)
+			owners, testNames, err := parseFailureData(testcase.Name, testcase.Failure.Data)
 			if err == nil {
 				tc.Owners = filterTestOwners(owners, testNames)
 				for _, o := range filterWorkflowOwners(owners, testNames) {
@@ -194,7 +203,7 @@ func parseTestsuite(
 		if testcase.Properties != nil {
 			for _, p := range testcase.Properties.Properties {
 				if p.Name == "owner" {
-					owners, testNames, err := parseOwnerProperties(p.Value)
+					owners, testNames, err := parseOwnerProperties(testcase.Name, p.Value)
 					if err == nil {
 						tc.Owners = filterTestOwners(owners, testNames)
 						for _, o := range filterWorkflowOwners(owners, testNames) {

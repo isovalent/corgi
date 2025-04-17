@@ -98,7 +98,7 @@ func TestParseFile(t *testing.T) {
 func TestParseFailureData(t *testing.T) {
 	input := "check-log-errors/no-errors-in-logs/kind-kind/kube-system/cilium-xxxxx (cilium-agent);metadata;Owners: @ci/owner1 (no-errors-in-logs), @ci/owner2 (no-errors-in-logs)"
 
-	owners, tests, err := parseFailureData(input)
+	owners, tests, err := parseFailureData("check-log-errors", input)
 	assert.NoError(t, err)
 	assert.Contains(t, owners, "@ci/owner1")
 	assert.Contains(t, owners, "@ci/owner2")
@@ -144,7 +144,7 @@ func TestParseProperties(t *testing.T) {
 func TestFilterOwners(t *testing.T) {
 	input := "check-log-errors/no-errors-in-logs/kind-kind/kube-system/cilium-xxxxx (cilium-agent);metadata;Owners: @ci/owner1 (no-errors-in-logs), @ci/owner2 (.github/foo)"
 
-	owners, tests, err := parseFailureData(input)
+	owners, tests, err := parseFailureData("check-log-errors", input)
 	assert.NoError(t, err)
 
 	testOwners := filterTestOwners(owners, tests)

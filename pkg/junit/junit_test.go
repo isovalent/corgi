@@ -82,6 +82,18 @@ func TestParseFile(t *testing.T) {
 			1,
 			nil,
 		},
+		{
+			"testdata/ci-privileged.xml",
+			7220,
+			0,
+			nil,
+		},
+		{
+			"testdata/unit-test.xml",
+			44,
+			1,
+			nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Log("Path: " + tt.path)

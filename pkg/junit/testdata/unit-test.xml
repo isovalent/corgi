@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="44" failures="1">
+	<testsuite name="github.com/cilium/cilium/pkg/ip" tests="44" failures="1" errors="0" id="0" hostname="joenats-l-PF4MRQR3" time="0.008" timestamp="2025-04-17T12:45:10-07:00">
+		<properties>
+			<property name="coverage.statements.pct" value="82.80"></property>
+		</properties>
+		<testcase name="TestIPToNetPrefix" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixesContains" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixesContains/contains([0.0.0.0/0],_192.0.0.1)" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixesContains/contains([0.0.0.0/0],_192.0.0.1)#01" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixesContains/contains([192.0.0.1/32_f00d::/118],_f00d::1)" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixesContains/contains([192.0.0.1/32],_0.0.0.0)" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestCountIPs" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestFirstIP" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestRemoveRedundant" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestRemoveCIDRs" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestRemoveSameCIDR" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestRemoveCIDRsEdgeCases" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestByteFunctions" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestIPNetToRange" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestNetsByRange" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestCoalesceCIDRs" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestRangeToCIDRs" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPreviousIP" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestNextIP" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestCreateSpanningCIDR" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPartitionCIDR" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/nil_slice" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/empty_slice" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/one_element_slice" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/IPv4_all_duplicates" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/IPv4_all_unique" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/IPv4_mixed" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/IPv6_all_duplicates" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/Mixed_IPv4_&amp;_IPv6" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestKeepUniqueAddrs/With_IPv6-in-IPv6" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestIPVersion" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestIPListEquals" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestGetIPFromListByFamily" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestGetIPAtIndex" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestMustAddrsFromIPs" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixToIpsValidIPv4" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixToIpsValidLimitedIPv4" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixToIpsValidIPv6" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixToIpsValidLimitedIPv6" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixToIPsInvalidPrefix" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixToIPv4sEdgeCase" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestPrefixToIpsWithMaxIPv4sExceedingRange" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestFailure" classname="github.com/cilium/cilium/pkg/ip" time="0.000" status="failed">
+			<properties>
+				<property name="owner" value="@cilium/sig-agent"></property>
+			</properties>
+			<failure message="Failed"><![CDATA[    ip_test.go:1053: 
+        	Error Trace:	/var/git/cilium/pkg/ip/ip_test.go:1053
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFailure]]></failure>
+		</testcase>
+	</testsuite>
+</testsuites>

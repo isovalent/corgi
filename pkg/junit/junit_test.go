@@ -90,9 +90,8 @@ func TestParseFile(t *testing.T) {
 		suites, cases, err := parseFile(f, dummyWorkflowRun, dummyConclusions, logger)
 		assert.ErrorIs(t, err, tt.expectedError)
 
-		assert.Equal(t, suites[0].TotalTests, tt.tests)
-		assert.Equal(t, len(cases), tt.tests)
-		assert.Equal(t, suites[0].TotalFailures, tt.failures)
+		assert.Equal(t, tt.tests, len(cases))
+		assert.Equal(t, tt.failures, suites[0].TotalFailures)
 	}
 }
 

@@ -501,7 +501,7 @@ func GetJobsAndStepsForRun(
 
 			job := types.NewJobRunFromRaw(run, jobRaw)
 
-			if job.Conclusion != "success" && includeErrorLogs {
+			if job.Conclusion != "success" && job.Conclusion != "skipped" && includeErrorLogs {
 				logs, err := GetLogsForJob(ctx, logger, client, job.ID, run.Repository.Owner.Login, run.Repository.Name)
 				if err != nil {
 					return nil, nil, err

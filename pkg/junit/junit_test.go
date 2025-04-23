@@ -100,6 +100,12 @@ func TestParseFile(t *testing.T) {
 			1,
 			nil,
 		},
+		{
+			"testdata/ci-bpf-tests.xml",
+			345,
+			0,
+			nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Log("Path: " + tt.path)

@@ -1,0 +1,1774 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="345">
+	<testsuite name="github.com/cilium/cilium/bpf/tests/bpftest" tests="345" failures="0" errors="0" id="0" hostname="1071719cec16" time="17.491" timestamp="2025-04-23T16:05:39Z">
+		<testcase name="TestBPF" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="17.470" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_ct_tests.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.050" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_ct_tests.o/ct4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_ct_tests.o/ct4/ct4_syn" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_ct_tests.o/ct4/ct4_rst" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.730" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_icmp_error_icmp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_icmp_error_icmp_egress" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_icmp_error_sctp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_icmp_error_sctp_egress" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_icmp_error_tcp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_icmp_error_tcp_egress" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_icmp_error_udp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_icmp_error_udp_egress" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_nat_tests.o/nat4_port_allocation" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.600" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_skb_255_tests.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_skb_255_tests.o/set_and_get_cluster_id" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_skb_255_tests.o/set_and_get_identity" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_skb_255_tests.o/set_identity_mark_bits" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_skb_511_tests.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_skb_511_tests.o/set_and_get_cluster_id" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/bpf_skb_511_tests.o/set_and_get_identity" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/builtins.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.960" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/builtins.o/builtin_memcmp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/builtins.o/builtin_memcmp_large" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/builtins.o/builtin_memcpy" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/builtins.o/builtin_memmove" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/builtins.o/builtin_memzero" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/conntrack_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.010" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/conntrack_test.o/conntrack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/conntrack_test.o/conntrack/ct_update_timeout" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/conntrack_test.o/conntrack/ct_lookup" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/conntrack_test.o/conntrack_svc" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/conntrack_test.o/conntrack_svc/ct_lookup_svc" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/drop_notify_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/drop_notify_test.o/send_drop_notify" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/eni_nlb_symetric_routing_host.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.140" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/eni_nlb_symetric_routing_host.o/eni_nlb_symetric_routing_egress_v4_setup" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/eni_nlb_symetric_routing_host.o/eni_nlb_symetric_routing_egress_v4_setup_icmp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/fib_tests.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/fib_tests.o/fib_do_redirect_happy_path" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/fib_tests.o/fib_do_redirect_happy_path/lookup_success" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/fib_tests.o/fib_do_redirect_happy_path/lookup_no_neigh" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/fib_tests.o/fib_do_redirect_happy_path/lookup_no_neigh_no_fib" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hairpin_sctp_flow.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.090" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hairpin_sctp_flow.o/hairpin_sctp_flow_1_forward_v4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hairpin_sctp_flow.o/hairpin_sctp_flow_2_forward_ingress_v4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hairpin_sctp_flow.o/hairpin_sctp_flow_3_reverse_v4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hairpin_sctp_flow.o/hairpin_sctp_flow_4_reverse_ingress_v4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/host_only_socket_lb_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.020" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:291: Skipping program 'cil_sock4_sendmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock4_recvmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_connect' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_sendmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_recvmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock4_connect' of type 'CGroupSockAddr': BPF_PROG_RUN not supported]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/host_only_socket_lb_test.o/sock4_xlate_fwd_test" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: host_only_socket_lb_test.c:105: xlate_fwd: 0
+    bpf_test.go:444: host_only_socket_lb_test.c:106: ip 0100a8c0
+    bpf_test.go:444: host_only_socket_lb_test.c:107: port 7000
+    bpf_test.go:444: host_only_socket_lb_test.c:108: ret: 0]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/hostfw_host_iptables.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.120" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hostfw_host_iptables.o/hostfw_iptables_host_ipv4_01_pod" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hostfw_host_iptables.o/hostfw_iptables_host_ipv4_02_pod" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hostfw_host_iptables.o/hostfw_iptables_host_ipv4_03_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hostfw_host_iptables.o/hostfw_iptables_host_ipv4_04_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/hostfw_host_iptables.o/hostfw_iptables_host_ipv4_05_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_backend_lxc.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.330" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_backend_lxc.o/01_overlay_to_lxc_syn" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_backend_lxc.o/02_lxc_to_overlay_synack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_backend_lxc.o/03_overlay_to_lxc_ack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_backend_overlay.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.280" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_backend_overlay.o/01_from_overlay_syn" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_backend_overlay.o/02_to_overlay_synack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_backend_overlay.o/03_from_overlay_ack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_client_lxc.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.340" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_client_lxc.o/01_lxc_to_overlay_syn" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_client_lxc.o/02_overlay_to_lxc_synack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_client_lxc.o/03_lxc_to_overlay_ack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_client_overlay.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.290" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_client_overlay.o/01_to_overlay_syn" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_client_overlay.o/02_from_overlay_synack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/inter_cluster_snat_clusterip_client_overlay.o/03_to_overlay_ack" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipfrag.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.190" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipfrag.o/ipfrag_helpers_ipv4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipfrag.o/ipfrag_helpers_ipv6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipfrag.o/ipfrag_helpers_ipv6_nofrag" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_encryption_on_egress.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.030" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_encryption_on_egress.o/ipsec_encryption_on_egress" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_native.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.090" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_native.o/ipv4_ipsec_from_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_native.o/ipv6_ipsec_from_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_native_endpoint.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.080" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_native_endpoint.o/ipv4_ipsec_from_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_native_endpoint.o/ipv6_ipsec_from_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_tunnel.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.090" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_tunnel.o/ipv4_ipsec_from_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_tunnel.o/ipv6_ipsec_from_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_tunnel_endpoint.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.090" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_tunnel_endpoint.o/ipv4_ipsec_from_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_host_tunnel_endpoint.o/ipv6_ipsec_from_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.120" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native.o/ipv4_decrypted_ipsec_from_network" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native.o/ipv4_not_decrypted_ipsec_from_network" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native.o/ipv6_decrypted_ipsec_from_network" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native.o/ipv6_not_decrypted_ipsec_from_network" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native_endpoint.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.120" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native_endpoint.o/ipv4_decrypted_ipsec_from_network" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native_endpoint.o/ipv4_not_decrypted_ipsec_from_network" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native_endpoint.o/ipv6_decrypted_ipsec_from_network" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_network_native_endpoint.o/ipv6_not_decrypted_ipsec_from_network" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.130" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel.o/ipv4_decrypted_ipsec_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel.o/ipv4_not_decrypted_ipsec_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel.o/ipv6_decrypted_ipsec_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel.o/ipv6_not_decrypted_ipsec_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel_endpoint.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.130" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel_endpoint.o/ipv4_decrypted_ipsec_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel_endpoint.o/ipv4_not_decrypted_ipsec_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel_endpoint.o/ipv6_decrypted_ipsec_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_from_overlay_tunnel_endpoint.o/ipv6_not_decrypted_ipsec_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_redirect_native.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.010" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipsec_redirect_native.o/ipsec_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.720" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o/011_ipv6_from_netdev_ns_pod" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o/011_ipv6_from_netdev_ns_pod_noopt" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o/012_ipv6_from_netdev_ns_pod_mcast" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o/012_ipv6_from_netdev_ns_pod_mcast_noopt" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o/0211_ipv6_from_netdev_ns_node_ip" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o/0212_ipv6_from_netdev_ns_node_ip_noopt" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o/022_ipv6_from_netdev_ns_node_ip_mcast" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_ndp_from_netdev_test.o/022_ipv6_from_netdev_ns_node_ip_mcast_noopt" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.140" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_test.o/ipv6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_test.o/ipv6/test_ipv6_addr_clear_suffix" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_test.o/ipv6_with_auth_hop_tcp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ipv6_test.o/ipv6_without_extension_header" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/jhash_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/jhash_test.o/jhash" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/jhash_test.o/jhash/Non-zero" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/jhash_test.o/jhash/Zero" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/l4lb_ipip_health_check_host.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.190" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/l4lb_ipip_health_check_host.o/l4lb_health_check_host" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/mcast_tests.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.080" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/mcast_tests.o/mcast_tests" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/mcast_tests.o/mcast_tests/is_igmp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/mcast_tests.o/mcast_tests/is_not_igmp" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/mcast_tests.o/mcast_tests/igmp_type" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/mock_skb_metadata.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/mock_skb_metadata.o/01_mock_skb_metadata" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/mock_skb_metadata.o/02_mock_skb_metadata" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/nodeport_geneve_dsr_lb_xdp.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.120" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/nodeport_geneve_dsr_lb_xdp.o/nodeport_geneve_dsr_lb_xdp1_local_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/nodeport_geneve_dsr_lb_xdp.o/nodeport_geneve_dsr_lb_xdp2_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/nodeport_overlay_nat_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.130" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/nodeport_overlay_nat_lb.o/nodeport_overlay_nat_1_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/nodeport_overlay_nat_lb.o/nodeport_overlay_nat_2_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ratelimit.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.030" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ratelimit.o/ratelimit" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ratelimit.o/ratelimit/bucket-created-when-missing" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ratelimit.o/ratelimit/block-on-bucket-empty" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ratelimit.o/ratelimit/topup-after-interval" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/ratelimit.o/ratelimit/do-not-go-over-bucket-size" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_maglev_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.270" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_maglev_test.o/session_affinity_maglev_client_1_port_1" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_maglev_test.o/session_affinity_maglev_client_1_port_2" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_maglev_test.o/session_affinity_maglev_client_1_port_3" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_maglev_test.o/session_affinity_maglev_client_2_port_1" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_maglev_test.o/session_affinity_maglev_client_2_port_2" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_maglev_test.o/session_affinity_maglev_client_2_port_3" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.120" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/session_affinity_test.o/session_affinity" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_lb_xlate_lrp_per_packet_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.170" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_lb_xlate_lrp_per_packet_lb.o/v4_local_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: skip_lb_xlate_lrp_per_packet_lb.c:121: l3->saddr: -22336 l3->daddr: 4268
+    bpf_test.go:444: skip_lb_xlate_lrp_per_packet_lb.c:122: V4_BACKEND_IP: -22336 V4_SERVICE_IP: 4268]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/skip_lb_xlate_lrp_per_packet_lb.o/v6_local_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_lb_xlate_socket_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.040" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:291: Skipping program 'cil_sock4_sendmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_connect' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_recvmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock4_connect' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock4_recvmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_sendmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/skip_lb_xlate_socket_lb.o/sock4_xlate_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: skip_lb_xlate_socket_lb.c:93: ret: -6
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:94: pod_one [0100a8c0] -> svc_one [010a10ac]
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:103: ret: 0
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:104: pod_one [0100a8c0] -> svc_two [0100a8c0]
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:114: ret: 0
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:115: pod_two [0200a8c0] -> svc_one [0100a8c0]]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/skip_lb_xlate_socket_lb.o/sock6_xlate_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: skip_lb_xlate_socket_lb.c:169: ret: -6
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:170: pod_one [000004fd] -> svc_one [000005fd]
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:186: ret: 0
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:187: pod_one [000004fd] -> svc_two [000004fd]
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:203: ret: 0
+    bpf_test.go:444: skip_lb_xlate_socket_lb.c:204: pod_two [000004fd] -> svc_one [000004fd]]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_host.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.150" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_host.o/01_ipv4_from_host_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_host.o/02_ipv4_from_host_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_host.o/03_ipv6_from_host_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_host.o/04_ipv6_from_host_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_lxc.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.240" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_lxc.o/01_ipv4_from_lxc_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_lxc.o/02_ipv4_from_lxc_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_lxc.o/03_ipv6_from_lxc_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_from_lxc.o/04_ipv6_from_lxc_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_masq.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.380" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_masq.o/01_ipv4_nodeport_ingress_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_masq.o/02_ipv4_nodeport_ingress_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_masq.o/03_ipv6_nodeport_ingress_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_masq.o/04_ipv6_nodeport_ingress_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_nat.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.340" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_nat.o/01_ipv4_nodeport_egress_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_nat.o/02_ipv4_nodeport_egress_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_nat.o/03_ipv6_nodeport_egress_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_nat.o/04_ipv6_nodeport_egress_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_revnat.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.350" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_revnat.o/01_ipv4_nodeport_ingress_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_revnat.o/02_ipv4_nodeport_ingress_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_revnat.o/03_ipv6_nodeport_ingress_no_flags" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/skip_tunnel_nodeport_revnat.o/04_ipv6_nodeport_ingress_skip_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.470" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o/tc_egressgw_drop_no_egress_ip" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o/tc_egressgw_drop_no_egress_ip_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o/tc_egressgw_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o/tc_egressgw_redirect_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o/tc_egressgw_skip_excluded_cidr_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o/tc_egressgw_skip_excluded_cidr_redirect_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o/tc_egressgw_skip_no_gateway_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_host.o/tc_egressgw_skip_no_gateway_redirect_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.380" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o/tc_egressgw_drop_no_egress_ip_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o/tc_egressgw_drop_no_egress_ip_from_overlay_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o/tc_egressgw_redirect_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o/tc_egressgw_redirect_from_overlay_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o/tc_egressgw_skip_excluded_cidr_redirect_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o/tc_egressgw_skip_excluded_cidr_redirect_from_overlay_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o/tc_egressgw_skip_no_gateway_redirect_from_overlay" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay.o/tc_egressgw_skip_no_gateway_redirect_from_overlay_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay_with_egress_interface.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.220" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay_with_egress_interface.o/tc_egressgw_redirect_from_overlay_with_egress_interface" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_redirect_from_overlay_with_egress_interface.o/tc_egressgw_redirect_from_overlay_with_egress_interface_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.730" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_egressgw_fib_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_egressgw_skip_excluded_cidr_snat" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_egressgw_snat1" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_egressgw_snat1_2_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_egressgw_snat2" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_egressgw_tuple_collision1" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_egressgw_tuple_collision2" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_egressgw_tuple_collision2_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_v6_egressgw_fib_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_v6_egressgw_skip_excluded_cidr_snat" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_v6_egressgw_snat1" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_v6_egressgw_snat1_2_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_v6_egressgw_snat2" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_v6_egressgw_tuple_collision1" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_v6_egressgw_tuple_collision2" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_egressgw_snat.o/tc_v6_egressgw_tuple_collision2_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_l2_announcement.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.030" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_l2_announcement.o/0_no_entry" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_l2_announcement.o/1_happy_path" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_lxc_lb4_no_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.090" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_lxc_lb4_no_backend.o/tc_lxc_no_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: tc_lxc_lb4_no_backend.c:108: Status code: 7]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/tc_lxc_lb6_no_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.110" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_lxc_lb6_no_backend.o/tc_lxc_no_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: tc_lxc_lb6_no_backend.c:117: Status code: 7]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/tc_lxc_policy_drop.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.090" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_lxc_policy_drop.o/tc_lxc_policy_drop" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.090" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev.o/ipv4_l3_to_l2_fast_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev.o/ipv6_l3_to_l2_fast_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev_lb_dsr_geneve_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.220" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev_lb_dsr_geneve_lb.o/ipv4_tc_nodeport_l3_dev_dsr_geneve_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev_lb_dsr_geneve_lb.o/ipv6_tc_nodeport_l3_dev_dsr_geneve_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev_to_tunnel.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.310" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev_to_tunnel.o/ipv4_tc_nodeport_l3_to_remote_backend_via_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_l3_dev_to_tunnel.o/ipv6_tc_nodeport_l3_to_remote_backend_via_tunnel" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_dsr_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.190" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_dsr_backend.o/tc_nodeport_dsr_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_dsr_backend.o/tc_nodeport_dsr_backend_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_dsr_backend.o/tc_nodeport_dsr_backend_redirect_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_dsr_backend.o/tc_nodeport_dsr_backend_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_dsr_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.100" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_dsr_lb.o/tc_nodeport_dsr_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.120" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_backend.o/tc_nodeport_nat_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.520" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_local_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_local_backend_redirect" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_local_backend_redirect_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_local_backend_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_original_renated" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_reply2_egw" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_reply_no_fib" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_reply_punt" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_restore" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_restore_original_entry" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_restore_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_nat_fwd_verify_restored_original_entry" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_nat_lb.o/tc_nodeport_udp_local_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_no_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.150" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_no_backend.o/tc_nodeport_no_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: tc_nodeport_lb4_no_backend.c:115: Status code: 7]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb4_no_backend.o/tc_nodeport_no_backend2_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: tc_nodeport_lb4_no_backend.c:115: Status code: 0]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb6_dsr_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.260" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb6_dsr_backend.o/tc_nodeport_dsr_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb6_dsr_backend.o/tc_nodeport_dsr_backend_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb6_dsr_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.120" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb6_dsr_lb.o/tc_nodeport_dsr_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb6_no_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.200" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb6_no_backend.o/tc_nodeport_no_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: tc_nodeport_lb6_no_backend.c:123: Status code: 7]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb6_no_backend.o/tc_nodeport_no_backend2_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:444: tc_nodeport_lb6_no_backend.c:123: Status code: 0]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb_terminating_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.130" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb_terminating_backend.o/tc_nodeport_lb_terminating_backend_0" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_lb_terminating_backend.o/tc_nodeport_lb_terminating_backend_1" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.200" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_test.o/hairpin_flow_1_forward_v4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_test.o/hairpin_flow_2_forward_ingress_v4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_test.o/hairpin_flow_3_reverse_v4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_test.o/hairpin_flow_4_reverse_ingress_v4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_nodeport_test.o/tc_drop_no_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_srv6_decap.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="2.880" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_srv6_decap.o/tc_srv6_decap_to_pod_ipv4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_srv6_decap.o/tc_srv6_decap_to_pod_ipv6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_srv6_decap.o/tc_srv6_decap_to_service_ipv4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_srv6_decap.o/tc_srv6_decap_to_service_ipv6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_srv6_encap.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.170" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_srv6_encap.o/tc_srv6_encap_from_pod_ipv4" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/tc_srv6_encap.o/tc_srv6_encap_from_pod_ipv6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/vxlan_helpers_tests.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.390" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/vxlan_helpers_tests.o/vxlan_get_inner_ipv4_success" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/vxlan_helpers_tests.o/vxlan_get_vni_success" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/vxlan_helpers_tests.o/vxlan_rewrite_vni_success" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.070" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+			<system-out><![CDATA[    bpf_test.go:291: Skipping program 'cil_sock4_connect' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock4_sendmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_post_bind' of type 'CGroupSock': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_sendmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock4_recvmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_connect' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock6_recvmsg' of type 'CGroupSockAddr': BPF_PROG_RUN not supported
+    bpf_test.go:291: Skipping program 'cil_sock4_post_bind' of type 'CGroupSock': BPF_PROG_RUN not supported]]></system-out>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock4_wildcard_lookup_test" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock4_wildcard_lookup_test/setup" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock4_wildcard_lookup_test/bad-port-range" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock4_wildcard_lookup_test/nodeport" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock4_wildcard_lookup_test/hostport" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock4_wildcard_lookup_test/nodeport-full" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock4_wildcard_lookup_test/hostport-full" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock4_wildcard_lookup_test/hostport-full-loopback" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock6_wildcard_lookup_test" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock6_wildcard_lookup_test/setup" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock6_wildcard_lookup_test/bad-port-range" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock6_wildcard_lookup_test/nodeport" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock6_wildcard_lookup_test/hostport" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock6_wildcard_lookup_test/nodeport-full" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock6_wildcard_lookup_test/hostport-full" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wildcard_lookup.o/sock6_wildcard_lookup_test/hostport-full-loopback" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wireguard_helpers_tests.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.010" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wireguard_helpers_tests.o/ctx_is_wireguard_success" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wireguard_helpers_tests.o/ctx_mark_is_wireguard_success" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wireguard_metrics.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.040" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/wireguard_metrics.o/wireguard_egress_metrics" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_egressgw_reply.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.460" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_egressgw_reply.o/xdp_egressgw_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_egressgw_reply.o/xdp_egressgw_reply_v6" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_dsr_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.090" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_dsr_lb.o/xdp_nodeport_dsr_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_nat_backend.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.100" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_nat_backend.o/xdp_nodeport_nat_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_nat_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.190" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_nat_lb.o/xdp_nodeport_local_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_nat_lb.o/xdp_nodeport_nat_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_nat_lb.o/xdp_nodeport_nat_fwd_reply" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_nat_lb.o/xdp_nodeport_nat_fwd_reply_no_fib" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_test.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.070" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_test.o/xdp_lb4_drop_no_backend" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb4_test.o/xdp_lb4_forward_to_other_node" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb6_dsr_lb.o" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.350" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+		<testcase name="TestBPF/xdp_nodeport_lb6_dsr_lb.o/xdp_nodeport_dsr_fwd" classname="github.com/cilium/cilium/bpf/tests/bpftest" time="0.000" status="passed">
+			<properties>
+				<property name="owner" value="@cilium/sig-datapath"></property>
+			</properties>
+		</testcase>
+	</testsuite>
+</testsuites>

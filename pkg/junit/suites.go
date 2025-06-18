@@ -144,9 +144,10 @@ type Property struct {
 
 // Result represents the result of a single test.
 type Result struct {
-	Message string `xml:"message,attr"`
-	Type    string `xml:"type,attr,omitempty"`
-	Data    string `xml:",cdata"`
+	Message         string   `xml:"message,attr"`
+	FailureMessages []string `xml:"failureMessage,attr,omitempty"`
+	Type            string   `xml:"type,attr,omitempty"`
+	Data            string   `xml:",cdata"`
 }
 
 // Output represents output written to stdout or sderr.

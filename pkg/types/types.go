@@ -264,11 +264,13 @@ type Testsuite struct {
 
 type Testcase struct {
 	*Testsuite
-	Type     TypeName      `json:"type,omitempty"`
-	Name     string        `json:"test_case_name,omitempty"`
-	Duration time.Duration `json:"test_case_duration,omitempty"`
-	Status   string        `json:"test_case_status,omitempty"`
-	Owners   []string      `json:"test_case_owners,omitempty"`
+	Type            TypeName      `json:"type,omitempty"`
+	Name            string        `json:"test_case_name,omitempty"`
+	Duration        time.Duration `json:"test_case_duration,omitempty"`
+	Status          string        `json:"test_case_status,omitempty"`
+	Owners          []string      `json:"test_case_owners,omitempty"`
+	Message         string        `json:"test_case_message,omitempty"`
+	FailureMessages []string      `json:"test_case_failure_message,omitempty"`
 }
 
 // FailureRate holds information regarding the rate of failure for a particular

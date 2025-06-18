@@ -184,6 +184,10 @@ func parseTestsuite(
 			}
 		}
 
+		if testcase.Failure != nil {
+			tc.FailureMessages = testcase.Failure.FailureMessages
+		}
+
 		if !util.Contains(allowedTestConclusions, tc.Status) {
 			l.Debug(
 				"Skipping test case for workflow, does not meet status criteria",

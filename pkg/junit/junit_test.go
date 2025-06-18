@@ -106,6 +106,12 @@ func TestParseFile(t *testing.T) {
 			0,
 			nil,
 		},
+		{
+			"testdata/failure-messages.xml",
+			121,
+			1,
+			nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Log("Path: " + tt.path)

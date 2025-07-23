@@ -92,7 +92,6 @@ jobs:
         run: |
           go run . workflow runs \
             --repository ${{ matrix.repository }} \
-            --branch ${{ matrix.branch }} \
             --until ${{ matrix.until }} \
             --since ${{ matrix.since }} \
             --events ${{ matrix.events }} \

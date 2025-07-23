@@ -1,52 +1,14 @@
 {
   "include": [
     {
-      "name": "cilium-cilium-main",
+      "name": "cilium-cilium",
       "repository": "cilium/cilium",
-      "branch": "main",
-      "events": "schedule,push"
-    },
-    {
-      "name": "cilium-cilium-1.15",
-      "repository": "cilium/cilium",
-      "branch": "v1.15",
-      "events": "workflow_dispatch,push"
-    },
-    {
-      "name": "cilium-cilium-1.16",
-      "repository": "cilium/cilium",
-      "branch": "v1.16",
-      "events": "workflow_dispatch,push"
-    },
-    {
-      "name": "cilium-cilium-1.17",
-      "repository": "cilium/cilium",
-      "branch": "v1.17",
-      "events": "workflow_dispatch,push"
-    },
-    {
-      "name": "cilium-cilium-1.18",
-      "repository": "cilium/cilium",
-      "branch": "v1.18",
-      "events": "workflow_dispatch,push"
+      "events": "workflow_dispatch,schedule,push,pull_request,pull_request_target"
     },
     {
       "name": "cilium-tetragon-main",
       "repository": "cilium/tetragon",
-      "branch": "main",
-      "events": "push"
-    },
-    {
-      "name": "cilium-tetragon-v1.3",
-      "repository": "cilium/tetragon",
-      "branch": "v1.2",
-      "events": "push"
-    },
-    {
-      "name": "cilium-tetragon-v1.4",
-      "repository": "cilium/tetragon",
-      "branch": "v1.2",
-      "events": "push"
+      "events": "workflow_dispatch,schedule,push,pull_request,pull_request_target"
     }
   ]
 }

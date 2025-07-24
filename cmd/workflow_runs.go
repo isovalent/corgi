@@ -230,11 +230,11 @@ func init() {
 		"Repository to pull workflows from in owner/name format",
 	)
 	workflowRunsCmd.PersistentFlags().StringVarP(
-		&workflowRunsParams.Branch, "branch", "b", "main",
+		&workflowRunsParams.Branch, "branch", "b", "",
 		"Name of the branch to pull workflows from",
 	)
 	workflowRunsCmd.PersistentFlags().StringSliceVarP(
-		&workflowRunsParams.Events, "events", "e", []string{"push"},
+		&workflowRunsParams.Events, "events", "e", []string{},
 		"Only pull workflows triggered by the given events",
 	)
 	workflowRunsCmd.PersistentFlags().StringSliceVar(

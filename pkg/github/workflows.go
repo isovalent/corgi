@@ -328,6 +328,12 @@ func GetLogsForJob(
 			return "", nil
 		}
 
+		if logURLResp.StatusCode == 404 {
+			l.Warn("Logs for workflow run are unavailable, received status 404 Not Found")
+
+			return "", nil
+		}
+
 		return "", fmt.Errorf("unable to get log URL for job with ID %d: %w", jobID, err)
 	}
 

@@ -332,8 +332,9 @@ func GetLogsForJob(
 	)
 
 	if err != nil {
-		if logURLResp.StatusCode == 410 {
-			l.Warn("Logs for workflow run are unavailable, received status 410 Gone")
+		switch logURLResp.StatusCode {
+		case http.StatusNotFound, http.StatusGone:
+			l.Warn("Logs for workflow run are unavailable, received status", "http-code", logURLResp.StatusCode)
 
 			return "", nil
 		}

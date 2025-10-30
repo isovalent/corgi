@@ -90,6 +90,7 @@ type WorkflowRun struct {
 	TestedSHA              string            `json:"tested_sha,omitempty"`
 	TestedCommit           Commit            `json:"tested_commit,omitempty"`
 	HeadBranch             string            `json:"head_branch,omitempty"`
+	BaseBranch             string            `json:"base_branch,omitempty"`
 	HeadSHA                string            `json:"head_sha,omitempty"`
 	HeadCommit             Commit            `json:"head_commit,omitempty"`
 	WorkflowDispatchInputs map[string]string `json:"workflow_dispatch_inputs,omitempty"`
@@ -169,6 +170,10 @@ func NewWorkflowRunFromRaw(runRaw *github.WorkflowRun) *WorkflowRun {
 		"https://github.com/%s/%s/actions/runs/%d",
 		run.Repository.Owner.Login, run.Repository.Name, run.ID,
 	)
+
+	if len(runRaw.PullRequests) > 0 {
+		run.BaseBranch = *runRaw.PullRequests[0].Base.Ref
+	}
 
 	return run
 }
@@ -287,6 +292,7 @@ type FailureRate struct {
 	JobName            string     `json:"job_name,omitempty"`
 	StepName           string     `json:"step_name,omitempty"`
 	HeadBranch         string     `json:"head_branch,omitempty"`
+	BaseBranch         string     `json:"base_branch,omitempty"`
 	FailureRate        float64    `json:"failure_rate"`
 	TotalRuns          int        `json:"total_runs"`
 	TotalFailures      int        `json:"total_failures"`

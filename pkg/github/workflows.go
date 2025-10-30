@@ -85,14 +85,9 @@ func GetWorkflowRuns(
 				ctx, l, func() (*github.WorkflowRuns, *github.Response, error) {
 					return client.Actions.ListWorkflowRunsByID(
 						ctx, repoOwner, repoName, workflowID, &github.ListWorkflowRunsOptions{
-							Event:  event,
-							Branch: branch,
-							// Not relevant. The Pull Requests field in the response
-							// returns open PRs that have the same HEAD SHA as the returned
-							// workflow run. In other words, the pull_requests field contains
-							// pull requests that use the same wversion of the workflow file
-							// as the returned workflow run.
-							ExcludePullRequests: true,
+							Event:               event,
+							Branch:              branch,
+							ExcludePullRequests: false,
 							Status:              status,
 							Created:             dateQuery,
 							ListOptions:         runOpts,
@@ -106,17 +101,11 @@ func GetWorkflowRuns(
 				func() (*github.WorkflowRuns, *github.Response, error) {
 					return client.Actions.ListRepositoryWorkflowRuns(
 						ctx, repoOwner, repoName, &github.ListWorkflowRunsOptions{
-							Event:  event,
-							Branch: branch,
-							// Not relevant. The Pull Requests field in the response
-							// returns open PRs that have the same HEAD SHA as the returned
-							// workflow run. In other words, the pull_requests field contains
-							// pull requests that use the same wversion of the workflow file
-							// as the returned workflow run.
-							ExcludePullRequests: true,
-							Status:              status,
-							Created:             dateQuery,
-							ListOptions:         runOpts,
+							Event:       event,
+							Branch:      branch,
+							Status:      status,
+							Created:     dateQuery,
+							ListOptions: runOpts,
 						},
 					)
 				},
@@ -335,6 +324,12 @@ func GetLogsForJob(
 		switch logURLResp.StatusCode {
 		case http.StatusNotFound, http.StatusGone:
 			l.Warn("Logs for workflow run are unavailable, received status", "http-code", logURLResp.StatusCode)
+
+			return "", nil
+		}
+
+		if logURLResp.StatusCode == 404 {
+			l.Warn("Logs for workflow run are unavailable, received status 404 Not Found")
 
 			return "", nil
 		}

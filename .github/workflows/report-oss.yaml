@@ -1,0 +1,51 @@
+name: Generate OSS CI Health Reports
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+env:
+  RUNS_INDEX: runs-oss
+  EVENTS: schedule,push
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  generate-reports:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate OSS reports
+        env:
+          OPENSEARCH_URL: ${{ secrets.OPENSEARCH_URL }}
+          OPENSEARCH_USER: ${{ secrets.OPENSEARCH_USER }}
+          OPENSEARCH_PASS: ${{ secrets.OPENSEARCH_PASS }}
+        run: |
+          go run . report \
+            --runs-index ${{ env.RUNS_INDEX }} \
+            --events ${{ env.EVENTS }} \
+            --output-dir ./report-out
+      - name: Checkout wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update wiki pages
+        run: |
+          cp -R ./report-out/. ./wiki/
+      - name: Commit and push wiki
+        run: |
+          cd wiki
+          if git status --porcelain | grep .; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Update CI health reports" -s
+            git push origin master
+          else
+            echo "No changes to commit"
+          fi

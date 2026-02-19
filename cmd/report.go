@@ -1551,6 +1551,13 @@ func queryWorkflowBars(
 		results = append(results, workflowBar{Workflow: workflow, TotalRuns: total, TotalFails: failures})
 	}
 
+	sort.Slice(results, func(i, j int) bool {
+		if results[i].TotalRuns == results[j].TotalRuns {
+			return results[i].TotalFails > results[j].TotalFails
+		}
+		return results[i].TotalRuns > results[j].TotalRuns
+	})
+
 	return results, nil
 }
 
@@ -1614,6 +1621,13 @@ func queryWorkflowBarsForBranch(
 		}
 		results = append(results, workflowBar{Workflow: workflow, TotalRuns: total, TotalFails: failures})
 	}
+
+	sort.Slice(results, func(i, j int) bool {
+		if results[i].TotalRuns == results[j].TotalRuns {
+			return results[i].TotalFails > results[j].TotalFails
+		}
+		return results[i].TotalRuns > results[j].TotalRuns
+	})
 
 	return results, nil
 }

@@ -121,6 +121,8 @@ type reportResult struct {
 type branchResult struct {
 	Branch                string
 	Graphs                graphBundle
+	WorkflowBars          []workflowBar
+	WorkflowSuiteBars     []workflowSuiteBar
 	WorkflowFailures      []workflowCount
 	WorkflowSuiteFailures []workflowSuiteFailureGroup
 	Trends                []trendItem
@@ -327,6 +329,14 @@ func buildReportWindow(
 		if err != nil {
 			return reportResult{}, err
 		}
+		branchWorkflowBars, err := queryWorkflowBarsForBranch(ctx, logger, client, params, repo, window, branch)
+		if err != nil {
+			return reportResult{}, err
+		}
+		branchWorkflowSuiteBars, err := queryWorkflowSuiteBarsForBranch(ctx, logger, client, params, repo, window, branch)
+		if err != nil {
+			return reportResult{}, err
+		}
 		branchWorkflowFailures, err := queryWorkflowFailuresForBranch(ctx, logger, client, params, repo, window, branch)
 		if err != nil {
 			return reportResult{}, err
@@ -345,6 +355,8 @@ func buildReportWindow(
 		branchResults = append(branchResults, branchResult{
 			Branch:                branch,
 			Graphs:                branchGraphs,
+			WorkflowBars:          branchWorkflowBars,
+			WorkflowSuiteBars:     branchWorkflowSuiteBars,
 			WorkflowFailures:      branchWorkflowFailures,
 			WorkflowSuiteFailures: branchWorkflowSuiteFailures,
 			Trends:                branchTrends,
@@ -506,6 +518,12 @@ func renderReportFile(outputDir, fileName string, spec reportSpec, results []rep
 		}
 		for _, branch := range result.BranchFailureGroupsByWorkflow {
 			if err := writeGraphBundle(outputDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.Graphs); err != nil {
+				return err
+			}
+			if err := writeWorkflowBars(outputDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.WorkflowBars); err != nil {
+				return err
+			}
+			if err := writeWorkflowTestBars(outputDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.WorkflowSuiteBars); err != nil {
 				return err
 			}
 		}
@@ -1543,6 +1561,68 @@ func queryWorkflowBars(
 	return results, nil
 }
 
+func queryWorkflowBarsForBranch(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *reportParams,
+	repo string,
+	window reportWindow,
+	branch string,
+) ([]workflowBar, error) {
+	query := map[string]any{
+		"size": 0,
+		"query": map[string]any{
+			"bool": map[string]any{
+				"must": []any{
+					buildRangeFilter(window.Since, window.Until),
+					buildTypeFilter("workflow_run"),
+					buildRepoTermFilter(repo),
+					buildEventTermsFilter(params.Events),
+					buildTermFilter("head_branch.keyword", branch),
+				},
+			},
+		},
+		"aggs": map[string]any{
+			"workflows": map[string]any{
+				"terms": map[string]any{
+					"field": "workflow_name.keyword",
+					"size":  params.Top,
+				},
+				"aggs": map[string]any{
+					"failures": map[string]any{
+						"filter": map[string]any{
+							"terms": map[string]any{"workflow_conclusion": params.FailStatus},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
+	if err != nil {
+		return nil, err
+	}
+	buckets, err := getBuckets(resp, "workflows")
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]workflowBar, 0, len(buckets))
+	for _, bucket := range buckets {
+		workflow := getString(bucket, "key")
+		total := getInt(bucket, "doc_count")
+		failures := 0
+		if failAgg, ok := bucket["failures"].(map[string]any); ok {
+			failures = getInt(failAgg, "doc_count")
+		}
+		results = append(results, workflowBar{Workflow: workflow, TotalRuns: total, TotalFails: failures})
+	}
+
+	return results, nil
+}
+
 func queryWorkflowSuiteBars(
 	ctx context.Context,
 	logger *slog.Logger,
@@ -1564,6 +1644,102 @@ func queryWorkflowSuiteBars(
 						buildTypeFilter("test_case"),
 						buildRepoTermFilter(repo),
 						buildEventTermsFilter(params.Events),
+					},
+				},
+			},
+			"aggs": map[string]any{
+				"workflow_suite": map[string]any{
+					"composite": map[string]any{
+						"size": 1000,
+						"sources": []any{
+							map[string]any{"workflow": map[string]any{"terms": map[string]any{"field": "workflow_name.keyword"}}},
+							map[string]any{"suite": map[string]any{"terms": map[string]any{"field": "test_suite_name.keyword"}}},
+						},
+					},
+					"aggs": map[string]any{
+						"failures": map[string]any{
+							"filter": map[string]any{
+								"terms": map[string]any{"test_case_status": params.TestStatus},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		if afterKey != nil {
+			query["aggs"].(map[string]any)["workflow_suite"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
+		}
+
+		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
+		if err != nil {
+			return nil, err
+		}
+
+		agg, err := getAgg(resp, "workflow_suite")
+		if err != nil {
+			return nil, err
+		}
+		buckets, err := getBucketArray(agg)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, bucket := range buckets {
+			keyMap := getMap(bucket, "key")
+			workflow := getStringFromMap(keyMap, "workflow")
+			suite := getStringFromMap(keyMap, "suite")
+			total := getInt(bucket, "doc_count")
+			failures := 0
+			if failAgg, ok := bucket["failures"].(map[string]any); ok {
+				failures = getInt(failAgg, "doc_count")
+			}
+			results = append(results, workflowSuiteBar{
+				Workflow:   workflow,
+				TestSuite:  suite,
+				TotalRuns:  total,
+				TotalFails: failures,
+			})
+		}
+
+		afterKey, _ = agg["after_key"].(map[string]any)
+		if afterKey == nil {
+			break
+		}
+	}
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].TotalFails > results[j].TotalFails
+	})
+	if len(results) > params.Top {
+		results = results[:params.Top]
+	}
+	return results, nil
+}
+
+func queryWorkflowSuiteBarsForBranch(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *reportParams,
+	repo string,
+	window reportWindow,
+	branch string,
+) ([]workflowSuiteBar, error) {
+	var results []workflowSuiteBar
+	var afterKey map[string]any
+
+	for {
+		query := map[string]any{
+			"size": 0,
+			"query": map[string]any{
+				"bool": map[string]any{
+					"must": []any{
+						buildRangeFilter(window.Since, window.Until),
+						buildTypeFilter("test_case"),
+						buildRepoTermFilter(repo),
+						buildEventTermsFilter(params.Events),
+						buildTermFilter("head_branch.keyword", branch),
 					},
 				},
 			},

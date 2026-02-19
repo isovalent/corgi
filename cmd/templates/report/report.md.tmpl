@@ -104,4 +104,14 @@
 
 {{- end }}
 
+{{- if gt (len .OtherBranches) 0 }}
+
+### Other branches ({{ $windowTag }})
+
+{{- range .OtherBranches }}
+- [{{ .Name }}]({{ .Path }})
+{{- end }}
+
+{{- end }}
+
 {{- end }}

@@ -1,0 +1,58 @@
+# {{ .Spec.Title }} - Branch {{ .Branch }}
+
+- Generated: {{ .Generated }}
+- Execution time: {{ .ExecutionTime }}
+
+{{- range .Results }}
+{{- $window := .Window }}
+{{- $days := .Window.Days }}
+{{- $windowTag := windowTag $window }}
+## {{ windowTitle $window }}
+
+### Branch {{ $.Branch }} (last {{ $days }} days)
+
+{{ formatFailureRate .Result.Graphs.TotalSeries }}
+
+#### Graphs (branch {{ $.Branch }}, last {{ $days }} days)
+
+![Total failures vs runs](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-total.svg)
+
+![Failures per workflow](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflows.svg)
+
+{{- if and (eq $days 7) (gt (len .Result.Trends) 0) }}
+
+#### Trends (branch {{ $.Branch }}, last {{ $days }} days)
+
+{{- range .Result.Trends }}
+- {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
+{{- end }}
+
+{{- end }}
+
+#### Per workflow CI failures (branch {{ $.Branch }}, last {{ $days }} days)
+
+![Workflow runs vs failures](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflow-bars.svg)
+
+<details><summary>Table</summary>
+
+| Rank | Workflow | Test suite | Test owners | Suite owners | Failures | Links |
+| --- | --- | --- | --- | --- | --- | --- |
+{{- range $i, $wf := .Result.WorkflowFailures }}
+| {{ add1 $i }} | {{ escapePipes $wf.Workflow }} | {{ escapePipes (join $wf.TestSuites ", ") }} | {{ escapePipes (join $wf.TestCaseOwners ", ") }} | {{ escapePipes (join $wf.TestSuiteOwners ", ") }} | {{ $wf.Count }} | {{ renderLinks $wf.Links }} |
+{{- end }}
+
+</details>
+
+#### Per workflow+test CI failures (branch {{ $.Branch }}, last {{ $days }} days)
+
+<details><summary>Table</summary>
+
+| Rank | Workflow | Test suite | Test case | Failure | Test owners | Suite owners | Failures | Links |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+{{- range $i, $group := .Result.WorkflowSuiteFailures }}
+| {{ add1 $i }} | {{ escapePipes $group.Workflow }} | {{ escapePipes $group.TestSuite }} | {{ escapePipes $group.TestCaseName }} | {{ escapePipes $group.FailureMessage }} | {{ escapePipes (join $group.TestCaseOwners ", ") }} | {{ escapePipes (join $group.TestSuiteOwners ", ") }} | {{ $group.Count }} | {{ renderLinks $group.Links }} |
+{{- end }}
+
+</details>
+
+{{- end }}

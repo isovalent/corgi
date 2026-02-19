@@ -107,6 +107,7 @@ type reportSpec struct {
 	Title      string
 	Slug       string
 	Repository string
+	Component  string
 }
 
 type reportTemplateData struct {
@@ -125,6 +126,11 @@ type landingTemplateData struct {
 	Links []landingLink
 }
 
+type branchLink struct {
+	Name string
+	Path string
+}
+
 type reportResult struct {
 	Window                        reportWindow
 	Graphs                        graphBundle
@@ -133,6 +139,21 @@ type reportResult struct {
 	WorkflowFailures              []workflowCount
 	BranchWorkflowSuiteFailures   []workflowSuiteCount
 	BranchFailureGroupsByWorkflow []branchResult
+	OtherBranchResults            []branchResult
+	OtherBranches                 []branchLink
+}
+
+type branchWindowResult struct {
+	Window reportWindow
+	Result branchResult
+}
+
+type branchReportTemplateData struct {
+	Spec          reportSpec
+	Branch        string
+	Generated     string
+	ExecutionTime string
+	Results       []branchWindowResult
 }
 
 type branchResult struct {
@@ -163,6 +184,11 @@ var reportTemplate = template.Must(template.New("report.md.tmpl").Funcs(reportTe
 var landingTemplate = template.Must(template.New("landing.md.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
 	reportTemplates,
 	"templates/report/landing.md.tmpl",
+))
+
+var branchTemplate = template.Must(template.New("branch.md.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
+	reportTemplates,
+	"templates/report/branch.md.tmpl",
 ))
 
 var reportCmd = &cobra.Command{
@@ -204,20 +230,18 @@ var reportCmd = &cobra.Command{
 				Title:      "Cilium OSS: CI health report",
 				Slug:       "Cilium-OSS-CI-health-report",
 				Repository: "cilium/cilium",
+				Component:  componentFromRepo("cilium/cilium"),
 			},
 			{
 				Title:      "Tetragon OSS: CI health report",
 				Slug:       "Tetragon-OSS-CI-health-report",
 				Repository: "cilium/tetragon",
+				Component:  componentFromRepo("cilium/tetragon"),
 			},
 		}
 
 		now := time.Now().Local()
 		windows := buildReportWindows(now, reportCmdParams.Days)
-
-		if err := os.MkdirAll(filepath.Join(reportCmdParams.OutputDir, "graphs"), 0o755); err != nil {
-			return fmt.Errorf("unable to create output directory: %w", err)
-		}
 
 		landingLinks := make([]landingLink, 0, len(reportSpecs))
 
@@ -229,19 +253,34 @@ var reportCmd = &cobra.Command{
 
 			reportStart := time.Now()
 			results := make([]reportResult, 0, len(windows))
+			branchResults := make(map[string][]branchWindowResult)
 			for _, window := range windows {
 				windowResult, err := buildReportWindow(ctx, logger, client, reportCmdParams, spec.Repository, window)
 				if err != nil {
 					return fmt.Errorf("unable to build report for %s: %w", spec.Repository, err)
 				}
 				results = append(results, windowResult)
+				for _, branchResult := range windowResult.OtherBranchResults {
+					branchResults[branchResult.Branch] = append(
+						branchResults[branchResult.Branch],
+						branchWindowResult{Window: window, Result: branchResult},
+					)
+				}
 			}
 
-			fileName := fmt.Sprintf("%s.md", spec.Slug)
-			landingLinks = append(landingLinks, landingLink{Title: spec.Title, File: fileName})
+			landingLinks = append(landingLinks, landingLink{
+				Title: spec.Title,
+				File:  filepath.ToSlash(filepath.Join(spec.Component, "report.md")),
+			})
 
-			if err := renderReportFile(reportCmdParams.OutputDir, fileName, spec, results, reportStart); err != nil {
+			if err := renderReportFile(reportCmdParams.OutputDir, spec, results, reportStart); err != nil {
 				return err
+			}
+
+			for branch, branchWindowResults := range branchResults {
+				if err := renderBranchReportFile(reportCmdParams.OutputDir, spec, branch, branchWindowResults, reportStart); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -340,39 +379,24 @@ func buildReportWindow(
 		return reportResult{}, err
 	}
 
-	branchResults := make([]branchResult, 0, len(branches))
-	for _, branch := range branches {
-		branchGraphs, err := buildBranchGraphData(ctx, logger, client, params, repo, window, branch)
+	mainBranches, otherBranches := filterBranchesByPrefix(branches)
+	mainBranchResults := make([]branchResult, 0, len(mainBranches))
+	otherBranchResults := make([]branchResult, 0, len(otherBranches))
+
+	for _, branch := range mainBranches {
+		result, err := buildBranchResult(ctx, logger, client, params, repo, window, branch)
 		if err != nil {
 			return reportResult{}, err
 		}
-		branchWorkflowBars, err := queryWorkflowBarsForBranch(ctx, logger, client, params, repo, window, branch)
+		mainBranchResults = append(mainBranchResults, result)
+	}
+
+	for _, branch := range otherBranches {
+		result, err := buildBranchResult(ctx, logger, client, params, repo, window, branch)
 		if err != nil {
 			return reportResult{}, err
 		}
-		branchWorkflowFailures, err := queryWorkflowFailuresForBranch(ctx, logger, client, params, repo, window, branch)
-		if err != nil {
-			return reportResult{}, err
-		}
-		branchWorkflowSuiteFailures, err := queryWorkflowSuiteFailureGroupsForBranch(ctx, logger, client, params, repo, window, branch)
-		if err != nil {
-			return reportResult{}, err
-		}
-		var branchTrends []trendItem
-		if window.Days == 7 {
-			branchTrends, err = buildTrendsForBranch(ctx, logger, client, params, repo, window, branch)
-			if err != nil {
-				return reportResult{}, err
-			}
-		}
-		branchResults = append(branchResults, branchResult{
-			Branch:                branch,
-			Graphs:                branchGraphs,
-			WorkflowBars:          branchWorkflowBars,
-			WorkflowFailures:      branchWorkflowFailures,
-			WorkflowSuiteFailures: branchWorkflowSuiteFailures,
-			Trends:                branchTrends,
-		})
+		otherBranchResults = append(otherBranchResults, result)
 	}
 
 	return reportResult{
@@ -382,12 +406,62 @@ func buildReportWindow(
 		Trends:                        trends,
 		WorkflowFailures:              workflowFailures,
 		BranchWorkflowSuiteFailures:   branchWorkflowSuiteFailures,
-		BranchFailureGroupsByWorkflow: branchResults,
+		BranchFailureGroupsByWorkflow: mainBranchResults,
+		OtherBranchResults:            otherBranchResults,
+		OtherBranches:                 buildOtherBranchLinks(componentFromRepo(repo), otherBranches),
 	}, nil
 }
 
-func renderReportFile(outputDir, fileName string, spec reportSpec, results []reportResult, start time.Time) error {
-	path := filepath.Join(outputDir, fileName)
+func buildBranchResult(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *reportParams,
+	repo string,
+	window reportWindow,
+	branch string,
+) (branchResult, error) {
+	branchGraphs, err := buildBranchGraphData(ctx, logger, client, params, repo, window, branch)
+	if err != nil {
+		return branchResult{}, err
+	}
+	branchWorkflowBars, err := queryWorkflowBarsForBranch(ctx, logger, client, params, repo, window, branch)
+	if err != nil {
+		return branchResult{}, err
+	}
+	branchWorkflowFailures, err := queryWorkflowFailuresForBranch(ctx, logger, client, params, repo, window, branch)
+	if err != nil {
+		return branchResult{}, err
+	}
+	branchWorkflowSuiteFailures, err := queryWorkflowSuiteFailureGroupsForBranch(ctx, logger, client, params, repo, window, branch)
+	if err != nil {
+		return branchResult{}, err
+	}
+	var branchTrends []trendItem
+	if window.Days == 7 {
+		branchTrends, err = buildTrendsForBranch(ctx, logger, client, params, repo, window, branch)
+		if err != nil {
+			return branchResult{}, err
+		}
+	}
+	return branchResult{
+		Branch:                branch,
+		Graphs:                branchGraphs,
+		WorkflowBars:          branchWorkflowBars,
+		WorkflowFailures:      branchWorkflowFailures,
+		WorkflowSuiteFailures: branchWorkflowSuiteFailures,
+		Trends:                branchTrends,
+	}, nil
+}
+
+func renderReportFile(outputDir string, spec reportSpec, results []reportResult, start time.Time) error {
+	path := reportOutputPath(outputDir, spec.Component)
+	reportDir := filepath.Dir(path)
+	graphDir := filepath.Join(reportDir, "graphs")
+
+	if err := os.MkdirAll(graphDir, 0o755); err != nil {
+		return fmt.Errorf("unable to create report graphs directory: %w", err)
+	}
 
 	end := time.Now()
 	duration := end.Sub(start)
@@ -403,22 +477,25 @@ func renderReportFile(outputDir, fileName string, spec reportSpec, results []rep
 		return fmt.Errorf("unable to render report template: %w", err)
 	}
 
+	if err := os.MkdirAll(reportDir, 0o755); err != nil {
+		return fmt.Errorf("unable to create report directory: %w", err)
+	}
 	if err := os.WriteFile(path, []byte(b.String()), 0o644); err != nil {
 		return fmt.Errorf("unable to write report file %s: %w", path, err)
 	}
 
 	for _, result := range results {
-		if err := writeGraphBundle(outputDir, graphPrefix(spec.Slug, result.Window.Days), result.Graphs); err != nil {
+		if err := writeGraphBundle(graphDir, graphPrefix(spec.Slug, result.Window.Days), result.Graphs); err != nil {
 			return err
 		}
-		if err := writeWorkflowBars(outputDir, graphPrefix(spec.Slug, result.Window.Days), result.WorkflowBars); err != nil {
+		if err := writeWorkflowBars(graphDir, graphPrefix(spec.Slug, result.Window.Days), result.WorkflowBars); err != nil {
 			return err
 		}
 		for _, branch := range result.BranchFailureGroupsByWorkflow {
-			if err := writeGraphBundle(outputDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.Graphs); err != nil {
+			if err := writeGraphBundle(graphDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.Graphs); err != nil {
 				return err
 			}
-			if err := writeWorkflowBars(outputDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.WorkflowBars); err != nil {
+			if err := writeWorkflowBars(graphDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.WorkflowBars); err != nil {
 				return err
 			}
 		}
@@ -427,8 +504,52 @@ func renderReportFile(outputDir, fileName string, spec reportSpec, results []rep
 	return nil
 }
 
+func renderBranchReportFile(outputDir string, spec reportSpec, branch string, results []branchWindowResult, start time.Time) error {
+	path := branchReportOutputPath(outputDir, spec.Component, branch)
+	reportDir := filepath.Dir(path)
+	graphDir := filepath.Join(reportDir, "graphs")
+
+	if err := os.MkdirAll(graphDir, 0o755); err != nil {
+		return fmt.Errorf("unable to create branch report graphs directory: %w", err)
+	}
+
+	end := time.Now()
+	duration := end.Sub(start)
+
+	var b strings.Builder
+	data := branchReportTemplateData{
+		Spec:          spec,
+		Branch:        branch,
+		Generated:     end.Format("2006-01-02 15:04 MST"),
+		ExecutionTime: formatDuration(duration),
+		Results:       results,
+	}
+	if err := branchTemplate.Execute(&b, data); err != nil {
+		return fmt.Errorf("unable to render branch report template: %w", err)
+	}
+
+	if err := os.MkdirAll(reportDir, 0o755); err != nil {
+		return fmt.Errorf("unable to create branch report directory: %w", err)
+	}
+	if err := os.WriteFile(path, []byte(b.String()), 0o644); err != nil {
+		return fmt.Errorf("unable to write branch report file %s: %w", path, err)
+	}
+
+	for _, result := range results {
+		prefix := branchGraphPrefix(spec.Slug, result.Window.Days, branch)
+		if err := writeGraphBundle(graphDir, prefix, result.Result.Graphs); err != nil {
+			return err
+		}
+		if err := writeWorkflowBars(graphDir, prefix, result.Result.WorkflowBars); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func renderLandingPage(outputDir string, links []landingLink) error {
-	path := filepath.Join(outputDir, "CI-Health-reports.md")
+	path := filepath.Join(outputDir, "Home.md")
 	var b strings.Builder
 	data := landingTemplateData{Links: links}
 	if err := landingTemplate.Execute(&b, data); err != nil {
@@ -2577,6 +2698,59 @@ func parseRunID(link string) int64 {
 	return value
 }
 
+func componentFromRepo(repo string) string {
+	parts := strings.Split(repo, "/")
+	for i := len(parts) - 1; i >= 0; i-- {
+		if parts[i] != "" {
+			return parts[i]
+		}
+	}
+	return slugify(repo)
+}
+
+func reportOutputPath(outputDir, component string) string {
+	return filepath.Join(outputDir, component, "report.md")
+}
+
+func branchReportOutputPath(outputDir, component, branch string) string {
+	return filepath.Join(outputDir, component, "branch", slugify(branch), "report.md")
+}
+
+func filterBranchesByPrefix(branches []string) ([]string, []string) {
+	mainBranches := make([]string, 0, len(branches))
+	otherBranches := make([]string, 0, len(branches))
+	for _, branch := range branches {
+		if isMainBranch(branch) {
+			mainBranches = append(mainBranches, branch)
+		} else {
+			otherBranches = append(otherBranches, branch)
+		}
+	}
+	sort.Strings(mainBranches)
+	sort.Strings(otherBranches)
+	return mainBranches, otherBranches
+}
+
+func buildOtherBranchLinks(component string, branches []string) []branchLink {
+	if len(branches) == 0 {
+		return nil
+	}
+	sorted := append([]string(nil), branches...)
+	sort.Strings(sorted)
+	links := make([]branchLink, 0, len(sorted))
+	for _, branch := range sorted {
+		links = append(links, branchLink{
+			Name: branch,
+			Path: filepath.ToSlash(filepath.Join("branch", slugify(branch), "report.md")),
+		})
+	}
+	return links
+}
+
+func isMainBranch(branch string) bool {
+	return strings.HasPrefix(branch, "main")
+}
+
 // Graph rendering
 
 type svgChart struct {
@@ -2593,17 +2767,17 @@ func branchGraphPrefix(slug string, days int, branch string) string {
 	return fmt.Sprintf("%s-%dd-%s", slug, days, slugify(branch))
 }
 
-func writeGraphBundle(outputDir, prefix string, graphs graphBundle) error {
-	if err := writeSVG(filepath.Join(outputDir, "graphs", fmt.Sprintf("%s-total.svg", prefix)),
+func writeGraphBundle(graphDir, prefix string, graphs graphBundle) error {
+	if err := writeSVG(filepath.Join(graphDir, fmt.Sprintf("%s-total.svg", prefix)),
 		renderTotalsChart(graphs.TotalSeries, "Total failures vs runs")); err != nil {
 		return err
 	}
-	if err := writeSVG(filepath.Join(outputDir, "graphs", fmt.Sprintf("%s-workflows.svg", prefix)),
+	if err := writeSVG(filepath.Join(graphDir, fmt.Sprintf("%s-workflows.svg", prefix)),
 		renderSeriesChart(graphs.WorkflowLines, "Failures per workflow")); err != nil {
 		return err
 	}
 	if len(graphs.BranchLines) > 0 {
-		if err := writeSVG(filepath.Join(outputDir, "graphs", fmt.Sprintf("%s-branches.svg", prefix)),
+		if err := writeSVG(filepath.Join(graphDir, fmt.Sprintf("%s-branches.svg", prefix)),
 			renderSeriesChart(graphs.BranchLines, "Failures per branch and workflow")); err != nil {
 			return err
 		}
@@ -2615,8 +2789,8 @@ func writeSVG(path string, content string) error {
 	return os.WriteFile(path, []byte(content), 0o644)
 }
 
-func writeWorkflowBars(outputDir, prefix string, bars []workflowBar) error {
-	path := filepath.Join(outputDir, "graphs", fmt.Sprintf("%s-workflow-bars.svg", prefix))
+func writeWorkflowBars(graphDir, prefix string, bars []workflowBar) error {
+	path := filepath.Join(graphDir, fmt.Sprintf("%s-workflow-bars.svg", prefix))
 	content := renderBarChart("Workflow runs vs failures", toWorkflowBarSeries(bars), true)
 	return writeSVG(path, content)
 }

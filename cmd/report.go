@@ -111,7 +111,6 @@ type reportResult struct {
 	Window                        reportWindow
 	Graphs                        graphBundle
 	WorkflowBars                  []workflowBar
-	WorkflowSuiteBars             []workflowSuiteBar
 	Trends                        []trendItem
 	WorkflowFailures              []workflowCount
 	BranchWorkflowSuiteFailures   []workflowSuiteCount
@@ -122,7 +121,6 @@ type branchResult struct {
 	Branch                string
 	Graphs                graphBundle
 	WorkflowBars          []workflowBar
-	WorkflowSuiteBars     []workflowSuiteBar
 	WorkflowFailures      []workflowCount
 	WorkflowSuiteFailures []workflowSuiteFailureGroup
 	Trends                []trendItem
@@ -130,13 +128,6 @@ type branchResult struct {
 
 type workflowBar struct {
 	Workflow   string
-	TotalRuns  int
-	TotalFails int
-}
-
-type workflowSuiteBar struct {
-	Workflow   string
-	TestSuite  string
 	TotalRuns  int
 	TotalFails int
 }
@@ -305,11 +296,6 @@ func buildReportWindow(
 		return reportResult{}, err
 	}
 
-	workflowSuiteBars, err := queryWorkflowSuiteBars(ctx, logger, client, params, repo, window)
-	if err != nil {
-		return reportResult{}, err
-	}
-
 	var trends []trendItem
 	if window.Days == 7 {
 		trends, err = buildTrends(ctx, logger, client, params, repo, window)
@@ -333,10 +319,6 @@ func buildReportWindow(
 		if err != nil {
 			return reportResult{}, err
 		}
-		branchWorkflowSuiteBars, err := queryWorkflowSuiteBarsForBranch(ctx, logger, client, params, repo, window, branch)
-		if err != nil {
-			return reportResult{}, err
-		}
 		branchWorkflowFailures, err := queryWorkflowFailuresForBranch(ctx, logger, client, params, repo, window, branch)
 		if err != nil {
 			return reportResult{}, err
@@ -356,7 +338,6 @@ func buildReportWindow(
 			Branch:                branch,
 			Graphs:                branchGraphs,
 			WorkflowBars:          branchWorkflowBars,
-			WorkflowSuiteBars:     branchWorkflowSuiteBars,
 			WorkflowFailures:      branchWorkflowFailures,
 			WorkflowSuiteFailures: branchWorkflowSuiteFailures,
 			Trends:                branchTrends,
@@ -367,7 +348,6 @@ func buildReportWindow(
 		Window:                        window,
 		Graphs:                        graphs,
 		WorkflowBars:                  workflowBars,
-		WorkflowSuiteBars:             workflowSuiteBars,
 		Trends:                        trends,
 		WorkflowFailures:              workflowFailures,
 		BranchWorkflowSuiteFailures:   branchWorkflowSuiteFailures,
@@ -481,7 +461,6 @@ func renderReportFile(outputDir, fileName string, spec reportSpec, results []rep
 			b.WriteString("\n</details>\n\n")
 
 			b.WriteString(fmt.Sprintf("#### Per workflow+test CI failures (branch %s, last %d days)\n\n", escapePipes(branch.Branch), result.Window.Days))
-			b.WriteString(fmt.Sprintf("![Workflow+test runs vs failures](graphs/%s-workflow-test-bars.svg)\n\n", branchPrefix))
 			b.WriteString("<details><summary>Table</summary>\n\n")
 			b.WriteString("| Rank | Workflow | Test suite | Test case | Failure | Test owners | Suite owners | Failures | Links |\n")
 			b.WriteString("| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n")
@@ -513,17 +492,11 @@ func renderReportFile(outputDir, fileName string, spec reportSpec, results []rep
 		if err := writeWorkflowBars(outputDir, graphPrefix(spec.Slug, result.Window.Days), result.WorkflowBars); err != nil {
 			return err
 		}
-		if err := writeWorkflowTestBars(outputDir, graphPrefix(spec.Slug, result.Window.Days), result.WorkflowSuiteBars); err != nil {
-			return err
-		}
 		for _, branch := range result.BranchFailureGroupsByWorkflow {
 			if err := writeGraphBundle(outputDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.Graphs); err != nil {
 				return err
 			}
 			if err := writeWorkflowBars(outputDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.WorkflowBars); err != nil {
-				return err
-			}
-			if err := writeWorkflowTestBars(outputDir, branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch), branch.WorkflowSuiteBars); err != nil {
 				return err
 			}
 		}
@@ -1645,200 +1618,6 @@ func queryWorkflowBarsForBranch(
 	return results, nil
 }
 
-func queryWorkflowSuiteBars(
-	ctx context.Context,
-	logger *slog.Logger,
-	client *opensearch.Client,
-	params *reportParams,
-	repo string,
-	window reportWindow,
-) ([]workflowSuiteBar, error) {
-	var results []workflowSuiteBar
-	var afterKey map[string]any
-
-	for {
-		query := map[string]any{
-			"size": 0,
-			"query": map[string]any{
-				"bool": map[string]any{
-					"must": []any{
-						buildRangeFilter(window.Since, window.Until),
-						buildTypeFilter("test_case"),
-						buildRepoTermFilter(repo),
-						buildEventTermsFilter(params.Events),
-					},
-				},
-			},
-			"aggs": map[string]any{
-				"workflow_suite": map[string]any{
-					"composite": map[string]any{
-						"size": 1000,
-						"sources": []any{
-							map[string]any{"workflow": map[string]any{"terms": map[string]any{"field": "workflow_name.keyword"}}},
-							map[string]any{"suite": map[string]any{"terms": map[string]any{"field": "test_suite_name.keyword"}}},
-						},
-					},
-					"aggs": map[string]any{
-						"failures": map[string]any{
-							"filter": map[string]any{
-								"terms": map[string]any{"test_case_status": params.TestStatus},
-							},
-						},
-					},
-				},
-			},
-		}
-
-		if afterKey != nil {
-			query["aggs"].(map[string]any)["workflow_suite"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
-		}
-
-		addWorkflowExclusions(query)
-
-		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
-		if err != nil {
-			return nil, err
-		}
-
-		agg, err := getAgg(resp, "workflow_suite")
-		if err != nil {
-			return nil, err
-		}
-		buckets, err := getBucketArray(agg)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, bucket := range buckets {
-			keyMap := getMap(bucket, "key")
-			workflow := getStringFromMap(keyMap, "workflow")
-			suite := getStringFromMap(keyMap, "suite")
-			total := getInt(bucket, "doc_count")
-			failures := 0
-			if failAgg, ok := bucket["failures"].(map[string]any); ok {
-				failures = getInt(failAgg, "doc_count")
-			}
-			results = append(results, workflowSuiteBar{
-				Workflow:   workflow,
-				TestSuite:  suite,
-				TotalRuns:  total,
-				TotalFails: failures,
-			})
-		}
-
-		afterKey, _ = agg["after_key"].(map[string]any)
-		if afterKey == nil {
-			break
-		}
-	}
-
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].TotalFails > results[j].TotalFails
-	})
-	if len(results) > params.Top {
-		results = results[:params.Top]
-	}
-	return results, nil
-}
-
-func queryWorkflowSuiteBarsForBranch(
-	ctx context.Context,
-	logger *slog.Logger,
-	client *opensearch.Client,
-	params *reportParams,
-	repo string,
-	window reportWindow,
-	branch string,
-) ([]workflowSuiteBar, error) {
-	var results []workflowSuiteBar
-	var afterKey map[string]any
-
-	for {
-		query := map[string]any{
-			"size": 0,
-			"query": map[string]any{
-				"bool": map[string]any{
-					"must": []any{
-						buildRangeFilter(window.Since, window.Until),
-						buildTypeFilter("test_case"),
-						buildRepoTermFilter(repo),
-						buildEventTermsFilter(params.Events),
-						buildTermFilter("head_branch.keyword", branch),
-					},
-				},
-			},
-			"aggs": map[string]any{
-				"workflow_suite": map[string]any{
-					"composite": map[string]any{
-						"size": 1000,
-						"sources": []any{
-							map[string]any{"workflow": map[string]any{"terms": map[string]any{"field": "workflow_name.keyword"}}},
-							map[string]any{"suite": map[string]any{"terms": map[string]any{"field": "test_suite_name.keyword"}}},
-						},
-					},
-					"aggs": map[string]any{
-						"failures": map[string]any{
-							"filter": map[string]any{
-								"terms": map[string]any{"test_case_status": params.TestStatus},
-							},
-						},
-					},
-				},
-			},
-		}
-
-		if afterKey != nil {
-			query["aggs"].(map[string]any)["workflow_suite"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
-		}
-
-		addWorkflowExclusions(query)
-
-		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
-		if err != nil {
-			return nil, err
-		}
-
-		agg, err := getAgg(resp, "workflow_suite")
-		if err != nil {
-			return nil, err
-		}
-		buckets, err := getBucketArray(agg)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, bucket := range buckets {
-			keyMap := getMap(bucket, "key")
-			workflow := getStringFromMap(keyMap, "workflow")
-			suite := getStringFromMap(keyMap, "suite")
-			total := getInt(bucket, "doc_count")
-			failures := 0
-			if failAgg, ok := bucket["failures"].(map[string]any); ok {
-				failures = getInt(failAgg, "doc_count")
-			}
-			results = append(results, workflowSuiteBar{
-				Workflow:   workflow,
-				TestSuite:  suite,
-				TotalRuns:  total,
-				TotalFails: failures,
-			})
-		}
-
-		afterKey, _ = agg["after_key"].(map[string]any)
-		if afterKey == nil {
-			break
-		}
-	}
-
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].TotalFails > results[j].TotalFails
-	})
-	if len(results) > params.Top {
-		results = results[:params.Top]
-	}
-	return results, nil
-}
-
 func buildBranchGraphData(
 	ctx context.Context,
 	logger *slog.Logger,
@@ -2864,12 +2643,6 @@ func writeWorkflowBars(outputDir, prefix string, bars []workflowBar) error {
 	return writeSVG(path, content)
 }
 
-func writeWorkflowTestBars(outputDir, prefix string, bars []workflowSuiteBar) error {
-	path := filepath.Join(outputDir, "graphs", fmt.Sprintf("%s-workflow-test-bars.svg", prefix))
-	content := renderBarChart("Workflow+test runs vs failures", toWorkflowSuiteBarSeries(bars), true)
-	return writeSVG(path, content)
-}
-
 type barSeries struct {
 	Label      string
 	TotalRuns  int
@@ -2881,19 +2654,6 @@ func toWorkflowBarSeries(bars []workflowBar) []barSeries {
 	for _, b := range bars {
 		series = append(series, barSeries{
 			Label:      b.Workflow,
-			TotalRuns:  b.TotalRuns,
-			TotalFails: b.TotalFails,
-		})
-	}
-	return series
-}
-
-func toWorkflowSuiteBarSeries(bars []workflowSuiteBar) []barSeries {
-	series := make([]barSeries, 0, len(bars))
-	for _, b := range bars {
-		label := fmt.Sprintf("%s / %s", b.Workflow, b.TestSuite)
-		series = append(series, barSeries{
-			Label:      label,
 			TotalRuns:  b.TotalRuns,
 			TotalFails: b.TotalFails,
 		})

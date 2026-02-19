@@ -78,3 +78,53 @@ func TestParseRunID(t *testing.T) {
 		t.Fatalf("unexpected run id: %d", id)
 	}
 }
+
+func TestComponentFromRepo(t *testing.T) {
+	component := componentFromRepo("cilium/cilium")
+	if component != "cilium" {
+		t.Fatalf("unexpected component: %s", component)
+	}
+	component = componentFromRepo("cilium/tetragon")
+	if component != "tetragon" {
+		t.Fatalf("unexpected component: %s", component)
+	}
+}
+
+func TestReportOutputPath(t *testing.T) {
+	path := reportOutputPath("/tmp/output", "cilium")
+	if path != "/tmp/output/cilium/report.md" {
+		t.Fatalf("unexpected path: %s", path)
+	}
+}
+
+func TestBranchReportOutputPath(t *testing.T) {
+	path := branchReportOutputPath("/tmp/output", "tetragon", "feature/foo")
+	if path != "/tmp/output/tetragon/branch/feature-foo/report.md" {
+		t.Fatalf("unexpected path: %s", path)
+	}
+}
+
+func TestFilterBranchesByPrefix(t *testing.T) {
+	mainBranches, otherBranches := filterBranchesByPrefix(
+		[]string{"main", "release-1.0", "mainline", "feature/foo"},
+	)
+	if !reflect.DeepEqual(mainBranches, []string{"main", "mainline"}) {
+		t.Fatalf("unexpected main branches: %v", mainBranches)
+	}
+	if !reflect.DeepEqual(otherBranches, []string{"feature/foo", "release-1.0"}) {
+		t.Fatalf("unexpected other branches: %v", otherBranches)
+	}
+}
+
+func TestBuildOtherBranchLinks(t *testing.T) {
+	links := buildOtherBranchLinks("cilium", []string{"release-1.0", "feature/foo"})
+	if len(links) != 2 {
+		t.Fatalf("unexpected link count: %d", len(links))
+	}
+	if links[0].Name != "feature/foo" || links[0].Path != "branch/feature-foo/report.md" {
+		t.Fatalf("unexpected first link: %+v", links[0])
+	}
+	if links[1].Name != "release-1.0" || links[1].Path != "branch/release-1-0/report.md" {
+		t.Fatalf("unexpected second link: %+v", links[1])
+	}
+}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/isovalent/corgi/pkg/log"
@@ -107,6 +109,22 @@ type reportSpec struct {
 	Repository string
 }
 
+type reportTemplateData struct {
+	Spec          reportSpec
+	Generated     string
+	ExecutionTime string
+	Results       []reportResult
+}
+
+type landingLink struct {
+	Title string
+	File  string
+}
+
+type landingTemplateData struct {
+	Links []landingLink
+}
+
 type reportResult struct {
 	Window                        reportWindow
 	Graphs                        graphBundle
@@ -133,6 +151,19 @@ type workflowBar struct {
 }
 
 var reportCmdParams = &reportParams{}
+
+//go:embed templates/report/*.tmpl
+var reportTemplates embed.FS
+
+var reportTemplate = template.Must(template.New("report.md.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
+	reportTemplates,
+	"templates/report/report.md.tmpl",
+))
+
+var landingTemplate = template.Must(template.New("landing.md.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
+	reportTemplates,
+	"templates/report/landing.md.tmpl",
+))
 
 var reportCmd = &cobra.Command{
 	Use:   "report",
@@ -188,7 +219,7 @@ var reportCmd = &cobra.Command{
 			return fmt.Errorf("unable to create output directory: %w", err)
 		}
 
-		landingLinks := make([]string, 0, len(reportSpecs))
+		landingLinks := make([]landingLink, 0, len(reportSpecs))
 
 		for _, spec := range reportSpecs {
 			if !contains(reportCmdParams.Repos, spec.Repository) {
@@ -207,7 +238,7 @@ var reportCmd = &cobra.Command{
 			}
 
 			fileName := fmt.Sprintf("%s.md", spec.Slug)
-			landingLinks = append(landingLinks, fmt.Sprintf("- [%s](%s)", spec.Title, fileName))
+			landingLinks = append(landingLinks, landingLink{Title: spec.Title, File: fileName})
 
 			if err := renderReportFile(reportCmdParams.OutputDir, fileName, spec, results, reportStart); err != nil {
 				return err
@@ -362,123 +393,14 @@ func renderReportFile(outputDir, fileName string, spec reportSpec, results []rep
 	duration := end.Sub(start)
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("# %s\n\n", spec.Title))
-	b.WriteString(fmt.Sprintf("- Generated: %s\n", end.Format("2006-01-02 15:04 MST")))
-	b.WriteString(fmt.Sprintf("- Execution time: %s\n\n", formatDuration(duration)))
-
-	// No manual table of contents.
-
-	for _, result := range results {
-		windowTitle := fmt.Sprintf("Last %d days (%s to %s)",
-			result.Window.Days,
-			result.Window.Since.Format("2006-01-02"),
-			result.Window.Until.Format("2006-01-02"),
-		)
-		windowTag := fmt.Sprintf("last %d days", result.Window.Days)
-		b.WriteString(fmt.Sprintf("## %s\n\n", windowTitle))
-
-		if result.Window.Days == 7 && len(result.Trends) > 0 {
-			b.WriteString(fmt.Sprintf("### Trends (%s)\n\n", windowTag))
-			for _, item := range result.Trends {
-				b.WriteString(fmt.Sprintf("- %s `%s` %s (%d -> %d)\n", item.Status, item.Workflow, item.Label, item.Previous, item.Current))
-			}
-			b.WriteString("\n")
-		}
-		b.WriteString(fmt.Sprintf("### Graphs (all branches, %s)\n\n", windowTag))
-		prefix := graphPrefix(spec.Slug, result.Window.Days)
-		b.WriteString(fmt.Sprintf("![Total failures vs runs](graphs/%s-total.svg)\n\n", prefix))
-		b.WriteString(fmt.Sprintf("![Failures per workflow](graphs/%s-workflows.svg)\n\n", prefix))
-		b.WriteString(fmt.Sprintf("![Failures per branch and workflow](graphs/%s-branches.svg)\n\n", prefix))
-
-		b.WriteString(fmt.Sprintf("### Per workflow CI failures (%s)\n\n", windowTag))
-		b.WriteString(fmt.Sprintf("![Workflow runs vs failures](graphs/%s-workflow-bars.svg)\n\n", prefix))
-		b.WriteString("<details><summary>Table</summary>\n\n")
-		b.WriteString("| Rank | Workflow | Test suite | Test owners | Suite owners | Failures | Links |\n")
-		b.WriteString("| --- | --- | --- | --- | --- | --- | --- |\n")
-		for i, wf := range result.WorkflowFailures {
-			b.WriteString(fmt.Sprintf("| %d | %s | %s | %s | %s | %d | %s |\n",
-				i+1,
-				escapePipes(wf.Workflow),
-				escapePipes(strings.Join(wf.TestSuites, ", ")),
-				escapePipes(strings.Join(wf.TestCaseOwners, ", ")),
-				escapePipes(strings.Join(wf.TestSuiteOwners, ", ")),
-				wf.Count,
-				renderLinks(wf.Links),
-			))
-		}
-		b.WriteString("\n</details>\n\n")
-
-		b.WriteString(fmt.Sprintf("### Per workflow+branch+test CI failures (%s)\n\n", windowTag))
-		b.WriteString("<details><summary>Table</summary>\n\n")
-		b.WriteString("| Rank | Branch | Workflow | Test suite | Test owners | Suite owners | Failures | Links |\n")
-		b.WriteString("| --- | --- | --- | --- | --- | --- | --- | --- |\n")
-		for i, entry := range result.BranchWorkflowSuiteFailures {
-			b.WriteString(fmt.Sprintf("| %d | %s | %s | %s | %s | %s | %d | %s |\n",
-				i+1,
-				escapePipes(entry.Branch),
-				escapePipes(entry.Workflow),
-				escapePipes(entry.TestSuite),
-				escapePipes(strings.Join(entry.TestCaseOwners, ", ")),
-				escapePipes(strings.Join(entry.TestSuiteOwners, ", ")),
-				entry.Count,
-				renderLinks(entry.Links),
-			))
-		}
-		b.WriteString("\n</details>\n\n")
-
-		for _, branch := range result.BranchFailureGroupsByWorkflow {
-			branchTitle := fmt.Sprintf("Branch %s (last %d days)", branch.Branch, result.Window.Days)
-			b.WriteString(fmt.Sprintf("### %s\n\n", branchTitle))
-			branchPrefix := branchGraphPrefix(spec.Slug, result.Window.Days, branch.Branch)
-			b.WriteString(fmt.Sprintf("#### Graphs (branch %s, last %d days)\n\n", branch.Branch, result.Window.Days))
-			b.WriteString(fmt.Sprintf("![Total failures vs runs](graphs/%s-total.svg)\n\n", branchPrefix))
-			b.WriteString(fmt.Sprintf("![Failures per workflow](graphs/%s-workflows.svg)\n\n", branchPrefix))
-
-			if result.Window.Days == 7 && len(branch.Trends) > 0 {
-				b.WriteString(fmt.Sprintf("#### Trends (branch %s, last %d days)\n\n", escapePipes(branch.Branch), result.Window.Days))
-				for _, item := range branch.Trends {
-					b.WriteString(fmt.Sprintf("- %s `%s` %s (%d -> %d)\n", item.Status, item.Workflow, item.Label, item.Previous, item.Current))
-				}
-				b.WriteString("\n")
-			}
-
-			b.WriteString(fmt.Sprintf("#### Per workflow CI failures (branch %s, last %d days)\n\n", escapePipes(branch.Branch), result.Window.Days))
-			b.WriteString(fmt.Sprintf("![Workflow runs vs failures](graphs/%s-workflow-bars.svg)\n\n", branchPrefix))
-			b.WriteString("<details><summary>Table</summary>\n\n")
-			b.WriteString("| Rank | Workflow | Test suite | Test owners | Suite owners | Failures | Links |\n")
-			b.WriteString("| --- | --- | --- | --- | --- | --- | --- |\n")
-			for i, wf := range branch.WorkflowFailures {
-				b.WriteString(fmt.Sprintf("| %d | %s | %s | %s | %s | %d | %s |\n",
-					i+1,
-					escapePipes(wf.Workflow),
-					escapePipes(strings.Join(wf.TestSuites, ", ")),
-					escapePipes(strings.Join(wf.TestCaseOwners, ", ")),
-					escapePipes(strings.Join(wf.TestSuiteOwners, ", ")),
-					wf.Count,
-					renderLinks(wf.Links),
-				))
-			}
-			b.WriteString("\n</details>\n\n")
-
-			b.WriteString(fmt.Sprintf("#### Per workflow+test CI failures (branch %s, last %d days)\n\n", escapePipes(branch.Branch), result.Window.Days))
-			b.WriteString("<details><summary>Table</summary>\n\n")
-			b.WriteString("| Rank | Workflow | Test suite | Test case | Failure | Test owners | Suite owners | Failures | Links |\n")
-			b.WriteString("| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n")
-			for i, group := range branch.WorkflowSuiteFailures {
-				b.WriteString(fmt.Sprintf("| %d | %s | %s | %s | %s | %s | %s | %d | %s |\n",
-					i+1,
-					escapePipes(group.Workflow),
-					escapePipes(group.TestSuite),
-					escapePipes(group.TestCaseName),
-					escapePipes(group.FailureMessage),
-					escapePipes(strings.Join(group.TestCaseOwners, ", ")),
-					escapePipes(strings.Join(group.TestSuiteOwners, ", ")),
-					group.Count,
-					renderLinks(group.Links),
-				))
-			}
-			b.WriteString("\n</details>\n\n")
-		}
+	data := reportTemplateData{
+		Spec:          spec,
+		Generated:     end.Format("2006-01-02 15:04 MST"),
+		ExecutionTime: formatDuration(duration),
+		Results:       results,
+	}
+	if err := reportTemplate.Execute(&b, data); err != nil {
+		return fmt.Errorf("unable to render report template: %w", err)
 	}
 
 	if err := os.WriteFile(path, []byte(b.String()), 0o644); err != nil {
@@ -505,14 +427,12 @@ func renderReportFile(outputDir, fileName string, spec reportSpec, results []rep
 	return nil
 }
 
-func renderLandingPage(outputDir string, links []string) error {
+func renderLandingPage(outputDir string, links []landingLink) error {
 	path := filepath.Join(outputDir, "CI-Health-reports.md")
 	var b strings.Builder
-	b.WriteString("# CI Health reports\n\n")
-	b.WriteString("## Reports\n\n")
-	for _, link := range links {
-		b.WriteString(link)
-		b.WriteString("\n")
+	data := landingTemplateData{Links: links}
+	if err := landingTemplate.Execute(&b, data); err != nil {
+		return fmt.Errorf("unable to render landing template: %w", err)
 	}
 	return os.WriteFile(path, []byte(b.String()), 0o644)
 }
@@ -530,6 +450,35 @@ func formatDuration(d time.Duration) string {
 	hours := minutes / 60
 	minutes = minutes % 60
 	return fmt.Sprintf("%dh%dm%ds", hours, minutes, seconds)
+}
+
+func windowTitle(window reportWindow) string {
+	return fmt.Sprintf("Last %d days (%s to %s)",
+		window.Days,
+		window.Since.Format("2006-01-02"),
+		window.Until.Format("2006-01-02"),
+	)
+}
+
+func windowTag(window reportWindow) string {
+	return fmt.Sprintf("last %d days", window.Days)
+}
+
+func addOne(value int) int {
+	return value + 1
+}
+
+func reportTemplateFuncs() template.FuncMap {
+	return template.FuncMap{
+		"windowTitle":       windowTitle,
+		"windowTag":         windowTag,
+		"graphPrefix":       graphPrefix,
+		"branchGraphPrefix": branchGraphPrefix,
+		"escapePipes":       escapePipes,
+		"renderLinks":       renderLinks,
+		"join":              strings.Join,
+		"add1":              addOne,
+	}
 }
 
 func queryWorkflowFailures(

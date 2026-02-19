@@ -1,0 +1,103 @@
+# {{ .Spec.Title }}
+
+- Generated: {{ .Generated }}
+- Execution time: {{ .ExecutionTime }}
+
+{{- range .Results }}
+{{- $window := .Window }}
+{{- $days := .Window.Days }}
+{{- $prefix := graphPrefix $.Spec.Slug $days }}
+{{- $windowTag := windowTag $window }}
+## {{ windowTitle $window }}
+
+{{- if and (eq $days 7) (gt (len .Trends) 0) }}
+### Trends ({{ $windowTag }})
+
+{{- range .Trends }}
+- {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
+{{- end }}
+
+{{- end }}
+### Graphs (all branches, {{ $windowTag }})
+
+![Total failures vs runs](graphs/{{ $prefix }}-total.svg)
+
+![Failures per workflow](graphs/{{ $prefix }}-workflows.svg)
+
+![Failures per branch and workflow](graphs/{{ $prefix }}-branches.svg)
+
+### Per workflow CI failures ({{ $windowTag }})
+
+![Workflow runs vs failures](graphs/{{ $prefix }}-workflow-bars.svg)
+
+<details><summary>Table</summary>
+
+| Rank | Workflow | Test suite | Test owners | Suite owners | Failures | Links |
+| --- | --- | --- | --- | --- | --- | --- |
+{{- range $i, $wf := .WorkflowFailures }}
+| {{ add1 $i }} | {{ escapePipes $wf.Workflow }} | {{ escapePipes (join $wf.TestSuites ", ") }} | {{ escapePipes (join $wf.TestCaseOwners ", ") }} | {{ escapePipes (join $wf.TestSuiteOwners ", ") }} | {{ $wf.Count }} | {{ renderLinks $wf.Links }} |
+{{- end }}
+
+</details>
+
+### Per workflow+branch+test CI failures ({{ $windowTag }})
+
+<details><summary>Table</summary>
+
+| Rank | Branch | Workflow | Test suite | Test owners | Suite owners | Failures | Links |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+{{- range $i, $entry := .BranchWorkflowSuiteFailures }}
+| {{ add1 $i }} | {{ escapePipes $entry.Branch }} | {{ escapePipes $entry.Workflow }} | {{ escapePipes $entry.TestSuite }} | {{ escapePipes (join $entry.TestCaseOwners ", ") }} | {{ escapePipes (join $entry.TestSuiteOwners ", ") }} | {{ $entry.Count }} | {{ renderLinks $entry.Links }} |
+{{- end }}
+
+</details>
+
+{{- range $branch := .BranchFailureGroupsByWorkflow }}
+
+### Branch {{ $branch.Branch }} (last {{ $days }} days)
+
+#### Graphs (branch {{ $branch.Branch }}, last {{ $days }} days)
+
+![Total failures vs runs](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-total.svg)
+
+![Failures per workflow](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflows.svg)
+
+{{- if and (eq $days 7) (gt (len $branch.Trends) 0) }}
+
+#### Trends (branch {{ $branch.Branch }}, last {{ $days }} days)
+
+{{- range $branch.Trends }}
+- {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
+{{- end }}
+
+{{- end }}
+
+#### Per workflow CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
+
+![Workflow runs vs failures](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflow-bars.svg)
+
+<details><summary>Table</summary>
+
+| Rank | Workflow | Test suite | Test owners | Suite owners | Failures | Links |
+| --- | --- | --- | --- | --- | --- | --- |
+{{- range $i, $wf := $branch.WorkflowFailures }}
+| {{ add1 $i }} | {{ escapePipes $wf.Workflow }} | {{ escapePipes (join $wf.TestSuites ", ") }} | {{ escapePipes (join $wf.TestCaseOwners ", ") }} | {{ escapePipes (join $wf.TestSuiteOwners ", ") }} | {{ $wf.Count }} | {{ renderLinks $wf.Links }} |
+{{- end }}
+
+</details>
+
+#### Per workflow+test CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
+
+<details><summary>Table</summary>
+
+| Rank | Workflow | Test suite | Test case | Failure | Test owners | Suite owners | Failures | Links |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+{{- range $i, $group := $branch.WorkflowSuiteFailures }}
+| {{ add1 $i }} | {{ escapePipes $group.Workflow }} | {{ escapePipes $group.TestSuite }} | {{ escapePipes $group.TestCaseName }} | {{ escapePipes $group.FailureMessage }} | {{ escapePipes (join $group.TestCaseOwners ", ") }} | {{ escapePipes (join $group.TestSuiteOwners ", ") }} | {{ $group.Count }} | {{ renderLinks $group.Links }} |
+{{- end }}
+
+</details>
+
+{{- end }}
+
+{{- end }}

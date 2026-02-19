@@ -1255,6 +1255,7 @@ func queryFailureGroups(
 					"composite": map[string]any{
 						"size": 1000,
 						"sources": []any{
+							map[string]any{"workflow": map[string]any{"terms": map[string]any{"field": "workflow_name.keyword"}}},
 							map[string]any{"test_case": map[string]any{"terms": map[string]any{"field": "test_case_name.keyword"}}},
 							map[string]any{"message": map[string]any{"terms": map[string]any{"field": "test_case_failure_message.keyword"}}},
 						},
@@ -1287,11 +1288,12 @@ func queryFailureGroups(
 
 		for _, bucket := range buckets {
 			keyMap := getMap(bucket, "key")
+			workflow := getStringFromMap(keyMap, "workflow")
 			testCase := getStringFromMap(keyMap, "test_case")
 			message := getStringFromMap(keyMap, "message")
 			count := getInt(bucket, "doc_count")
 			normalized := normalizeFailureMessage(message)
-			key := fmt.Sprintf("%s::%s", testCase, normalized)
+			key := fmt.Sprintf("%s::%s::%s", workflow, testCase, normalized)
 
 			group, ok := groups[key]
 			if !ok {
@@ -1299,7 +1301,7 @@ func queryFailureGroups(
 					Key:            key,
 					TestCaseName:   testCase,
 					FailureMessage: normalized,
-					Workflow:       "",
+					Workflow:       workflow,
 				}
 				groups[key] = group
 			}

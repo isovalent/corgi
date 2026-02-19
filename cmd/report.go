@@ -478,7 +478,22 @@ func reportTemplateFuncs() template.FuncMap {
 		"renderLinks":       renderLinks,
 		"join":              strings.Join,
 		"add1":              addOne,
+		"formatFailureRate": formatFailureRate,
 	}
+}
+
+func formatFailureRate(points []dayPoint) string {
+	totalRuns := 0
+	totalFailures := 0
+	for _, point := range points {
+		totalRuns += point.TotalRuns
+		totalFailures += point.TotalFailures
+	}
+	percent := 0.0
+	if totalRuns > 0 {
+		percent = (float64(totalFailures) / float64(totalRuns)) * 100
+	}
+	return fmt.Sprintf("Failures: %d / %d (%.1f%%)", totalFailures, totalRuns, percent)
 }
 
 func queryWorkflowFailures(

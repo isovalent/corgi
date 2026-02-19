@@ -10,6 +10,8 @@
 {{- $windowTag := windowTag $window }}
 ## {{ windowTitle $window }}
 
+{{ formatFailureRate .Graphs.TotalSeries }}
+
 {{- if and (eq $days 7) (gt (len .Trends) 0) }}
 ### Trends ({{ $windowTag }})
 
@@ -55,6 +57,8 @@
 {{- range $branch := .BranchFailureGroupsByWorkflow }}
 
 ### Branch {{ $branch.Branch }} (last {{ $days }} days)
+
+{{ formatFailureRate $branch.Graphs.TotalSeries }}
 
 #### Graphs (branch {{ $branch.Branch }}, last {{ $days }} days)
 

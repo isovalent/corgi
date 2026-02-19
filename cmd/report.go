@@ -593,6 +593,8 @@ func queryWorkflowFailures(
 		},
 	}
 
+	addWorkflowExclusions(query)
+
 	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 	if err != nil {
 		return nil, err
@@ -676,6 +678,8 @@ func queryWorkflowFailuresForBranch(
 		},
 	}
 
+	addWorkflowExclusions(query)
+
 	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 	if err != nil {
 		return nil, err
@@ -753,6 +757,8 @@ func queryFailureBranches(
 			},
 		},
 	}
+
+	addWorkflowExclusions(query)
 
 	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 	if err != nil {
@@ -959,6 +965,8 @@ func scanFailureOwners(
 			query["search_after"] = searchAfter
 		}
 
+		addWorkflowExclusions(query)
+
 		resp, err := doSearch(ctx, logger, client, index, query)
 		if err != nil {
 			return nil, nil, nil, err
@@ -1059,6 +1067,8 @@ func queryBranchWorkflowSuiteFailures(
 			query["aggs"].(map[string]any)["branch_workflow_suite"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
 		}
 
+		addWorkflowExclusions(query)
+
 		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 		if err != nil {
 			return nil, err
@@ -1157,6 +1167,8 @@ func queryWorkflowSuiteFailureGroupsForBranch(
 		if afterKey != nil {
 			query["aggs"].(map[string]any)["workflow_suite_case"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
 		}
+
+		addWorkflowExclusions(query)
 
 		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 		if err != nil {
@@ -1271,6 +1283,8 @@ func queryFailureGroups(
 			query["aggs"].(map[string]any)["failures"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
 		}
 
+		addWorkflowExclusions(query)
+
 		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 		if err != nil {
 			return nil, err
@@ -1383,6 +1397,8 @@ func queryFailureGroupsForBranch(
 		if afterKey != nil {
 			query["aggs"].(map[string]any)["failures"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
 		}
+
+		addWorkflowExclusions(query)
 
 		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 		if err != nil {
@@ -1540,6 +1556,8 @@ func queryWorkflowBars(
 		},
 	}
 
+	addWorkflowExclusions(query)
+
 	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 	if err != nil {
 		return nil, err
@@ -1601,6 +1619,8 @@ func queryWorkflowBarsForBranch(
 			},
 		},
 	}
+
+	addWorkflowExclusions(query)
 
 	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 	if err != nil {
@@ -1672,6 +1692,8 @@ func queryWorkflowSuiteBars(
 		if afterKey != nil {
 			query["aggs"].(map[string]any)["workflow_suite"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
 		}
+
+		addWorkflowExclusions(query)
 
 		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 		if err != nil {
@@ -1768,6 +1790,8 @@ func queryWorkflowSuiteBarsForBranch(
 		if afterKey != nil {
 			query["aggs"].(map[string]any)["workflow_suite"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
 		}
+
+		addWorkflowExclusions(query)
 
 		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 		if err != nil {
@@ -1883,6 +1907,8 @@ func queryDailyTotals(
 		},
 	}
 
+	addWorkflowExclusions(query)
+
 	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 	if err != nil {
 		return nil, err
@@ -1987,6 +2013,8 @@ func queryTopWorkflows(
 		},
 	}
 
+	addWorkflowExclusions(query)
+
 	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 	if err != nil {
 		return nil, err
@@ -2037,6 +2065,8 @@ func queryTopWorkflowsForBranch(
 			},
 		},
 	}
+
+	addWorkflowExclusions(query)
 
 	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 	if err != nil {
@@ -2097,6 +2127,8 @@ func queryTopBranchWorkflows(
 		if afterKey != nil {
 			query["aggs"].(map[string]any)["branch_workflow"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
 		}
+
+		addWorkflowExclusions(query)
 
 		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
 		if err != nil {
@@ -2280,6 +2312,8 @@ func queryDailySeries(
 	index string,
 	query map[string]any,
 ) ([]dayPoint, error) {
+	addWorkflowExclusions(query)
+
 	resp, err := doSearch(ctx, logger, client, index, query)
 	if err != nil {
 		return nil, err
@@ -2429,6 +2463,25 @@ func buildTermFilter(field string, value string) map[string]any {
 
 func buildTermsFilter(field string, values []string) map[string]any {
 	return map[string]any{"terms": map[string]any{field: values}}
+}
+
+func buildWorkflowExclusionFilters() []any {
+	return []any{
+		map[string]any{"wildcard": map[string]any{"workflow_name.keyword": "Ariane*"}},
+		map[string]any{"term": map[string]any{"workflow_name.keyword": "Renovate"}},
+	}
+}
+
+func addWorkflowExclusions(query map[string]any) {
+	queryBlock, ok := query["query"].(map[string]any)
+	if !ok {
+		return
+	}
+	boolBlock, ok := queryBlock["bool"].(map[string]any)
+	if !ok {
+		return
+	}
+	boolBlock["must_not"] = buildWorkflowExclusionFilters()
 }
 
 func buildTopHitsAgg(size int) map[string]any {

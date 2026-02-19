@@ -41,7 +41,7 @@ Graphs:
   - Per workflow + test: runs vs failures per workflow + test suite (blue runs, red failures).
 
 Event filtering:
-- Include only `schedule` and `push` events.
+- Include only `schedule`, `push`, and `workflow_dispatch` events.
 
 Failure definition:
 - Count `failed` and `error` (workflows: `failure`; tests: `failed`/`error`).

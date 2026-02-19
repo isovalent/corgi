@@ -267,7 +267,7 @@ func init() {
 		"Repositories to include in reports",
 	)
 	reportCmd.PersistentFlags().StringSliceVar(
-		&reportCmdParams.Events, "events", []string{"schedule", "push"},
+		&reportCmdParams.Events, "events", []string{"schedule", "push", "workflow_dispatch"},
 		"Workflow events to include",
 	)
 	reportCmd.PersistentFlags().IntVar(

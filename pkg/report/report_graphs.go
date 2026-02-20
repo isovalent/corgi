@@ -605,6 +605,12 @@ type barChartSVGBar struct {
 	LabelY      int
 }
 
+type barChartYTick struct {
+	Y      int
+	LabelY int
+	Label  int
+}
+
 type barChartSVGData struct {
 	Width           int
 	Height          int
@@ -612,8 +618,11 @@ type barChartSVGData struct {
 	TitleX          int
 	TitleY          int
 	Axis            svgAxis
+	YTickLabelX     int
+	YTicks          []barChartYTick
 	BackgroundColor string
 	AxisColor       string
+	GridColor       string
 	RunsColor       string
 	RunsOpacity     float64
 	FailsColor      string
@@ -741,6 +750,7 @@ func renderBarChart(title string, series []barSeries, extraLabelSpace bool) stri
 		TitleY:          padTop - 30,
 		BackgroundColor: graphColorBackground,
 		AxisColor:       graphColorAxis,
+		GridColor:       graphColorGrid,
 		RunsColor:       graphColorRuns,
 		RunsOpacity:     graphColorRunsOpacity,
 		FailsColor:      graphColorFailures,
@@ -767,7 +777,23 @@ func renderBarChart(title string, series []barSeries, extraLabelSpace bool) stri
 	x1 := width - padRight
 	y1 := padTop
 	data.Axis = svgAxis{X0: x0, Y0: y0, X1: x1, Y1: y1}
+	data.YTickLabelX = x0 - 6
 	data.Bars = make([]barChartSVGBar, 0, len(series))
+
+	tickCount := 5
+	if maxVal+1 < tickCount {
+		tickCount = maxVal + 1
+	}
+	data.YTicks = make([]barChartYTick, 0, tickCount)
+	for i := 0; i < tickCount; i++ {
+		label := int(math.Round(float64(maxVal) * float64(i) / float64(tickCount-1)))
+		y := int(math.Round(float64(y0) - (float64(label)/float64(maxVal))*plotHeight))
+		data.YTicks = append(data.YTicks, barChartYTick{
+			Y:      y,
+			LabelY: y + 4,
+			Label:  label,
+		})
+	}
 
 	for i, item := range series {
 		x := float64(padLeft) + barWidth*float64(i) + barWidth*0.1

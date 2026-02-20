@@ -49,6 +49,21 @@ func TestRenderBarChartUsesTemplateMarkup(t *testing.T) {
 	}
 }
 
+func TestRenderBarChartIncludesYAxisNumbers(t *testing.T) {
+	series := []barSeries{
+		{Label: "wf-a", TotalRuns: 12, TotalFails: 3},
+		{Label: "wf-b", TotalRuns: 6, TotalFails: 1},
+	}
+
+	svg := renderBarChart("title", series, true)
+	if !strings.Contains(svg, `text-anchor="end">0</text>`) {
+		t.Fatalf("expected y-axis zero label in bar chart output")
+	}
+	if !strings.Contains(svg, `text-anchor="end">12</text>`) {
+		t.Fatalf("expected y-axis max label in bar chart output")
+	}
+}
+
 func TestRenderSeriesChartUsesTemplateMarkup(t *testing.T) {
 	lines := []seriesLine{
 		{

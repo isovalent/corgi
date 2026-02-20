@@ -79,6 +79,110 @@ func TestFormatFailureStat(t *testing.T) {
 	}
 }
 
+func TestBuildTrendsForWindowPrioritizesCurrentFailurePercentage(t *testing.T) {
+	window := reportWindow{
+		Since: time.Date(2026, 2, 13, 0, 0, 0, 0, time.UTC),
+		Until: time.Date(2026, 2, 20, 0, 0, 0, 0, time.UTC),
+		Days:  7,
+	}
+
+	groupCallCount := 0
+	queryGroupsFn := func(w reportWindow) ([]reportGroup, error) {
+		groupCallCount++
+		switch groupCallCount {
+		case 1:
+			if !w.Since.Equal(window.Since) || !w.Until.Equal(window.Until) {
+				t.Fatalf("unexpected current window: %+v", w)
+			}
+			return []reportGroup{
+				{
+					Key:            "stable-high",
+					Workflow:       "wf-stable",
+					TestCaseName:   "test-stable",
+					FailureMessage: "msg-stable",
+					Count:          100,
+				},
+				{
+					Key:            "regressed",
+					Workflow:       "wf-regressed",
+					TestCaseName:   "test-regressed",
+					FailureMessage: "msg-regressed",
+					Count:          10,
+				},
+			}, nil
+		case 2:
+			expectedPrev := reportWindow{
+				Since: window.Since.AddDate(0, 0, -window.Days),
+				Until: window.Since,
+				Days:  window.Days,
+			}
+			if !w.Since.Equal(expectedPrev.Since) || !w.Until.Equal(expectedPrev.Until) {
+				t.Fatalf("unexpected previous window: %+v", w)
+			}
+			return []reportGroup{
+				{
+					Key:            "stable-high",
+					Workflow:       "wf-stable",
+					TestCaseName:   "test-stable",
+					FailureMessage: "msg-stable",
+					Count:          100,
+				},
+			}, nil
+		default:
+			t.Fatalf("group query called too many times: %d", groupCallCount)
+			return nil, nil
+		}
+	}
+
+	runTotalsCallCount := 0
+	queryRunTotalsFn := func(w reportWindow) (map[string]int, error) {
+		runTotalsCallCount++
+		switch runTotalsCallCount {
+		case 1:
+			if !w.Since.Equal(window.Since) || !w.Until.Equal(window.Until) {
+				t.Fatalf("unexpected current totals window: %+v", w)
+			}
+			return map[string]int{
+				"wf-stable":    1000,
+				"wf-regressed": 10,
+			}, nil
+		case 2:
+			expectedPrev := reportWindow{
+				Since: window.Since.AddDate(0, 0, -window.Days),
+				Until: window.Since,
+				Days:  window.Days,
+			}
+			if !w.Since.Equal(expectedPrev.Since) || !w.Until.Equal(expectedPrev.Until) {
+				t.Fatalf("unexpected previous totals window: %+v", w)
+			}
+			return map[string]int{
+				"wf-stable":    1000,
+				"wf-regressed": 10,
+			}, nil
+		default:
+			t.Fatalf("run totals query called too many times: %d", runTotalsCallCount)
+			return nil, nil
+		}
+	}
+
+	trends, err := buildTrendsForWindow(10, window, queryGroupsFn, queryRunTotalsFn)
+	if err != nil {
+		t.Fatalf("build trends: %v", err)
+	}
+	if len(trends) != 2 {
+		t.Fatalf("unexpected trend count: got %d want 2", len(trends))
+	}
+	if trends[0].Workflow != "wf-regressed" {
+		t.Fatalf("expected wf-regressed first, got %q", trends[0].Workflow)
+	}
+	if trends[1].Workflow != "wf-stable" {
+		t.Fatalf("expected wf-stable second, got %q", trends[1].Workflow)
+	}
+	if trends[0].CurrentTotalRuns != 10 || trends[0].PreviousTotalRuns != 10 {
+		t.Fatalf("unexpected run totals for wf-regressed trend: %+v", trends[0])
+	}
+}
+
 func TestRenderLinks(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -259,6 +363,44 @@ func TestReportTemplateIncludesGraphLayout(t *testing.T) {
 	}
 }
 
+func TestReportTemplateRendersTrendPercentagesWithFailedCounts(t *testing.T) {
+	data := reportTemplateData{
+		Spec: reportSpec{
+			Title:     "Test Report",
+			Slug:      "Test-Report",
+			Component: "test",
+		},
+		Generated:     "now",
+		ExecutionTime: "1s",
+		Results: []reportResult{
+			{
+				Window: reportWindow{Days: 7},
+				Trends: []trendItem{
+					{
+						Status:            "🔴",
+						Workflow:          "wf",
+						Label:             "`tc` `msg`",
+						Previous:          2,
+						PreviousTotalRuns: 5,
+						Current:           3,
+						CurrentTotalRuns:  5,
+					},
+				},
+			},
+		},
+	}
+
+	var out bytes.Buffer
+	if err := reportTemplate.Execute(&out, data); err != nil {
+		t.Fatalf("render report template: %v", err)
+	}
+
+	rendered := out.String()
+	if !strings.Contains(rendered, "40.0%(2/5) -> 60.0%(3/5)") {
+		t.Fatalf("expected trend output to include percentages and counts, got:\n%s", rendered)
+	}
+}
+
 func TestBranchTemplateIncludesGraphLayout(t *testing.T) {
 	data := branchReportTemplateData{
 		Spec: reportSpec{
@@ -291,6 +433,48 @@ func TestBranchTemplateIncludesGraphLayout(t *testing.T) {
 	}
 	if !strings.Contains(rendered, `<a href="graphs/Test-Report-7d-main-workflow-bars.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/Test-Report-7d-main-workflow-bars.svg" alt="Workflow runs vs failures"/></a>`) {
 		t.Fatalf("expected clickable workflow bar chart image that opens in new tab")
+	}
+}
+
+func TestBranchTemplateRendersTrendPercentagesWithFailedCounts(t *testing.T) {
+	data := branchReportTemplateData{
+		Spec: reportSpec{
+			Title:     "Test Report",
+			Slug:      "Test-Report",
+			Component: "test",
+		},
+		Branch:        "main",
+		Generated:     "now",
+		ExecutionTime: "1s",
+		Results: []branchWindowResult{
+			{
+				Window: reportWindow{Days: 7},
+				Result: branchResult{
+					Branch: "main",
+					Trends: []trendItem{
+						{
+							Status:            "🔴",
+							Workflow:          "wf",
+							Label:             "`tc` `msg`",
+							Previous:          2,
+							PreviousTotalRuns: 5,
+							Current:           3,
+							CurrentTotalRuns:  5,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var out bytes.Buffer
+	if err := branchTemplate.Execute(&out, data); err != nil {
+		t.Fatalf("render branch template: %v", err)
+	}
+
+	rendered := out.String()
+	if !strings.Contains(rendered, "40.0%(2/5) -> 60.0%(3/5)") {
+		t.Fatalf("expected trend output to include percentages and counts, got:\n%s", rendered)
 	}
 }
 

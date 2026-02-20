@@ -593,14 +593,15 @@ func windowTag(window reportWindow) string {
 
 func reportTemplateFuncs() template.FuncMap {
 	return template.FuncMap{
-		"windowTitle":       windowTitle,
-		"windowTag":         windowTag,
-		"graphPrefix":       graphPrefix,
-		"branchGraphPrefix": branchGraphPrefix,
-		"escapePipes":       escapePipes,
-		"escapeXML":         html.EscapeString,
-		"renderLinks":       renderLinks,
-		"join":              strings.Join,
+		"windowTitle":           windowTitle,
+		"windowTag":             windowTag,
+		"graphPrefix":           graphPrefix,
+		"branchGraphPrefix":     branchGraphPrefix,
+		"escapePipes":           escapePipes,
+		"escapeXML":             html.EscapeString,
+		"renderLinks":           renderLinks,
+		"formatTrendComparison": formatTrendComparison,
+		"join":                  strings.Join,
 		"add1": func(value int) int {
 			return value + 1
 		},
@@ -643,6 +644,27 @@ func formatFailureStat(failures, totalRuns int) string {
 	return fmt.Sprintf(failureStatFmt, failures, totalRuns, percent)
 }
 
+func failureRatePercent(failures, totalRuns int) float64 {
+	if totalRuns <= 0 {
+		return 0
+	}
+	return (float64(failures) / float64(totalRuns)) * 100
+}
+
+func formatTrendComparison(previous, previousTotalRuns, current, currentTotalRuns int) string {
+	previousPercent := failureRatePercent(previous, previousTotalRuns)
+	currentPercent := failureRatePercent(current, currentTotalRuns)
+	return fmt.Sprintf(
+		"%.1f%%(%d/%d) -> %.1f%%(%d/%d)",
+		previousPercent,
+		previous,
+		previousTotalRuns,
+		currentPercent,
+		current,
+		currentTotalRuns,
+	)
+}
+
 func queryWorkflowRunTotals(
 	ctx context.Context,
 	logger *slog.Logger,
@@ -651,11 +673,43 @@ func queryWorkflowRunTotals(
 	repo string,
 	window reportWindow,
 ) (map[string]int, error) {
+	return queryWorkflowRunTotalsWithExtraFilters(ctx, logger, client, params, repo, window)
+}
+
+func queryWorkflowRunTotalsForBranch(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	repo string,
+	window reportWindow,
+	branch string,
+) (map[string]int, error) {
+	return queryWorkflowRunTotalsWithExtraFilters(
+		ctx,
+		logger,
+		client,
+		params,
+		repo,
+		window,
+		buildTermFilter("head_branch.keyword", branch),
+	)
+}
+
+func queryWorkflowRunTotalsWithExtraFilters(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	repo string,
+	window reportWindow,
+	extraMust ...any,
+) (map[string]int, error) {
 	query := map[string]any{
 		"size": 0,
 		"query": map[string]any{
 			"bool": map[string]any{
-				"must": buildWorkflowRunMust(window, repo, params.Events),
+				"must": buildWorkflowRunMust(window, repo, params.Events, extraMust...),
 			},
 		},
 		"aggs": map[string]any{
@@ -948,11 +1002,13 @@ func queryFailureBranches(
 }
 
 type trendItem struct {
-	Workflow string
-	Label    string
-	Current  int
-	Previous int
-	Status   string
+	Workflow          string
+	Label             string
+	Current           int
+	CurrentTotalRuns  int
+	Previous          int
+	PreviousTotalRuns int
+	Status            string
 }
 
 func buildTrends(
@@ -963,9 +1019,16 @@ func buildTrends(
 	repo string,
 	window reportWindow,
 ) ([]trendItem, error) {
-	return buildTrendsForWindow(params.Top, window, func(w reportWindow) ([]reportGroup, error) {
-		return queryFailureGroups(ctx, logger, client, params, repo, w)
-	})
+	return buildTrendsForWindow(
+		params.Top,
+		window,
+		func(w reportWindow) ([]reportGroup, error) {
+			return queryFailureGroups(ctx, logger, client, params, repo, w)
+		},
+		func(w reportWindow) (map[string]int, error) {
+			return queryWorkflowRunTotals(ctx, logger, client, params, repo, w)
+		},
+	)
 }
 
 func buildTrendsForBranch(
@@ -977,17 +1040,25 @@ func buildTrendsForBranch(
 	window reportWindow,
 	branch string,
 ) ([]trendItem, error) {
-	return buildTrendsForWindow(params.Top, window, func(w reportWindow) ([]reportGroup, error) {
-		return queryFailureGroupsForBranch(ctx, logger, client, params, repo, w, branch)
-	})
+	return buildTrendsForWindow(
+		params.Top,
+		window,
+		func(w reportWindow) ([]reportGroup, error) {
+			return queryFailureGroupsForBranch(ctx, logger, client, params, repo, w, branch)
+		},
+		func(w reportWindow) (map[string]int, error) {
+			return queryWorkflowRunTotalsForBranch(ctx, logger, client, params, repo, w, branch)
+		},
+	)
 }
 
 func buildTrendsForWindow(
 	top int,
 	window reportWindow,
-	queryFn func(reportWindow) ([]reportGroup, error),
+	queryGroupsFn func(reportWindow) ([]reportGroup, error),
+	queryRunTotalsFn func(reportWindow) (map[string]int, error),
 ) ([]trendItem, error) {
-	current, err := queryFn(window)
+	current, err := queryGroupsFn(window)
 	if err != nil {
 		return nil, err
 	}
@@ -997,7 +1068,15 @@ func buildTrendsForWindow(
 		Until: window.Since,
 		Days:  window.Days,
 	}
-	previous, err := queryFn(prevWindow)
+	previous, err := queryGroupsFn(prevWindow)
+	if err != nil {
+		return nil, err
+	}
+	currentRunTotals, err := queryRunTotalsFn(window)
+	if err != nil {
+		return nil, err
+	}
+	previousRunTotals, err := queryRunTotalsFn(prevWindow)
 	if err != nil {
 		return nil, err
 	}
@@ -1010,24 +1089,49 @@ func buildTrendsForWindow(
 	trends := make([]trendItem, 0, len(current))
 	for _, item := range current {
 		prev := prevMap[item.Key]
+		currentTotalRuns := currentRunTotals[item.Workflow]
+		previousTotalRuns := previousRunTotals[item.Workflow]
+		currentRate := failureRatePercent(item.Count, currentTotalRuns)
+		previousRate := failureRatePercent(prev, previousTotalRuns)
 		status := "🟠"
-		if item.Count < prev {
+		if currentRate < previousRate {
 			status = "🟢"
-		} else if item.Count > prev {
+		} else if currentRate > previousRate {
 			status = "🔴"
 		}
 		label := fmt.Sprintf("`%s` `%s`", item.TestCaseName, item.FailureMessage)
 		trends = append(trends, trendItem{
-			Workflow: item.Workflow,
-			Label:    label,
-			Current:  item.Count,
-			Previous: prev,
-			Status:   status,
+			Workflow:          item.Workflow,
+			Label:             label,
+			Current:           item.Count,
+			CurrentTotalRuns:  currentTotalRuns,
+			Previous:          prev,
+			PreviousTotalRuns: previousTotalRuns,
+			Status:            status,
 		})
 	}
 
 	sort.Slice(trends, func(i, j int) bool {
-		return trends[i].Current > trends[j].Current
+		leftCurrentRate := failureRatePercent(trends[i].Current, trends[i].CurrentTotalRuns)
+		rightCurrentRate := failureRatePercent(trends[j].Current, trends[j].CurrentTotalRuns)
+		if leftCurrentRate != rightCurrentRate {
+			return leftCurrentRate > rightCurrentRate
+		}
+		leftPreviousRate := failureRatePercent(trends[i].Previous, trends[i].PreviousTotalRuns)
+		rightPreviousRate := failureRatePercent(trends[j].Previous, trends[j].PreviousTotalRuns)
+		if leftPreviousRate != rightPreviousRate {
+			return leftPreviousRate > rightPreviousRate
+		}
+		if trends[i].Current != trends[j].Current {
+			return trends[i].Current > trends[j].Current
+		}
+		if trends[i].Previous != trends[j].Previous {
+			return trends[i].Previous > trends[j].Previous
+		}
+		if trends[i].Workflow != trends[j].Workflow {
+			return trends[i].Workflow < trends[j].Workflow
+		}
+		return trends[i].Label < trends[j].Label
 	})
 	if len(trends) > top {
 		trends = trends[:top]

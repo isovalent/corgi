@@ -33,7 +33,7 @@
 ##### Trends (branch `{{ $.Branch }}`, last {{ $days }} days)
 
 {{ range .Result.Trends }}
-  - {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
+  - {{ .Status }} `{{ .Workflow }}` {{ .Label }} {{ formatTrendComparison .Previous .PreviousTotalRuns .Current .CurrentTotalRuns }}
 {{ end }}
 
 {{ end }}

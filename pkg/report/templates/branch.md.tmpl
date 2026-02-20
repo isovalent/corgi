@@ -4,7 +4,7 @@
 
 </div>
 
-## {{ .Spec.Title }} - Branch {{ .Branch }}
+## {{ .Spec.Title }} - Branch `{{ .Branch }}`
 
 - Generated: {{ .Generated }}
 - Execution time: {{ .ExecutionTime }}
@@ -45,11 +45,11 @@
 
 ### {{ windowTitle $window }}
 
-#### Branch {{ $.Branch }} (last {{ $days }} days)
+#### Branch `{{ $.Branch }}` (last {{ $days }} days)
 
 {{ formatFailureRate .Result.Graphs.TotalSeries }}
 
-##### Graphs (branch {{ $.Branch }}, last {{ $days }} days)
+##### Graphs (branch `{{ $.Branch }}`, last {{ $days }} days)
 
 ![{{ chartTitleTotal }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-total.svg)
 
@@ -57,7 +57,7 @@
 
 {{ if and (eq $days 7) (gt (len .Result.Trends) 0) }}
 
-##### Trends (branch {{ $.Branch }}, last {{ $days }} days)
+##### Trends (branch `{{ $.Branch }}`, last {{ $days }} days)
 
 {{ range .Result.Trends }}
   - {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
@@ -65,7 +65,7 @@
 
 {{ end }}
 
-##### Per workflow CI failures (branch {{ $.Branch }}, last {{ $days }} days)
+##### Per workflow CI failures (branch `{{ $.Branch }}`, last {{ $days }} days)
 
 ![{{ chartTitleBars }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflow-bars.svg)
 
@@ -83,7 +83,7 @@
 
 </details>
 
-##### Per workflow+test CI failures (branch {{ $.Branch }}, last {{ $days }} days)
+##### Per workflow+test CI failures (branch `{{ $.Branch }}`, last {{ $days }} days)
 
 <details markdown="1"><summary>Table</summary>
 

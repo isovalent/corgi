@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"reflect"
 	"strings"
 	"testing"
@@ -126,5 +127,90 @@ func TestBuildOtherBranchLinks(t *testing.T) {
 	}
 	if links[1].Name != "release-1.0" || links[1].Path != "branch/release-1-0/report.md" {
 		t.Fatalf("unexpected second link: %+v", links[1])
+	}
+}
+
+func TestReportTemplateIncludesGraphLayout(t *testing.T) {
+	data := reportTemplateData{
+		Spec: reportSpec{
+			Title:     "Test Report",
+			Slug:      "Test-Report",
+			Component: "test",
+		},
+		Generated:     "now",
+		ExecutionTime: "1s",
+		Results: []reportResult{
+			{
+				Window: reportWindow{Days: 7},
+				BranchFailureGroupsByWorkflow: []branchResult{
+					{Branch: "main"},
+				},
+			},
+		},
+	}
+
+	var out bytes.Buffer
+	if err := reportTemplate.Execute(&out, data); err != nil {
+		t.Fatalf("render report template: %v", err)
+	}
+
+	rendered := out.String()
+	if !strings.Contains(rendered, "class=\"graph-grid\"") {
+		t.Fatalf("expected graph grid markup in report template output")
+	}
+	if !strings.Contains(rendered, "graph-modal") {
+		t.Fatalf("expected graph modal markup in report template output")
+	}
+	if !strings.Contains(rendered, "graph-link") {
+		t.Fatalf("expected graph link markup in report template output")
+	}
+}
+
+func TestBranchTemplateIncludesGraphLayout(t *testing.T) {
+	data := branchReportTemplateData{
+		Spec: reportSpec{
+			Title:     "Test Report",
+			Slug:      "Test-Report",
+			Component: "test",
+		},
+		Branch:        "main",
+		Generated:     "now",
+		ExecutionTime: "1s",
+		Results: []branchWindowResult{
+			{
+				Window: reportWindow{Days: 7},
+				Result: branchResult{Branch: "main"},
+			},
+		},
+	}
+
+	var out bytes.Buffer
+	if err := branchTemplate.Execute(&out, data); err != nil {
+		t.Fatalf("render branch template: %v", err)
+	}
+
+	rendered := out.String()
+	if !strings.Contains(rendered, "class=\"graph-grid\"") {
+		t.Fatalf("expected graph grid markup in branch template output")
+	}
+	if !strings.Contains(rendered, "graph-modal") {
+		t.Fatalf("expected graph modal markup in branch template output")
+	}
+	if !strings.Contains(rendered, "graph-link") {
+		t.Fatalf("expected graph link markup in branch template output")
+	}
+}
+
+func TestRenderBarChartDoesNotTruncateLabels(t *testing.T) {
+	label := "very-long-workflow-name-that-should-not-truncate"
+	series := []barSeries{
+		{Label: label, TotalRuns: 10, TotalFails: 2},
+	}
+	svg := renderBarChart("title", series, true)
+	if !strings.Contains(svg, label) {
+		t.Fatalf("expected full label in svg output")
+	}
+	if strings.Contains(svg, "…") {
+		t.Fatalf("expected no ellipsis in svg output")
 	}
 }

@@ -51,9 +51,9 @@
 
 ##### Graphs (branch `{{ $.Branch }}`, last {{ $days }} days)
 
-![{{ chartTitleTotal }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-total.svg)
+<a href="graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-total.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-total.svg" alt="{{ chartTitleTotal }}"/></a>
 
-![{{ chartTitleWf }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflows.svg)
+<a href="graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflows.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflows.svg" alt="{{ chartTitleWf }}"/></a>
 
 {{ if and (eq $days 7) (gt (len .Result.Trends) 0) }}
 
@@ -67,7 +67,7 @@
 
 ##### Per workflow CI failures (branch `{{ $.Branch }}`, last {{ $days }} days)
 
-![{{ chartTitleBars }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflow-bars.svg)
+<a href="graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflow-bars.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflow-bars.svg" alt="{{ chartTitleBars }}"/></a>
 
 <details markdown="1"><summary>Table</summary>
 

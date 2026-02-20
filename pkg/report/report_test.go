@@ -203,11 +203,11 @@ func TestReportTemplateIncludesGraphLayout(t *testing.T) {
 	if !strings.Contains(rendered, "### Graphs (all branches,") {
 		t.Fatalf("expected graphs section heading in report template output")
 	}
-	if !strings.Contains(rendered, "![Total failures vs runs](graphs/") {
-		t.Fatalf("expected total graph markdown image in report template output")
+	if !strings.Contains(rendered, `<a href="graphs/Test-Report-7d-total.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/Test-Report-7d-total.svg" alt="Total failures vs runs"/></a>`) {
+		t.Fatalf("expected clickable total graph image that opens in new tab")
 	}
-	if !strings.Contains(rendered, "![Workflow runs vs failures](graphs/") {
-		t.Fatalf("expected workflow bar chart markdown image in report template output")
+	if !strings.Contains(rendered, `<a href="graphs/Test-Report-7d-workflow-bars.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/Test-Report-7d-workflow-bars.svg" alt="Workflow runs vs failures"/></a>`) {
+		t.Fatalf("expected clickable workflow bar chart image that opens in new tab")
 	}
 }
 
@@ -238,11 +238,11 @@ func TestBranchTemplateIncludesGraphLayout(t *testing.T) {
 	if !strings.Contains(rendered, "#### Graphs (branch") {
 		t.Fatalf("expected graphs section heading in branch template output")
 	}
-	if !strings.Contains(rendered, "![Total failures vs runs](graphs/") {
-		t.Fatalf("expected total graph markdown image in branch template output")
+	if !strings.Contains(rendered, `<a href="graphs/Test-Report-7d-main-total.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/Test-Report-7d-main-total.svg" alt="Total failures vs runs"/></a>`) {
+		t.Fatalf("expected clickable total graph image that opens in new tab")
 	}
-	if !strings.Contains(rendered, "![Workflow runs vs failures](graphs/") {
-		t.Fatalf("expected workflow bar chart markdown image in branch template output")
+	if !strings.Contains(rendered, `<a href="graphs/Test-Report-7d-main-workflow-bars.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/Test-Report-7d-main-workflow-bars.svg" alt="Workflow runs vs failures"/></a>`) {
+		t.Fatalf("expected clickable workflow bar chart image that opens in new tab")
 	}
 }
 

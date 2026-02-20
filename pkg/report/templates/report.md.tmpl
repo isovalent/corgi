@@ -50,15 +50,15 @@
 
 #### Graphs (all branches, {{ $windowTag }})
 
-![{{ chartTitleTotal }}](graphs/{{ $prefix }}-total.svg)
+<a href="graphs/{{ $prefix }}-total.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ $prefix }}-total.svg" alt="{{ chartTitleTotal }}"/></a>
 
-![{{ chartTitleWf }}](graphs/{{ $prefix }}-workflows.svg)
+<a href="graphs/{{ $prefix }}-workflows.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ $prefix }}-workflows.svg" alt="{{ chartTitleWf }}"/></a>
 
-![{{ chartTitleBranch }}](graphs/{{ $prefix }}-branches.svg)
+<a href="graphs/{{ $prefix }}-branches.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ $prefix }}-branches.svg" alt="{{ chartTitleBranch }}"/></a>
 
 #### Per workflow CI failures ({{ $windowTag }})
 
-![{{ chartTitleBars }}](graphs/{{ $prefix }}-workflow-bars.svg)
+<a href="graphs/{{ $prefix }}-workflow-bars.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ $prefix }}-workflow-bars.svg" alt="{{ chartTitleBars }}"/></a>
 
 <details markdown="1"><summary>Table</summary>
 
@@ -100,9 +100,9 @@
 
 ##### Graphs (branch `{{ $branch.Branch }}`, last {{ $days }} days)
 
-![{{ chartTitleTotal }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-total.svg)
+<a href="graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-total.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-total.svg" alt="{{ chartTitleTotal }}"/></a>
 
-![{{ chartTitleWf }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflows.svg)
+<a href="graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflows.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflows.svg" alt="{{ chartTitleWf }}"/></a>
 
 {{ if and (eq $days 7) (gt (len $branch.Trends) 0) }}
 
@@ -116,7 +116,7 @@
 
 ##### Per workflow CI failures (branch `{{ $branch.Branch }}`, last {{ $days }} days)
 
-![{{ chartTitleBars }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflow-bars.svg)
+<a href="graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflow-bars.svg" target="_blank" rel="noopener noreferrer"><img src="graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflow-bars.svg" alt="{{ chartTitleBars }}"/></a>
 
 <details markdown="1"><summary>Table</summary>
 

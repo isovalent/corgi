@@ -333,3 +333,52 @@ func TestBranchTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 		t.Fatalf("expected failure/runs stat in branch template output")
 	}
 }
+
+func TestReportTemplateConditionallyRendersBranchSection(t *testing.T) {
+	makeData := func(otherBranches []branchLink) reportTemplateData {
+		return reportTemplateData{
+			Spec: reportSpec{
+				Title:     "Test Report",
+				Slug:      "Test-Report",
+				Component: "test",
+			},
+			Generated:     "now",
+			ExecutionTime: "1s",
+			Results: []reportResult{
+				{
+					Window: reportWindow{Days: 7},
+					BranchWorkflowSuiteFailures: []workflowSuiteCount{
+						{Branch: "main", Workflow: "wf", TestSuite: "suite", Count: 1, TotalRuns: 5},
+					},
+					OtherBranches: otherBranches,
+				},
+			},
+		}
+	}
+
+	t.Run("hidden when only main branches", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := reportTemplate.Execute(&out, makeData(nil)); err != nil {
+			t.Fatalf("render report template: %v", err)
+		}
+
+		rendered := out.String()
+		if strings.Contains(rendered, "### Per workflow+branch+test CI failures") {
+			t.Fatalf("expected branch section to be omitted when no non-main branches exist")
+		}
+	})
+
+	t.Run("shown when non-main branches exist", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := reportTemplate.Execute(&out, makeData([]branchLink{
+			{Name: "release-1.16", Path: "branch/release-1-16/"},
+		})); err != nil {
+			t.Fatalf("render report template: %v", err)
+		}
+
+		rendered := out.String()
+		if !strings.Contains(rendered, "### Per workflow+branch+test CI failures") {
+			t.Fatalf("expected branch section when non-main branches exist")
+		}
+	})
+}

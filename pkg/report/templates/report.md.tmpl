@@ -72,6 +72,7 @@
 
 </details>
 
+{{- if gt (len .OtherBranches) 0 }}
 ### Per workflow+branch+test CI failures ({{ $windowTag }})
 
 <details markdown="1"><summary>Table</summary>
@@ -87,6 +88,7 @@
 </div>
 
 </details>
+{{- end }}
 
 {{- range $branch := .BranchFailureGroupsByWorkflow }}
 

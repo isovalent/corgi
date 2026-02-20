@@ -38,6 +38,13 @@ web-report: # Generate reports and serve them via Jekyll
 	@TMP_BASE=$${WEB_REPORT_TMPDIR:-/tmp}; \
 	REPORT_TMP=$${REPORT_TMP:-$$(mktemp -d "$$TMP_BASE/corgi_pages_XXXXXX")}; \
 	command -v jekyll >/dev/null 2>&1 || { echo "jekyll is required in PATH" >&2; exit 1; }; \
+	command -v gem >/dev/null 2>&1 || { echo "gem is required to verify Jekyll plugins" >&2; exit 1; }; \
+	for gem_name in jekyll-relative-links jekyll-optional-front-matter jekyll-readme-index; do \
+		gem list -i "$$gem_name" >/dev/null 2>&1 || { \
+			echo "$$gem_name gem is required (install with: gem install $$gem_name)" >&2; \
+			exit 1; \
+		}; \
+	done; \
 	echo "Using report output: $$REPORT_TMP"; \
 	if [ "$${WEB_REPORT_SKIP_GENERATION:-0}" != "1" ]; then \
 		$(GO) run . report --output-dir "$$REPORT_TMP"; \

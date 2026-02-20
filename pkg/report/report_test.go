@@ -382,3 +382,58 @@ func TestReportTemplateConditionallyRendersBranchSection(t *testing.T) {
 		}
 	})
 }
+
+func TestReportTemplateSeparatesOtherBranchesListFromNextWindow(t *testing.T) {
+	data := reportTemplateData{
+		Spec: reportSpec{
+			Title:     "Test Report",
+			Slug:      "Test-Report",
+			Component: "test",
+		},
+		Generated:     "now",
+		ExecutionTime: "1s",
+		Results: []reportResult{
+			{
+				Window: reportWindow{
+					Days:  7,
+					Since: time.Date(2026, 2, 13, 0, 0, 0, 0, time.UTC),
+					Until: time.Date(2026, 2, 20, 0, 0, 0, 0, time.UTC),
+				},
+				OtherBranches: []branchLink{
+					{Name: "v1.19", Path: "branch/v1-19/"},
+				},
+			},
+			{
+				Window: reportWindow{
+					Days:  14,
+					Since: time.Date(2026, 2, 6, 0, 0, 0, 0, time.UTC),
+					Until: time.Date(2026, 2, 20, 0, 0, 0, 0, time.UTC),
+				},
+			},
+		},
+	}
+
+	var out bytes.Buffer
+	if err := reportTemplate.Execute(&out, data); err != nil {
+		t.Fatalf("render report template: %v", err)
+	}
+
+	rendered := out.String()
+	const listItem = "- [v1.19](branch/v1-19/)"
+	const nextHeading = "## Last 14 days (2026-02-06 to 2026-02-20)"
+	listIdx := strings.Index(rendered, listItem)
+	if listIdx == -1 {
+		t.Fatalf("expected other branches list item in rendered output")
+	}
+	headingIdx := strings.Index(rendered, nextHeading)
+	if headingIdx == -1 {
+		t.Fatalf("expected next window heading in rendered output")
+	}
+	if headingIdx <= listIdx {
+		t.Fatalf("expected next window heading after branch list")
+	}
+	between := rendered[listIdx+len(listItem) : headingIdx]
+	if !strings.Contains(between, "\n\n") {
+		t.Fatalf("expected blank line between branch list and next window heading")
+	}
+}

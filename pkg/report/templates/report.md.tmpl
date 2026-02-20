@@ -29,7 +29,7 @@
   }
 </style>
 
-{{- range .Results }}
+{{ range .Results }}
 {{- $window := .Window }}
 {{- $days := .Window.Days }}
 {{- $prefix := graphPrefix $.Spec.Slug $days }}
@@ -38,14 +38,16 @@
 
 {{ formatFailureRate .Graphs.TotalSeries }}
 
-{{- if and (eq $days 7) (gt (len .Trends) 0) }}
+{{ if and (eq $days 7) (gt (len .Trends) 0) }}
+
 #### Trends ({{ $windowTag }})
 
-{{- range .Trends }}
-- {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
-{{- end }}
+{{ range .Trends }}
+  - {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
+{{ end }}
 
-{{- end }}
+{{ end }}
+
 #### Graphs (all branches, {{ $windowTag }})
 
 ![{{ chartTitleTotal }}](graphs/{{ $prefix }}-total.svg)
@@ -72,7 +74,7 @@
 
 </details>
 
-{{- if gt (len .OtherBranches) 0 }}
+{{ if gt (len .OtherBranches) 0 }}
 #### Per workflow+branch+test CI failures ({{ $windowTag }})
 
 <details markdown="1"><summary>Table</summary>
@@ -88,9 +90,9 @@
 </div>
 
 </details>
-{{- end }}
+{{ end }}
 
-{{- range $branch := .BranchFailureGroupsByWorkflow }}
+{{ range $branch := .BranchFailureGroupsByWorkflow }}
 
 #### Branch {{ $branch.Branch }} (last {{ $days }} days)
 
@@ -102,15 +104,15 @@
 
 ![{{ chartTitleWf }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflows.svg)
 
-{{- if and (eq $days 7) (gt (len $branch.Trends) 0) }}
+{{ if and (eq $days 7) (gt (len $branch.Trends) 0) }}
 
 ##### Trends (branch {{ $branch.Branch }}, last {{ $days }} days)
 
-{{- range $branch.Trends }}
-- {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
-{{- end }}
+{{ range $branch.Trends }}
+  - {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
+{{ end }}
 
-{{- end }}
+{{ end }}
 
 ##### Per workflow CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
 
@@ -146,16 +148,16 @@
 
 </details>
 
-{{- end }}
+{{ end }}
 
-{{- if gt (len .OtherBranches) 0 }}
+{{ if gt (len .OtherBranches) 0 }}
 
 #### Other branches ({{ $windowTag }})
 
-{{- range .OtherBranches }}
-- [{{ .Name }}]({{ .Path }})
-{{- end }}
+{{ range .OtherBranches }}
+  - [{{ .Name }}]({{ .Path }})
+{{ end }}
 
-{{- end }}
+{{ end }}
 
-{{- end }}
+{{ end }}

@@ -42,6 +42,7 @@
 {{- $window := .Window }}
 {{- $days := .Window.Days }}
 {{- $windowTag := windowTag $window }}
+
 ### {{ windowTitle $window }}
 
 #### Branch {{ $.Branch }} (last {{ $days }} days)
@@ -54,15 +55,15 @@
 
 ![{{ chartTitleWf }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $.Branch }}-workflows.svg)
 
-{{- if and (eq $days 7) (gt (len .Result.Trends) 0) }}
+{{ if and (eq $days 7) (gt (len .Result.Trends) 0) }}
 
 ##### Trends (branch {{ $.Branch }}, last {{ $days }} days)
 
-{{- range .Result.Trends }}
-- {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
-{{- end }}
+{{ range .Result.Trends }}
+  - {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
+{{ end }}
 
-{{- end }}
+{{ end }}
 
 ##### Per workflow CI failures (branch {{ $.Branch }}, last {{ $days }} days)
 
@@ -98,4 +99,4 @@
 
 </details>
 
-{{- end }}
+{{ end }}

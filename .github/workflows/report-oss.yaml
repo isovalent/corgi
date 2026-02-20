@@ -44,6 +44,8 @@ jobs:
           cat > ./site/_config.yml <<'EOF'
           title: OSS CI Health Reports
           markdown: kramdown
+          kramdown:
+            input: GFM
           EOF
       - name: Setup Pages
         id: pages

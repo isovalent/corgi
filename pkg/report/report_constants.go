@@ -47,30 +47,31 @@ const (
 	linkEntriesSep   = ", "
 	lineDateLabelFmt = "Jan-02"
 
-	graphTopSeriesLimit           = 5
-	chartTitleTotalFailures       = "Total failures vs runs"
-	chartTitleWorkflowFailures    = "Failures per workflow"
-	chartTitleBranchWorkflowFails = "Failures per branch and workflow"
-	chartTitleWorkflowRunFailures = "Workflow runs vs failures"
-	chartSeriesNameFailures       = "Failures"
-	chartSeriesNameSuccessfulRuns = "Successful runs"
-	chartSeriesNameRuns           = "Runs"
-	chartLineAxisLabel            = "Failures"
-	chartLineAxisLabelRuns        = "Runs"
-	errorChartWidth               = 800
-	errorChartHeight              = 80
-	graphColorBackground          = "white"
-	graphColorAxis                = "#1f2937"
-	graphColorTick                = "#9ca3af"
-	graphColorGrid                = "#e5e7eb"
-	graphColorRuns                = "#2563eb"
-	graphColorFailures            = "#ef4444"
-	graphColorSuccessfulRuns      = "#16a34a"
-	graphColorRunsTotal           = "#111827"
-	graphColorFailureGap          = "#ef4444"
-	graphColorFailureGapOpacity   = 0.18
-	graphColorRunsOpacity         = 0.35
-	graphColorFailuresOpacity     = 0.8
+	graphTopSeriesLimit                 = 5
+	chartTitleTotalFailures             = "Total failures vs runs"
+	chartTitleWorkflowFailures          = "Failures per workflow"
+	chartTitleBranchWorkflowFails       = "Failures per branch and workflow"
+	chartTitleWorkflowRunFailures       = "Workflow runs vs failures"
+	chartSeriesNameFailures             = "Failures"
+	chartSeriesNameSuccessfulRuns       = "Successful runs"
+	chartSeriesNameRuns                 = "Runs"
+	chartLineAxisLabel                  = "Failures"
+	chartLineAxisLabelRuns              = "Runs"
+	errorChartWidth                     = 800
+	errorChartHeight                    = 80
+	graphColorBackground                = "white"
+	graphColorAxis                      = "#1f2937"
+	graphColorTick                      = "#9ca3af"
+	graphColorGrid                      = "#e5e7eb"
+	graphColorRuns                      = "#2563eb"
+	graphColorFailures                  = "#ef4444"
+	graphColorSuccessfulRuns            = "#16a34a"
+	graphColorSuccessfulRunsAreaOpacity = 0.2
+	graphColorRunsTotal                 = "#111827"
+	graphColorFailureGap                = "#ef4444"
+	graphColorFailureGapOpacity         = 0.18
+	graphColorRunsOpacity               = 0.35
+	graphColorFailuresOpacity           = 0.8
 )
 
 var (

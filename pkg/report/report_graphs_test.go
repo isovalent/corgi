@@ -101,6 +101,15 @@ func TestRenderTotalsChartUsesSuccessfulRunsAndFailureGap(t *testing.T) {
 	if !strings.Contains(svg, `fill="#ef4444"`) {
 		t.Fatalf("expected failure gap fill color in totals chart output")
 	}
+	if !strings.Contains(svg, `data-area="successful-runs-area"`) {
+		t.Fatalf("expected successful runs area marker in totals chart output")
+	}
+	if !strings.Contains(svg, `fill="#16a34a"`) {
+		t.Fatalf("expected successful runs area fill color in totals chart output")
+	}
+	if !strings.Contains(svg, `fill-opacity="0.2"`) {
+		t.Fatalf("expected successful runs area opacity in totals chart output")
+	}
 }
 
 func TestRenderSVGTemplateUsesErrorTemplateFallback(t *testing.T) {

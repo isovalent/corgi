@@ -1080,6 +1080,7 @@ func renderTotalsChart(points []dayPoint, title string) string {
 
 	runPoints := make([]svgPoint, 0, len(ordered))
 	successPoints := make([]svgPoint, 0, len(ordered))
+	axisPoints := make([]svgPoint, 0, len(ordered))
 	for _, point := range ordered {
 		x := leftPad + int(scaleTime(point.Date, minDate, maxDate, plotWidth))
 		runY := topPad + int(plotHeight-scaleValue(float64(point.TotalRuns), maxVal, plotHeight))
@@ -1087,9 +1088,16 @@ func renderTotalsChart(points []dayPoint, title string) string {
 
 		runPoints = append(runPoints, svgPoint{X: x, Y: runY})
 		successPoints = append(successPoints, svgPoint{X: x, Y: successY})
+		axisPoints = append(axisPoints, svgPoint{X: x, Y: y0})
 	}
 
 	if len(runPoints) > 0 {
+		data.Areas = append(data.Areas, lineChartArea{
+			Name:    "successful-runs-area",
+			Path:    buildAreaPath(successPoints, axisPoints),
+			Color:   graphColorSuccessfulRuns,
+			Opacity: graphColorSuccessfulRunsAreaOpacity,
+		})
 		data.Areas = append(data.Areas, lineChartArea{
 			Name:    "failure-gap",
 			Path:    buildAreaPath(runPoints, successPoints),

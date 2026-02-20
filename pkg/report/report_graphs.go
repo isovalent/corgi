@@ -1,4 +1,4 @@
-package cmd
+package report
 
 import (
 	"context"
@@ -17,12 +17,12 @@ import (
 
 var barChartSVGTemplate = template.Must(template.New("chart-bar.svg.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
 	reportTemplates,
-	"templates/report/chart-bar.svg.tmpl",
+	"templates/chart-bar.svg.tmpl",
 ))
 
 var lineChartSVGTemplate = template.Must(template.New("chart-lines.svg.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
 	reportTemplates,
-	"templates/report/chart-lines.svg.tmpl",
+	"templates/chart-lines.svg.tmpl",
 ))
 
 type graphBundle struct {
@@ -46,7 +46,7 @@ func buildGraphData(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 ) (graphBundle, error) {
@@ -88,7 +88,7 @@ func queryWorkflowBars(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 ) ([]workflowBar, error) {
@@ -157,7 +157,7 @@ func queryWorkflowBarsForBranch(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	branch string,
@@ -228,7 +228,7 @@ func buildBranchGraphData(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	branch string,
@@ -258,7 +258,7 @@ func queryDailyTotals(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 ) ([]dayPoint, error) {
@@ -327,7 +327,7 @@ func queryDailyTotalsForBranch(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	branch string,
@@ -370,7 +370,7 @@ func queryTopWorkflows(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	limit int,
@@ -421,7 +421,7 @@ func queryTopWorkflowsForBranch(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	branch string,
@@ -474,7 +474,7 @@ func queryTopBranchWorkflows(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	limit int,
@@ -561,7 +561,7 @@ func queryDailyByWorkflow(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	workflow string,
@@ -604,7 +604,7 @@ func queryDailyByWorkflowForBranch(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	branch string,
@@ -649,7 +649,7 @@ func queryDailyByBranchWorkflow(
 	ctx context.Context,
 	logger *slog.Logger,
 	client *opensearch.Client,
-	params *reportParams,
+	params *Params,
 	repo string,
 	window reportWindow,
 	branch string,

@@ -1,4 +1,4 @@
-package cmd
+package report
 
 import (
 	"bytes"
@@ -200,14 +200,14 @@ func TestReportTemplateIncludesGraphLayout(t *testing.T) {
 	}
 
 	rendered := out.String()
-	if !strings.Contains(rendered, "class=\"graph-grid\"") {
-		t.Fatalf("expected graph grid markup in report template output")
+	if !strings.Contains(rendered, "### Graphs (all branches,") {
+		t.Fatalf("expected graphs section heading in report template output")
 	}
-	if !strings.Contains(rendered, "graph-modal") {
-		t.Fatalf("expected graph modal markup in report template output")
+	if !strings.Contains(rendered, "![Total failures vs runs](graphs/") {
+		t.Fatalf("expected total graph markdown image in report template output")
 	}
-	if !strings.Contains(rendered, "graph-link") {
-		t.Fatalf("expected graph link markup in report template output")
+	if !strings.Contains(rendered, "![Workflow runs vs failures](graphs/") {
+		t.Fatalf("expected workflow bar chart markdown image in report template output")
 	}
 }
 
@@ -235,14 +235,14 @@ func TestBranchTemplateIncludesGraphLayout(t *testing.T) {
 	}
 
 	rendered := out.String()
-	if !strings.Contains(rendered, "class=\"graph-grid\"") {
-		t.Fatalf("expected graph grid markup in branch template output")
+	if !strings.Contains(rendered, "#### Graphs (branch") {
+		t.Fatalf("expected graphs section heading in branch template output")
 	}
-	if !strings.Contains(rendered, "graph-modal") {
-		t.Fatalf("expected graph modal markup in branch template output")
+	if !strings.Contains(rendered, "![Total failures vs runs](graphs/") {
+		t.Fatalf("expected total graph markdown image in branch template output")
 	}
-	if !strings.Contains(rendered, "graph-link") {
-		t.Fatalf("expected graph link markup in branch template output")
+	if !strings.Contains(rendered, "![Workflow runs vs failures](graphs/") {
+		t.Fatalf("expected workflow bar chart markdown image in branch template output")
 	}
 }
 

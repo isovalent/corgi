@@ -70,11 +70,21 @@ func TestBuildReportWindowsIncludes60(t *testing.T) {
 func TestRenderLinksUsesRunNumber(t *testing.T) {
 	links := []reportLink{{Workflow: "https://github.com/cilium/cilium/actions/runs/22174599299"}}
 	out := renderLinks(links)
-	if !strings.Contains(out, "<details markdown=\"1\"><summary>Links</summary><ul>") {
-		t.Fatalf("expected markdown-enabled details wrapper for links, got %q", out)
+	expected := "[run#22174599299](https://github.com/cilium/cilium/actions/runs/22174599299)"
+	if out != expected {
+		t.Fatalf("unexpected markdown links output: got %q want %q", out, expected)
 	}
-	if !strings.Contains(out, "run#22174599299") {
-		t.Fatalf("expected run number label, got %q", out)
+}
+
+func TestRenderLinksCommaSeparated(t *testing.T) {
+	links := []reportLink{
+		{Workflow: "https://github.com/cilium/cilium/actions/runs/1"},
+		{Workflow: "https://github.com/cilium/cilium/actions/runs/2"},
+	}
+	out := renderLinks(links)
+	expected := "[run#1](https://github.com/cilium/cilium/actions/runs/1), [run#2](https://github.com/cilium/cilium/actions/runs/2)"
+	if out != expected {
+		t.Fatalf("unexpected markdown links output: got %q want %q", out, expected)
 	}
 }
 

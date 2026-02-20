@@ -2223,10 +2223,9 @@ func renderLinks(links []reportLink) string {
 	if len(links) == 0 {
 		return ""
 	}
-	var b strings.Builder
-	b.WriteString("<details markdown=\"1\"><summary>Links</summary><ul>")
+	entries := make([]string, 0, len(links))
 	for _, link := range links {
-		b.WriteString("<li>")
+		parts := make([]string, 0, 2)
 		if link.Workflow != "" {
 			label := "run"
 			runID := link.RunID
@@ -2238,18 +2237,16 @@ func renderLinks(links []reportLink) string {
 			} else if link.RunNumber > 0 {
 				label = fmt.Sprintf("run#%d", link.RunNumber)
 			}
-			b.WriteString(fmt.Sprintf("<a href=\"%s\">%s</a>", link.Workflow, label))
+			parts = append(parts, fmt.Sprintf("[%s](%s)", label, link.Workflow))
 		}
 		if link.Job != "" {
-			if link.Workflow != "" {
-				b.WriteString(" / ")
-			}
-			b.WriteString(fmt.Sprintf("<a href=\"%s\">job</a>", link.Job))
+			parts = append(parts, fmt.Sprintf("[job](%s)", link.Job))
 		}
-		b.WriteString("</li>")
+		if len(parts) > 0 {
+			entries = append(entries, strings.Join(parts, " / "))
+		}
 	}
-	b.WriteString("</ul></details>")
-	return b.String()
+	return strings.Join(entries, ", ")
 }
 
 func formatOwners(testOwners, suiteOwners []string) string {

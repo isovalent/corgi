@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
-	"regexp"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -66,6 +66,18 @@ func TestBuildReportWindowsIncludes60(t *testing.T) {
 	}
 	if windows[3].Days != 60 {
 		t.Fatalf("expected 60-day window at index 3, got %d", windows[3].Days)
+	}
+}
+
+func TestFormatFailureStat(t *testing.T) {
+	got := formatFailureStat(3, 10)
+	if got != "3/10 (30.0%)" {
+		t.Fatalf("unexpected failure stat: %q", got)
+	}
+
+	got = formatFailureStat(2, 0)
+	if got != "2/0 (0.0%)" {
+		t.Fatalf("unexpected failure stat with zero runs: %q", got)
 	}
 }
 
@@ -248,6 +260,12 @@ func TestReportTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 		Results: []reportResult{
 			{
 				Window: reportWindow{Days: 7},
+				WorkflowFailures: []workflowCount{
+					{Workflow: "wf", Count: 2, TotalRuns: 5},
+				},
+				BranchWorkflowSuiteFailures: []workflowSuiteCount{
+					{Branch: "main", Workflow: "wf", TestSuite: "suite", Count: 1, TotalRuns: 5},
+				},
 			},
 		},
 	}
@@ -267,6 +285,9 @@ func TestReportTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 	if !strings.Contains(rendered, ".table-wrap {") || !strings.Contains(rendered, "overflow-x: auto;") {
 		t.Fatalf("expected responsive table CSS in report template output")
 	}
+	if !strings.Contains(rendered, "2/5 (40.0%)") {
+		t.Fatalf("expected failure/runs stat in report template output")
+	}
 }
 
 func TestBranchTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
@@ -282,7 +303,15 @@ func TestBranchTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 		Results: []branchWindowResult{
 			{
 				Window: reportWindow{Days: 7},
-				Result: branchResult{Branch: "main"},
+				Result: branchResult{
+					Branch: "main",
+					WorkflowFailures: []workflowCount{
+						{Workflow: "wf", Count: 2, TotalRuns: 5},
+					},
+					WorkflowSuiteFailures: []workflowSuiteFailureGroup{
+						{Workflow: "wf", Count: 1, TotalRuns: 5},
+					},
+				},
 			},
 		},
 	}
@@ -301,6 +330,9 @@ func TestBranchTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 	}
 	if !strings.Contains(rendered, ".table-wrap {") || !strings.Contains(rendered, "overflow-x: auto;") {
 		t.Fatalf("expected responsive table CSS in branch template output")
+	}
+	if !strings.Contains(rendered, "2/5 (40.0%)") {
+		t.Fatalf("expected failure/runs stat in branch template output")
 	}
 }
 

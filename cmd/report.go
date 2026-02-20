@@ -60,6 +60,7 @@ type reportGroup struct {
 type workflowCount struct {
 	Workflow        string
 	Count           int
+	TotalRuns       int
 	TestSuites      []string
 	TestCaseOwners  []string
 	TestSuiteOwners []string
@@ -71,6 +72,7 @@ type workflowSuiteCount struct {
 	Workflow        string
 	TestSuite       string
 	Count           int
+	TotalRuns       int
 	TestCaseOwners  []string
 	TestSuiteOwners []string
 	Links           []reportLink
@@ -83,6 +85,7 @@ type workflowSuiteFailureGroup struct {
 	TestCaseName    string
 	FailureMessage  string
 	Count           int
+	TotalRuns       int
 	TestCaseOwners  []string
 	TestSuiteOwners []string
 	Links           []reportLink
@@ -351,10 +354,21 @@ func buildReportWindow(
 		return reportResult{}, err
 	}
 
+	workflowRunTotals, err := queryWorkflowRunTotals(ctx, logger, client, params, repo, window)
+	if err != nil {
+		return reportResult{}, err
+	}
+	applyWorkflowRunTotals(workflowFailures, workflowRunTotals)
+
 	branchWorkflowSuiteFailures, err := queryBranchWorkflowSuiteFailures(ctx, logger, client, params, repo, window)
 	if err != nil {
 		return reportResult{}, err
 	}
+	branchWorkflowRunTotals, err := queryBranchWorkflowRunTotals(ctx, logger, client, params, repo, window)
+	if err != nil {
+		return reportResult{}, err
+	}
+	applyBranchWorkflowRunTotalsToSuiteCounts(branchWorkflowSuiteFailures, branchWorkflowRunTotals)
 
 	graphs, err := buildGraphData(ctx, logger, client, params, repo, window)
 	if err != nil {
@@ -384,7 +398,7 @@ func buildReportWindow(
 	otherBranchResults := make([]branchResult, 0, len(otherBranches))
 
 	for _, branch := range mainBranches {
-		result, err := buildBranchResult(ctx, logger, client, params, repo, window, branch)
+		result, err := buildBranchResult(ctx, logger, client, params, repo, window, branch, branchWorkflowRunTotals)
 		if err != nil {
 			return reportResult{}, err
 		}
@@ -392,7 +406,7 @@ func buildReportWindow(
 	}
 
 	for _, branch := range otherBranches {
-		result, err := buildBranchResult(ctx, logger, client, params, repo, window, branch)
+		result, err := buildBranchResult(ctx, logger, client, params, repo, window, branch, branchWorkflowRunTotals)
 		if err != nil {
 			return reportResult{}, err
 		}
@@ -420,6 +434,7 @@ func buildBranchResult(
 	repo string,
 	window reportWindow,
 	branch string,
+	branchWorkflowRunTotals map[string]int,
 ) (branchResult, error) {
 	branchGraphs, err := buildBranchGraphData(ctx, logger, client, params, repo, window, branch)
 	if err != nil {
@@ -433,10 +448,13 @@ func buildBranchResult(
 	if err != nil {
 		return branchResult{}, err
 	}
+	applyBranchWorkflowRunTotalsToWorkflowCounts(branchWorkflowFailures, branch, branchWorkflowRunTotals)
+
 	branchWorkflowSuiteFailures, err := queryWorkflowSuiteFailureGroupsForBranch(ctx, logger, client, params, repo, window, branch)
 	if err != nil {
 		return branchResult{}, err
 	}
+	applyBranchWorkflowRunTotalsToFailureGroups(branchWorkflowSuiteFailures, branch, branchWorkflowRunTotals)
 	var branchTrends []trendItem
 	if window.Days == 7 {
 		branchTrends, err = buildTrendsForBranch(ctx, logger, client, params, repo, window, branch)
@@ -600,6 +618,7 @@ func reportTemplateFuncs() template.FuncMap {
 		"join":              strings.Join,
 		"add1":              addOne,
 		"formatFailureRate": formatFailureRate,
+		"formatFailureStat": formatFailureStat,
 	}
 }
 
@@ -615,6 +634,172 @@ func formatFailureRate(points []dayPoint) string {
 		percent = (float64(totalFailures) / float64(totalRuns)) * 100
 	}
 	return fmt.Sprintf("Failures: %d / %d (%.1f%%)", totalFailures, totalRuns, percent)
+}
+
+func formatFailureStat(failures, totalRuns int) string {
+	percent := 0.0
+	if totalRuns > 0 {
+		percent = (float64(failures) / float64(totalRuns)) * 100
+	}
+	return fmt.Sprintf("%d/%d (%.1f%%)", failures, totalRuns, percent)
+}
+
+func queryWorkflowRunTotals(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *reportParams,
+	repo string,
+	window reportWindow,
+) (map[string]int, error) {
+	query := map[string]any{
+		"size": 0,
+		"query": map[string]any{
+			"bool": map[string]any{
+				"must": []any{
+					buildRangeFilter(window.Since, window.Until),
+					buildTypeFilter("workflow_run"),
+					buildRepoTermFilter(repo),
+					buildEventTermsFilter(params.Events),
+				},
+			},
+		},
+		"aggs": map[string]any{
+			"workflows": map[string]any{
+				"terms": map[string]any{
+					"field": "workflow_name.keyword",
+					"size":  1000,
+				},
+			},
+		},
+	}
+
+	addWorkflowExclusions(query)
+
+	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
+	if err != nil {
+		return nil, err
+	}
+	buckets, err := getBuckets(resp, "workflows")
+	if err != nil {
+		return nil, err
+	}
+
+	totals := make(map[string]int, len(buckets))
+	for _, bucket := range buckets {
+		workflow := getString(bucket, "key")
+		if workflow == "" {
+			continue
+		}
+		totals[workflow] = getInt(bucket, "doc_count")
+	}
+
+	return totals, nil
+}
+
+func queryBranchWorkflowRunTotals(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *reportParams,
+	repo string,
+	window reportWindow,
+) (map[string]int, error) {
+	totals := map[string]int{}
+	var afterKey map[string]any
+
+	for {
+		query := map[string]any{
+			"size": 0,
+			"query": map[string]any{
+				"bool": map[string]any{
+					"must": []any{
+						buildRangeFilter(window.Since, window.Until),
+						buildTypeFilter("workflow_run"),
+						buildRepoTermFilter(repo),
+						buildEventTermsFilter(params.Events),
+					},
+				},
+			},
+			"aggs": map[string]any{
+				"branch_workflow": map[string]any{
+					"composite": map[string]any{
+						"size": 1000,
+						"sources": []any{
+							map[string]any{"branch": map[string]any{"terms": map[string]any{"field": "head_branch.keyword"}}},
+							map[string]any{"workflow": map[string]any{"terms": map[string]any{"field": "workflow_name.keyword"}}},
+						},
+					},
+				},
+			},
+		}
+
+		if afterKey != nil {
+			query["aggs"].(map[string]any)["branch_workflow"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
+		}
+
+		addWorkflowExclusions(query)
+
+		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
+		if err != nil {
+			return nil, err
+		}
+
+		agg, err := getAgg(resp, "branch_workflow")
+		if err != nil {
+			return nil, err
+		}
+
+		buckets, err := getBucketArray(agg)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, bucket := range buckets {
+			keyMap := getMap(bucket, "key")
+			branch := getStringFromMap(keyMap, "branch")
+			workflow := getStringFromMap(keyMap, "workflow")
+			if branch == "" || workflow == "" {
+				continue
+			}
+			totals[branchWorkflowRunKey(branch, workflow)] = getInt(bucket, "doc_count")
+		}
+
+		afterKey, _ = agg["after_key"].(map[string]any)
+		if afterKey == nil {
+			break
+		}
+	}
+
+	return totals, nil
+}
+
+func branchWorkflowRunKey(branch, workflow string) string {
+	return branch + "::" + workflow
+}
+
+func applyWorkflowRunTotals(items []workflowCount, workflowRunTotals map[string]int) {
+	for i := range items {
+		items[i].TotalRuns = workflowRunTotals[items[i].Workflow]
+	}
+}
+
+func applyBranchWorkflowRunTotalsToWorkflowCounts(items []workflowCount, branch string, branchWorkflowRunTotals map[string]int) {
+	for i := range items {
+		items[i].TotalRuns = branchWorkflowRunTotals[branchWorkflowRunKey(branch, items[i].Workflow)]
+	}
+}
+
+func applyBranchWorkflowRunTotalsToSuiteCounts(items []workflowSuiteCount, branchWorkflowRunTotals map[string]int) {
+	for i := range items {
+		items[i].TotalRuns = branchWorkflowRunTotals[branchWorkflowRunKey(items[i].Branch, items[i].Workflow)]
+	}
+}
+
+func applyBranchWorkflowRunTotalsToFailureGroups(items []workflowSuiteFailureGroup, branch string, branchWorkflowRunTotals map[string]int) {
+	for i := range items {
+		items[i].TotalRuns = branchWorkflowRunTotals[branchWorkflowRunKey(branch, items[i].Workflow)]
+	}
 }
 
 func queryWorkflowFailures(

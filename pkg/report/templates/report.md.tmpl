@@ -19,7 +19,9 @@
 #### Trends ({{ $windowTag }})
 
 {{ range .Trends }}
-  - {{ .Status }} `{{ .Workflow }}` {{ .Label }} {{ formatTrendComparison .Previous .PreviousTotalRuns .Current .CurrentTotalRuns }}
+* {{ .Status }} `{{ .Workflow }}`
+  * Error rate: {{ formatTrendComparison .Previous .PreviousTotalRuns .Current .CurrentTotalRuns }}
+  * Most common failure message ({{ formatTrendMessageShare .MostCommonFailureCount .CurrentFailureOccurrences }}): {{ if .MostCommonFailureMessage }}`{{ .MostCommonFailureMessage }}`{{ else }}_n/a_{{ end }}
 {{ end }}
 
 {{ end }}
@@ -85,7 +87,9 @@
 ##### Trends (branch `{{ $branch.Branch }}`, last {{ $days }} days)
 
 {{ range $branch.Trends }}
-  - {{ .Status }} `{{ .Workflow }}` {{ .Label }} {{ formatTrendComparison .Previous .PreviousTotalRuns .Current .CurrentTotalRuns }}
+* {{ .Status }} `{{ .Workflow }}`
+  * Error rate: {{ formatTrendComparison .Previous .PreviousTotalRuns .Current .CurrentTotalRuns }}
+  * Most common failure message ({{ formatTrendMessageShare .MostCommonFailureCount .CurrentFailureOccurrences }}): {{ if .MostCommonFailureMessage }}`{{ .MostCommonFailureMessage }}`{{ else }}_n/a_{{ end }}
 {{ end }}
 
 {{ end }}

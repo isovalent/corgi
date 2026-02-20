@@ -606,7 +606,10 @@ func reportTemplateFuncs() template.FuncMap {
 		"escapeXML":             html.EscapeString,
 		"renderLinks":           renderLinks,
 		"formatTrendComparison": formatTrendComparison,
-		"join":                  strings.Join,
+		"formatTrendMessageShare": func(count, total int) string {
+			return formatTrendMessageShare(count, total)
+		},
+		"join": strings.Join,
 		"add1": func(value int) int {
 			return value + 1
 		},
@@ -670,6 +673,14 @@ func formatTrendComparison(previous, previousTotalRuns, current, currentTotalRun
 	)
 }
 
+func formatTrendMessageShare(count, total int) string {
+	share := 0.0
+	if total > 0 {
+		share = (float64(count) / float64(total)) * 100
+	}
+	return fmt.Sprintf("%.1f%%", share)
+}
+
 func queryWorkflowRunTotals(
 	ctx context.Context,
 	logger *slog.Logger,
@@ -679,6 +690,25 @@ func queryWorkflowRunTotals(
 	window reportWindow,
 ) (map[string]int, error) {
 	return queryWorkflowRunTotalsWithExtraFilters(ctx, logger, client, params, repo, window)
+}
+
+func queryFailedWorkflowRunTotals(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	repo string,
+	window reportWindow,
+) (map[string]int, error) {
+	return queryWorkflowRunTotalsWithExtraFilters(
+		ctx,
+		logger,
+		client,
+		params,
+		repo,
+		window,
+		buildTermsFilter("workflow_conclusion", params.FailStatus),
+	)
 }
 
 func queryWorkflowRunTotalsForBranch(
@@ -698,6 +728,27 @@ func queryWorkflowRunTotalsForBranch(
 		repo,
 		window,
 		buildTermFilter("head_branch.keyword", branch),
+	)
+}
+
+func queryFailedWorkflowRunTotalsForBranch(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	repo string,
+	window reportWindow,
+	branch string,
+) (map[string]int, error) {
+	return queryWorkflowRunTotalsWithExtraFilters(
+		ctx,
+		logger,
+		client,
+		params,
+		repo,
+		window,
+		buildTermFilter("head_branch.keyword", branch),
+		buildTermsFilter("workflow_conclusion", params.FailStatus),
 	)
 }
 
@@ -1007,13 +1058,15 @@ func queryFailureBranches(
 }
 
 type trendItem struct {
-	Workflow          string
-	Label             string
-	Current           int
-	CurrentTotalRuns  int
-	Previous          int
-	PreviousTotalRuns int
-	Status            string
+	Workflow                  string
+	Current                   int
+	CurrentTotalRuns          int
+	Previous                  int
+	PreviousTotalRuns         int
+	Status                    string
+	MostCommonFailureMessage  string
+	MostCommonFailureCount    int
+	CurrentFailureOccurrences int
 }
 
 func buildTrends(
@@ -1033,6 +1086,9 @@ func buildTrends(
 		},
 		func(w reportWindow) (map[string]int, error) {
 			return queryWorkflowRunTotals(ctx, logger, client, params, repo, w)
+		},
+		func(w reportWindow) (map[string]int, error) {
+			return queryFailedWorkflowRunTotals(ctx, logger, client, params, repo, w)
 		},
 	)
 }
@@ -1056,6 +1112,9 @@ func buildTrendsForBranch(
 		func(w reportWindow) (map[string]int, error) {
 			return queryWorkflowRunTotalsForBranch(ctx, logger, client, params, repo, w, branch)
 		},
+		func(w reportWindow) (map[string]int, error) {
+			return queryFailedWorkflowRunTotalsForBranch(ctx, logger, client, params, repo, w, branch)
+		},
 	)
 }
 
@@ -1065,6 +1124,7 @@ func buildTrendsForWindow(
 	window reportWindow,
 	queryGroupsFn func(reportWindow) ([]reportGroup, error),
 	queryRunTotalsFn func(reportWindow) (map[string]int, error),
+	queryFailedRunTotalsFn func(reportWindow) (map[string]int, error),
 ) ([]trendItem, error) {
 	current, err := queryGroupsFn(window)
 	if err != nil {
@@ -1076,10 +1136,6 @@ func buildTrendsForWindow(
 		Until: window.Since,
 		Days:  window.Days,
 	}
-	previous, err := queryGroupsFn(prevWindow)
-	if err != nil {
-		return nil, err
-	}
 	currentRunTotals, err := queryRunTotalsFn(window)
 	if err != nil {
 		return nil, err
@@ -1089,28 +1145,64 @@ func buildTrendsForWindow(
 		return nil, err
 	}
 
-	prevMap := map[string]int{}
-	for _, item := range previous {
-		prevMap[item.Key] = item.Count
+	currentFailedRunTotals, err := queryFailedRunTotalsFn(window)
+	if err != nil {
+		return nil, err
+	}
+	previousFailedRunTotals, err := queryFailedRunTotalsFn(prevWindow)
+	if err != nil {
+		return nil, err
 	}
 
-	trends := make([]trendItem, 0, len(current))
+	currentMessageCountsByWorkflow := map[string]map[string]int{}
+	currentFailureOccurrencesByWorkflow := map[string]int{}
 	for _, item := range current {
-		prev := prevMap[item.Key]
-		currentTotalRuns := currentRunTotals[item.Workflow]
-		previousTotalRuns := previousRunTotals[item.Workflow]
-		currentRate := failureRatePercent(item.Count, currentTotalRuns)
-		previousRate := failureRatePercent(prev, previousTotalRuns)
+		if item.Workflow == "" {
+			continue
+		}
+		if _, ok := currentMessageCountsByWorkflow[item.Workflow]; !ok {
+			currentMessageCountsByWorkflow[item.Workflow] = map[string]int{}
+		}
+		currentMessageCountsByWorkflow[item.Workflow][item.FailureMessage] += item.Count
+		currentFailureOccurrencesByWorkflow[item.Workflow] += item.Count
+	}
+
+	workflows := map[string]struct{}{}
+	for workflow, failedRuns := range currentFailedRunTotals {
+		if workflow == "" || failedRuns <= 0 {
+			continue
+		}
+		workflows[workflow] = struct{}{}
+	}
+	for workflow, failureOccurrences := range currentFailureOccurrencesByWorkflow {
+		if workflow == "" || failureOccurrences <= 0 {
+			continue
+		}
+		workflows[workflow] = struct{}{}
+	}
+
+	trends := make([]trendItem, 0, len(workflows))
+	for workflow := range workflows {
+		currentFailures := currentFailedRunTotals[workflow]
+		previousFailures := previousFailedRunTotals[workflow]
+		currentTotalRuns := currentRunTotals[workflow]
+		previousTotalRuns := previousRunTotals[workflow]
+		currentRate := failureRatePercent(currentFailures, currentTotalRuns)
+		previousRate := failureRatePercent(previousFailures, previousTotalRuns)
 		status := trendStatus(currentRate, previousRate, orangeRange)
-		label := fmt.Sprintf("`%s` `%s`", item.TestCaseName, item.FailureMessage)
+		mostCommonFailureMessage, mostCommonFailureCount := selectMostCommonFailureMessage(
+			currentMessageCountsByWorkflow[workflow],
+		)
 		trends = append(trends, trendItem{
-			Workflow:          item.Workflow,
-			Label:             label,
-			Current:           item.Count,
-			CurrentTotalRuns:  currentTotalRuns,
-			Previous:          prev,
-			PreviousTotalRuns: previousTotalRuns,
-			Status:            status,
+			Workflow:                  workflow,
+			Current:                   currentFailures,
+			CurrentTotalRuns:          currentTotalRuns,
+			Previous:                  previousFailures,
+			PreviousTotalRuns:         previousTotalRuns,
+			Status:                    status,
+			MostCommonFailureMessage:  mostCommonFailureMessage,
+			MostCommonFailureCount:    mostCommonFailureCount,
+			CurrentFailureOccurrences: currentFailureOccurrencesByWorkflow[workflow],
 		})
 	}
 
@@ -1134,7 +1226,7 @@ func buildTrendsForWindow(
 		if trends[i].Workflow != trends[j].Workflow {
 			return trends[i].Workflow < trends[j].Workflow
 		}
-		return trends[i].Label < trends[j].Label
+		return trends[i].MostCommonFailureMessage < trends[j].MostCommonFailureMessage
 	})
 	if len(trends) > top {
 		trends = trends[:top]
@@ -1158,6 +1250,22 @@ func trendStatus(currentRate, previousRate, orangeRange float64) string {
 		return "🟢"
 	}
 	return "🔴"
+}
+
+func selectMostCommonFailureMessage(counts map[string]int) (string, int) {
+	mostCommonMessage := ""
+	mostCommonCount := 0
+	for message, count := range counts {
+		if count > mostCommonCount {
+			mostCommonMessage = message
+			mostCommonCount = count
+			continue
+		}
+		if count == mostCommonCount && message < mostCommonMessage {
+			mostCommonMessage = message
+		}
+	}
+	return mostCommonMessage, mostCommonCount
 }
 
 func queryWorkflowFailureMeta(
@@ -1354,9 +1462,6 @@ func queryBranchWorkflowSuiteFailures(
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Count > results[j].Count
 	})
-	if len(results) > params.Top {
-		results = results[:params.Top]
-	}
 
 	return results, nil
 }
@@ -1470,9 +1575,6 @@ func queryWorkflowSuiteFailureGroupsForBranch(
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Count > results[j].Count
 	})
-	if len(results) > params.Top {
-		results = results[:params.Top]
-	}
 
 	return results, nil
 }
@@ -1626,9 +1728,6 @@ func queryFailureGroupsWithMust(
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Count > results[j].Count
 	})
-	if len(results) > params.Top {
-		results = results[:params.Top]
-	}
 
 	return results, nil
 }

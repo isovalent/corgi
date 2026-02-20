@@ -190,7 +190,45 @@ func TestBuildTrendsForWindowPrioritizesCurrentFailurePercentage(t *testing.T) {
 		}
 	}
 
-	trends, err := buildTrendsForWindow(10, defaultTrendOrangeRange, window, queryGroupsFn, queryRunTotalsFn)
+	failedRunTotalsCallCount := 0
+	queryFailedRunTotalsFn := func(w reportWindow) (map[string]int, error) {
+		failedRunTotalsCallCount++
+		switch failedRunTotalsCallCount {
+		case 1:
+			if !w.Since.Equal(window.Since) || !w.Until.Equal(window.Until) {
+				t.Fatalf("unexpected current failed totals window: %+v", w)
+			}
+			return map[string]int{
+				"wf-stable":    100,
+				"wf-regressed": 10,
+			}, nil
+		case 2:
+			expectedPrev := reportWindow{
+				Since: window.Since.AddDate(0, 0, -window.Days),
+				Until: window.Since,
+				Days:  window.Days,
+			}
+			if !w.Since.Equal(expectedPrev.Since) || !w.Until.Equal(expectedPrev.Until) {
+				t.Fatalf("unexpected previous failed totals window: %+v", w)
+			}
+			return map[string]int{
+				"wf-stable":    100,
+				"wf-regressed": 0,
+			}, nil
+		default:
+			t.Fatalf("failed run totals query called too many times: %d", failedRunTotalsCallCount)
+			return nil, nil
+		}
+	}
+
+	trends, err := buildTrendsForWindow(
+		10,
+		defaultTrendOrangeRange,
+		window,
+		queryGroupsFn,
+		queryRunTotalsFn,
+		queryFailedRunTotalsFn,
+	)
 	if err != nil {
 		t.Fatalf("build trends: %v", err)
 	}
@@ -263,7 +301,32 @@ func TestBuildTrendsForWindowMarksSmallRateDeltaAsOrange(t *testing.T) {
 		}
 	}
 
-	trends, err := buildTrendsForWindow(10, defaultTrendOrangeRange, window, queryGroupsFn, queryRunTotalsFn)
+	failedRunTotalsCallCount := 0
+	queryFailedRunTotalsFn := func(w reportWindow) (map[string]int, error) {
+		failedRunTotalsCallCount++
+		switch failedRunTotalsCallCount {
+		case 1:
+			return map[string]int{
+				"wf-nearly-stable": 12,
+			}, nil
+		case 2:
+			return map[string]int{
+				"wf-nearly-stable": 10,
+			}, nil
+		default:
+			t.Fatalf("failed run totals query called too many times: %d", failedRunTotalsCallCount)
+			return nil, nil
+		}
+	}
+
+	trends, err := buildTrendsForWindow(
+		10,
+		defaultTrendOrangeRange,
+		window,
+		queryGroupsFn,
+		queryRunTotalsFn,
+		queryFailedRunTotalsFn,
+	)
 	if err != nil {
 		t.Fatalf("build trends: %v", err)
 	}
@@ -311,7 +374,32 @@ func TestBuildTrendsForWindowHonorsConfiguredOrangeRange(t *testing.T) {
 		}, nil
 	}
 
-	trends, err := buildTrendsForWindow(10, 5.0, window, queryGroupsFn, queryRunTotalsFn)
+	failedRunTotalsCallCount := 0
+	queryFailedRunTotalsFn := func(w reportWindow) (map[string]int, error) {
+		failedRunTotalsCallCount++
+		switch failedRunTotalsCallCount {
+		case 1:
+			return map[string]int{
+				"wf-borderline": 23,
+			}, nil
+		case 2:
+			return map[string]int{
+				"wf-borderline": 20,
+			}, nil
+		default:
+			t.Fatalf("failed run totals query called too many times: %d", failedRunTotalsCallCount)
+			return nil, nil
+		}
+	}
+
+	trends, err := buildTrendsForWindow(
+		10,
+		5.0,
+		window,
+		queryGroupsFn,
+		queryRunTotalsFn,
+		queryFailedRunTotalsFn,
+	)
 	if err != nil {
 		t.Fatalf("build trends: %v", err)
 	}
@@ -320,6 +408,103 @@ func TestBuildTrendsForWindowHonorsConfiguredOrangeRange(t *testing.T) {
 	}
 	if trends[0].Status != "🟠" {
 		t.Fatalf("expected configured range to keep trend orange, got %q", trends[0].Status)
+	}
+}
+
+func TestBuildTrendsForWindowUsesWorkflowAggregateAndTopMessage(t *testing.T) {
+	window := reportWindow{
+		Since: time.Date(2026, 2, 13, 0, 0, 0, 0, time.UTC),
+		Until: time.Date(2026, 2, 20, 0, 0, 0, 0, time.UTC),
+		Days:  7,
+	}
+
+	groupCallCount := 0
+	queryGroupsFn := func(w reportWindow) ([]reportGroup, error) {
+		groupCallCount++
+		switch groupCallCount {
+		case 1:
+			return []reportGroup{
+				{
+					Key:            "wf-a::case-1::msg-shared",
+					Workflow:       "wf-a",
+					TestCaseName:   "case-1",
+					FailureMessage: "msg-shared",
+					Count:          2,
+				},
+				{
+					Key:            "wf-a::case-2::msg-shared",
+					Workflow:       "wf-a",
+					TestCaseName:   "case-2",
+					FailureMessage: "msg-shared",
+					Count:          1,
+				},
+				{
+					Key:            "wf-a::case-3::msg-other",
+					Workflow:       "wf-a",
+					TestCaseName:   "case-3",
+					FailureMessage: "msg-other",
+					Count:          1,
+				},
+			}, nil
+		case 2:
+			return []reportGroup{
+				{
+					Key:            "wf-a::case-1::msg-shared",
+					Workflow:       "wf-a",
+					TestCaseName:   "case-1",
+					FailureMessage: "msg-shared",
+					Count:          1,
+				},
+			}, nil
+		default:
+			t.Fatalf("group query called too many times: %d", groupCallCount)
+			return nil, nil
+		}
+	}
+
+	queryRunTotalsFn := func(w reportWindow) (map[string]int, error) {
+		return map[string]int{"wf-a": 20}, nil
+	}
+
+	failedRunTotalsCallCount := 0
+	queryFailedRunTotalsFn := func(w reportWindow) (map[string]int, error) {
+		failedRunTotalsCallCount++
+		switch failedRunTotalsCallCount {
+		case 1:
+			return map[string]int{"wf-a": 3}, nil
+		case 2:
+			return map[string]int{"wf-a": 1}, nil
+		default:
+			t.Fatalf("failed run totals query called too many times: %d", failedRunTotalsCallCount)
+			return nil, nil
+		}
+	}
+
+	trends, err := buildTrendsForWindow(
+		10,
+		defaultTrendOrangeRange,
+		window,
+		queryGroupsFn,
+		queryRunTotalsFn,
+		queryFailedRunTotalsFn,
+	)
+	if err != nil {
+		t.Fatalf("build trends: %v", err)
+	}
+	if len(trends) != 1 {
+		t.Fatalf("unexpected trend count: got %d want 1", len(trends))
+	}
+	if trends[0].Current != 3 || trends[0].Previous != 1 {
+		t.Fatalf("expected workflow aggregate failed runs, got %+v", trends[0])
+	}
+	if trends[0].MostCommonFailureMessage != "msg-shared" {
+		t.Fatalf("unexpected most common failure message: %+v", trends[0])
+	}
+	if trends[0].MostCommonFailureCount != 3 {
+		t.Fatalf("unexpected most common failure count: %+v", trends[0])
+	}
+	if trends[0].CurrentFailureOccurrences != 4 {
+		t.Fatalf("unexpected failure occurrence total: %+v", trends[0])
 	}
 }
 
@@ -520,13 +705,15 @@ func TestReportTemplateRendersTrendPercentagesWithFailedCounts(t *testing.T) {
 				Window: reportWindow{Days: 7},
 				Trends: []trendItem{
 					{
-						Status:            "🔴",
-						Workflow:          "wf",
-						Label:             "`tc` `msg`",
-						Previous:          2,
-						PreviousTotalRuns: 5,
-						Current:           3,
-						CurrentTotalRuns:  5,
+						Status:                    "🔴",
+						Workflow:                  "wf",
+						Previous:                  2,
+						PreviousTotalRuns:         5,
+						Current:                   3,
+						CurrentTotalRuns:          5,
+						MostCommonFailureMessage:  "msg",
+						MostCommonFailureCount:    2,
+						CurrentFailureOccurrences: 3,
 					},
 				},
 			},
@@ -541,6 +728,9 @@ func TestReportTemplateRendersTrendPercentagesWithFailedCounts(t *testing.T) {
 	rendered := out.String()
 	if !strings.Contains(rendered, "40.0%(2/5) -> 60.0%(3/5)") {
 		t.Fatalf("expected trend output to include percentages and counts, got:\n%s", rendered)
+	}
+	if !strings.Contains(rendered, "Most common failure message (66.7%): `msg`") {
+		t.Fatalf("expected trend output to include most common message share, got:\n%s", rendered)
 	}
 }
 
@@ -599,13 +789,15 @@ func TestBranchTemplateRendersTrendPercentagesWithFailedCounts(t *testing.T) {
 					Branch: "main",
 					Trends: []trendItem{
 						{
-							Status:            "🔴",
-							Workflow:          "wf",
-							Label:             "`tc` `msg`",
-							Previous:          2,
-							PreviousTotalRuns: 5,
-							Current:           3,
-							CurrentTotalRuns:  5,
+							Status:                    "🔴",
+							Workflow:                  "wf",
+							Previous:                  2,
+							PreviousTotalRuns:         5,
+							Current:                   3,
+							CurrentTotalRuns:          5,
+							MostCommonFailureMessage:  "msg",
+							MostCommonFailureCount:    2,
+							CurrentFailureOccurrences: 3,
 						},
 					},
 				},
@@ -621,6 +813,9 @@ func TestBranchTemplateRendersTrendPercentagesWithFailedCounts(t *testing.T) {
 	rendered := out.String()
 	if !strings.Contains(rendered, "40.0%(2/5) -> 60.0%(3/5)") {
 		t.Fatalf("expected trend output to include percentages and counts, got:\n%s", rendered)
+	}
+	if !strings.Contains(rendered, "Most common failure message (66.7%): `msg`") {
+		t.Fatalf("expected trend output to include most common message share, got:\n%s", rendered)
 	}
 }
 

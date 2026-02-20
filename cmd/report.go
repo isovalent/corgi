@@ -46,6 +46,10 @@ func init() {
 		&reportCmdParams.MaxLinks, "max-links", reportCmdParams.MaxLinks,
 		"Maximum number of links to include per group",
 	)
+	reportCmd.PersistentFlags().Float64Var(
+		&reportCmdParams.TrendOrangeRange, "trend-orange-range", reportCmdParams.TrendOrangeRange,
+		"Rate-delta threshold (percentage points) for orange trend status",
+	)
 
 	rootCmd.AddCommand(reportCmd)
 }

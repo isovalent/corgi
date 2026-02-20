@@ -79,6 +79,31 @@ func TestFormatFailureStat(t *testing.T) {
 	}
 }
 
+func TestDefaultParamsTrendOrangeRange(t *testing.T) {
+	params := DefaultParams()
+	if params.TrendOrangeRange != defaultTrendOrangeRange {
+		t.Fatalf(
+			"unexpected default trend orange range: got %.1f want %.1f",
+			params.TrendOrangeRange,
+			defaultTrendOrangeRange,
+		)
+	}
+}
+
+func TestValidateParamsRejectsNegativeTrendOrangeRange(t *testing.T) {
+	params := DefaultParams()
+	params.OutputDir = t.TempDir()
+	params.TrendOrangeRange = -1
+
+	err := ValidateParams(&params)
+	if err == nil {
+		t.Fatalf("expected validation error for negative trend orange range")
+	}
+	if !strings.Contains(err.Error(), "--trend-orange-range") {
+		t.Fatalf("unexpected validation error: %v", err)
+	}
+}
+
 func TestBuildTrendsForWindowPrioritizesCurrentFailurePercentage(t *testing.T) {
 	window := reportWindow{
 		Since: time.Date(2026, 2, 13, 0, 0, 0, 0, time.UTC),
@@ -165,7 +190,7 @@ func TestBuildTrendsForWindowPrioritizesCurrentFailurePercentage(t *testing.T) {
 		}
 	}
 
-	trends, err := buildTrendsForWindow(10, window, queryGroupsFn, queryRunTotalsFn)
+	trends, err := buildTrendsForWindow(10, defaultTrendOrangeRange, window, queryGroupsFn, queryRunTotalsFn)
 	if err != nil {
 		t.Fatalf("build trends: %v", err)
 	}
@@ -180,6 +205,121 @@ func TestBuildTrendsForWindowPrioritizesCurrentFailurePercentage(t *testing.T) {
 	}
 	if trends[0].CurrentTotalRuns != 10 || trends[0].PreviousTotalRuns != 10 {
 		t.Fatalf("unexpected run totals for wf-regressed trend: %+v", trends[0])
+	}
+}
+
+func TestBuildTrendsForWindowMarksSmallRateDeltaAsOrange(t *testing.T) {
+	window := reportWindow{
+		Since: time.Date(2026, 2, 13, 0, 0, 0, 0, time.UTC),
+		Until: time.Date(2026, 2, 20, 0, 0, 0, 0, time.UTC),
+		Days:  7,
+	}
+
+	groupCallCount := 0
+	queryGroupsFn := func(w reportWindow) ([]reportGroup, error) {
+		groupCallCount++
+		switch groupCallCount {
+		case 1:
+			return []reportGroup{
+				{
+					Key:            "nearly-stable",
+					Workflow:       "wf-nearly-stable",
+					TestCaseName:   "test-nearly-stable",
+					FailureMessage: "msg-nearly-stable",
+					Count:          12,
+				},
+			}, nil
+		case 2:
+			return []reportGroup{
+				{
+					Key:            "nearly-stable",
+					Workflow:       "wf-nearly-stable",
+					TestCaseName:   "test-nearly-stable",
+					FailureMessage: "msg-nearly-stable",
+					Count:          10,
+				},
+			}, nil
+		default:
+			t.Fatalf("group query called too many times: %d", groupCallCount)
+			return nil, nil
+		}
+	}
+
+	runTotalsCallCount := 0
+	queryRunTotalsFn := func(w reportWindow) (map[string]int, error) {
+		runTotalsCallCount++
+		switch runTotalsCallCount {
+		case 1:
+			return map[string]int{
+				"wf-nearly-stable": 100,
+			}, nil
+		case 2:
+			return map[string]int{
+				"wf-nearly-stable": 100,
+			}, nil
+		default:
+			t.Fatalf("run totals query called too many times: %d", runTotalsCallCount)
+			return nil, nil
+		}
+	}
+
+	trends, err := buildTrendsForWindow(10, defaultTrendOrangeRange, window, queryGroupsFn, queryRunTotalsFn)
+	if err != nil {
+		t.Fatalf("build trends: %v", err)
+	}
+	if len(trends) != 1 {
+		t.Fatalf("unexpected trend count: got %d want 1", len(trends))
+	}
+	if trends[0].Status != "🟠" {
+		t.Fatalf("expected small delta trend to be orange, got %q", trends[0].Status)
+	}
+}
+
+func TestBuildTrendsForWindowHonorsConfiguredOrangeRange(t *testing.T) {
+	window := reportWindow{
+		Since: time.Date(2026, 2, 13, 0, 0, 0, 0, time.UTC),
+		Until: time.Date(2026, 2, 20, 0, 0, 0, 0, time.UTC),
+		Days:  7,
+	}
+
+	queryGroupsFn := func(w reportWindow) ([]reportGroup, error) {
+		if w.Since.Equal(window.Since) && w.Until.Equal(window.Until) {
+			return []reportGroup{
+				{
+					Key:            "borderline",
+					Workflow:       "wf-borderline",
+					TestCaseName:   "test-borderline",
+					FailureMessage: "msg-borderline",
+					Count:          23,
+				},
+			}, nil
+		}
+		return []reportGroup{
+			{
+				Key:            "borderline",
+				Workflow:       "wf-borderline",
+				TestCaseName:   "test-borderline",
+				FailureMessage: "msg-borderline",
+				Count:          20,
+			},
+		}, nil
+	}
+
+	queryRunTotalsFn := func(w reportWindow) (map[string]int, error) {
+		return map[string]int{
+			"wf-borderline": 100,
+		}, nil
+	}
+
+	trends, err := buildTrendsForWindow(10, 5.0, window, queryGroupsFn, queryRunTotalsFn)
+	if err != nil {
+		t.Fatalf("build trends: %v", err)
+	}
+	if len(trends) != 1 {
+		t.Fatalf("unexpected trend count: got %d want 1", len(trends))
+	}
+	if trends[0].Status != "🟠" {
+		t.Fatalf("expected configured range to keep trend orange, got %q", trends[0].Status)
 	}
 }
 
@@ -352,6 +492,9 @@ func TestReportTemplateIncludesGraphLayout(t *testing.T) {
 	}
 
 	rendered := out.String()
+	if !strings.Contains(rendered, "**Failures: 0 / 0 (0.0%)**") {
+		t.Fatalf("expected failures summary to be bold in report template output")
+	}
 	if !strings.Contains(rendered, "### Graphs (all branches,") {
 		t.Fatalf("expected graphs section heading in report template output")
 	}
@@ -425,6 +568,9 @@ func TestBranchTemplateIncludesGraphLayout(t *testing.T) {
 	}
 
 	rendered := out.String()
+	if !strings.Contains(rendered, "**Failures: 0 / 0 (0.0%)**") {
+		t.Fatalf("expected failures summary to be bold in branch template output")
+	}
 	if !strings.Contains(rendered, "#### Graphs (branch") {
 		t.Fatalf("expected graphs section heading in branch template output")
 	}

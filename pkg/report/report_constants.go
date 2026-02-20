@@ -12,9 +12,10 @@ const (
 	lineChartTemplatePath  = "templates/chart-lines.svg.tmpl"
 	errorChartTemplatePath = "templates/chart-error.svg.tmpl"
 
-	defaultRunsIndex = "runs-oss"
-	defaultTop       = 50
-	defaultMaxLinks  = 5
+	defaultRunsIndex        = "runs-oss"
+	defaultTop              = 50
+	defaultMaxLinks         = 5
+	defaultTrendOrangeRange = 2.5
 
 	repoCilium   = "cilium/cilium"
 	repoTetragon = "cilium/tetragon"

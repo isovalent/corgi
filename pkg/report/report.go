@@ -28,16 +28,17 @@ import (
 )
 
 type Params struct {
-	OutputDir  string
-	RunsIndex  string
-	Repos      []string
-	Events     []string
-	Top        int
-	Days       []int
-	MaxLinks   int
-	Verbose    bool
-	FailStatus []string
-	TestStatus []string
+	OutputDir        string
+	RunsIndex        string
+	Repos            []string
+	Events           []string
+	Top              int
+	Days             []int
+	MaxLinks         int
+	TrendOrangeRange float64
+	Verbose          bool
+	FailStatus       []string
+	TestStatus       []string
 }
 
 type reportLink struct {
@@ -196,14 +197,15 @@ var branchTemplate = template.Must(template.New("branch.md.tmpl").Funcs(reportTe
 
 func DefaultParams() Params {
 	return Params{
-		RunsIndex:  defaultRunsIndex,
-		Repos:      append([]string(nil), defaultRepos...),
-		Events:     append([]string(nil), defaultEvents...),
-		Top:        defaultTop,
-		Days:       append([]int(nil), defaultDays...),
-		MaxLinks:   defaultMaxLinks,
-		FailStatus: append([]string(nil), defaultFailStatus...),
-		TestStatus: append([]string(nil), defaultTestStatus...),
+		RunsIndex:        defaultRunsIndex,
+		Repos:            append([]string(nil), defaultRepos...),
+		Events:           append([]string(nil), defaultEvents...),
+		Top:              defaultTop,
+		Days:             append([]int(nil), defaultDays...),
+		MaxLinks:         defaultMaxLinks,
+		TrendOrangeRange: defaultTrendOrangeRange,
+		FailStatus:       append([]string(nil), defaultFailStatus...),
+		TestStatus:       append([]string(nil), defaultTestStatus...),
 	}
 }
 
@@ -219,6 +221,9 @@ func ValidateParams(params *Params) error {
 	}
 	if params.MaxLinks <= 0 {
 		return errors.New("--max-links must be greater than 0")
+	}
+	if params.TrendOrangeRange < 0 {
+		return errors.New("--trend-orange-range must be greater than or equal to 0")
 	}
 	if params.RunsIndex == "" {
 		return errors.New("--runs-index is required")
@@ -1021,6 +1026,7 @@ func buildTrends(
 ) ([]trendItem, error) {
 	return buildTrendsForWindow(
 		params.Top,
+		params.TrendOrangeRange,
 		window,
 		func(w reportWindow) ([]reportGroup, error) {
 			return queryFailureGroups(ctx, logger, client, params, repo, w)
@@ -1042,6 +1048,7 @@ func buildTrendsForBranch(
 ) ([]trendItem, error) {
 	return buildTrendsForWindow(
 		params.Top,
+		params.TrendOrangeRange,
 		window,
 		func(w reportWindow) ([]reportGroup, error) {
 			return queryFailureGroupsForBranch(ctx, logger, client, params, repo, w, branch)
@@ -1054,6 +1061,7 @@ func buildTrendsForBranch(
 
 func buildTrendsForWindow(
 	top int,
+	orangeRange float64,
 	window reportWindow,
 	queryGroupsFn func(reportWindow) ([]reportGroup, error),
 	queryRunTotalsFn func(reportWindow) (map[string]int, error),
@@ -1093,12 +1101,7 @@ func buildTrendsForWindow(
 		previousTotalRuns := previousRunTotals[item.Workflow]
 		currentRate := failureRatePercent(item.Count, currentTotalRuns)
 		previousRate := failureRatePercent(prev, previousTotalRuns)
-		status := "🟠"
-		if currentRate < previousRate {
-			status = "🟢"
-		} else if currentRate > previousRate {
-			status = "🔴"
-		}
+		status := trendStatus(currentRate, previousRate, orangeRange)
 		label := fmt.Sprintf("`%s` `%s`", item.TestCaseName, item.FailureMessage)
 		trends = append(trends, trendItem{
 			Workflow:          item.Workflow,
@@ -1138,6 +1141,23 @@ func buildTrendsForWindow(
 	}
 
 	return trends, nil
+}
+
+func trendStatus(currentRate, previousRate, orangeRange float64) string {
+	if orangeRange < 0 {
+		orangeRange = 0
+	}
+	delta := currentRate - previousRate
+	if delta < 0 {
+		delta = -delta
+	}
+	if delta <= orangeRange {
+		return "🟠"
+	}
+	if currentRate < previousRate {
+		return "🟢"
+	}
+	return "🔴"
 }
 
 func queryWorkflowFailureMeta(

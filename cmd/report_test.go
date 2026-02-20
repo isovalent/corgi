@@ -70,6 +70,9 @@ func TestBuildReportWindowsIncludes60(t *testing.T) {
 func TestRenderLinksUsesRunNumber(t *testing.T) {
 	links := []reportLink{{Workflow: "https://github.com/cilium/cilium/actions/runs/22174599299"}}
 	out := renderLinks(links)
+	if !strings.Contains(out, "<details markdown=\"1\"><summary>Links</summary><ul>") {
+		t.Fatalf("expected markdown-enabled details wrapper for links, got %q", out)
+	}
 	if !strings.Contains(out, "run#22174599299") {
 		t.Fatalf("expected run number label, got %q", out)
 	}
@@ -218,6 +221,62 @@ func TestBranchTemplateIncludesGraphLayout(t *testing.T) {
 	}
 	if !strings.Contains(rendered, "graph-link") {
 		t.Fatalf("expected graph link markup in branch template output")
+	}
+}
+
+func TestReportTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
+	data := reportTemplateData{
+		Spec: reportSpec{
+			Title:     "Test Report",
+			Slug:      "Test-Report",
+			Component: "test",
+		},
+		Generated:     "now",
+		ExecutionTime: "1s",
+		Results: []reportResult{
+			{
+				Window: reportWindow{Days: 7},
+			},
+		},
+	}
+
+	var out bytes.Buffer
+	if err := reportTemplate.Execute(&out, data); err != nil {
+		t.Fatalf("render report template: %v", err)
+	}
+
+	rendered := out.String()
+	if !strings.Contains(rendered, "<details markdown=\"1\"><summary>Table</summary>") {
+		t.Fatalf("expected markdown-enabled details wrapper for report tables")
+	}
+}
+
+func TestBranchTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
+	data := branchReportTemplateData{
+		Spec: reportSpec{
+			Title:     "Test Report",
+			Slug:      "Test-Report",
+			Component: "test",
+		},
+		Branch:        "main",
+		Generated:     "now",
+		ExecutionTime: "1s",
+		Results: []branchWindowResult{
+			{
+				Window: reportWindow{Days: 7},
+				Result: branchResult{Branch: "main"},
+			},
+		},
+	}
+
+	var out bytes.Buffer
+	if err := branchTemplate.Execute(&out, data); err != nil {
+		t.Fatalf("render branch template: %v", err)
+	}
+
+	rendered := out.String()
+	if !strings.Contains(rendered, "<details markdown=\"1\"><summary>Table</summary>") {
+		t.Fatalf("expected markdown-enabled details wrapper for branch tables")
 	}
 }
 

@@ -2224,7 +2224,7 @@ func renderLinks(links []reportLink) string {
 		return ""
 	}
 	var b strings.Builder
-	b.WriteString("<details><summary>Links</summary><ul>")
+	b.WriteString("<details markdown=\"1\"><summary>Links</summary><ul>")
 	for _, link := range links {
 		b.WriteString("<li>")
 		if link.Workflow != "" {

@@ -32,7 +32,7 @@
 
 ![Workflow runs vs failures](graphs/{{ $prefix }}-workflow-bars.svg)
 
-<details><summary>Table</summary>
+<details markdown="1"><summary>Table</summary>
 
 | Rank | Workflow | Test suite | Test owners | Suite owners | Failures | Links |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -44,7 +44,7 @@
 
 ### Per workflow+branch+test CI failures ({{ $windowTag }})
 
-<details><summary>Table</summary>
+<details markdown="1"><summary>Table</summary>
 
 | Rank | Branch | Workflow | Test suite | Test owners | Suite owners | Failures | Links |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -80,7 +80,7 @@
 
 ![Workflow runs vs failures](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflow-bars.svg)
 
-<details><summary>Table</summary>
+<details markdown="1"><summary>Table</summary>
 
 | Rank | Workflow | Test suite | Test owners | Suite owners | Failures | Links |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -92,7 +92,7 @@
 
 #### Per workflow+test CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
 
-<details><summary>Table</summary>
+<details markdown="1"><summary>Table</summary>
 
 | Rank | Workflow | Test suite | Test case | Failure | Test owners | Suite owners | Failures | Links |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |

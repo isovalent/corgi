@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -93,14 +95,14 @@ func TestComponentFromRepo(t *testing.T) {
 
 func TestReportOutputPath(t *testing.T) {
 	path := reportOutputPath("/tmp/output", "cilium")
-	if path != "/tmp/output/cilium/report.md" {
+	if path != "/tmp/output/cilium/README.md" {
 		t.Fatalf("unexpected path: %s", path)
 	}
 }
 
 func TestBranchReportOutputPath(t *testing.T) {
 	path := branchReportOutputPath("/tmp/output", "tetragon", "feature/foo")
-	if path != "/tmp/output/tetragon/branch/feature-foo/report.md" {
+	if path != "/tmp/output/tetragon/branch/feature-foo/README.md" {
 		t.Fatalf("unexpected path: %s", path)
 	}
 }
@@ -122,11 +124,29 @@ func TestBuildOtherBranchLinks(t *testing.T) {
 	if len(links) != 2 {
 		t.Fatalf("unexpected link count: %d", len(links))
 	}
-	if links[0].Name != "feature/foo" || links[0].Path != "branch/feature-foo/report.md" {
+	if links[0].Name != "feature/foo" || links[0].Path != "branch/feature-foo/" {
 		t.Fatalf("unexpected first link: %+v", links[0])
 	}
-	if links[1].Name != "release-1.0" || links[1].Path != "branch/release-1-0/report.md" {
+	if links[1].Name != "release-1.0" || links[1].Path != "branch/release-1-0/" {
 		t.Fatalf("unexpected second link: %+v", links[1])
+	}
+}
+
+func TestRenderLandingPageWritesReadme(t *testing.T) {
+	outputDir := t.TempDir()
+	if err := renderLandingPage(outputDir, []landingLink{
+		{Title: "Cilium", File: "cilium/"},
+	}); err != nil {
+		t.Fatalf("render landing page: %v", err)
+	}
+
+	readmePath := filepath.Join(outputDir, "README.md")
+	if _, err := os.Stat(readmePath); err != nil {
+		t.Fatalf("expected README.md to exist: %v", err)
+	}
+	homePath := filepath.Join(outputDir, "Home.md")
+	if _, err := os.Stat(homePath); !os.IsNotExist(err) {
+		t.Fatalf("expected Home.md not to exist")
 	}
 }
 

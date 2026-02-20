@@ -270,7 +270,7 @@ var reportCmd = &cobra.Command{
 
 			landingLinks = append(landingLinks, landingLink{
 				Title: spec.Title,
-				File:  filepath.ToSlash(filepath.Join(spec.Component, "report.md")),
+				File:  filepath.ToSlash(spec.Component) + "/",
 			})
 
 			if err := renderReportFile(reportCmdParams.OutputDir, spec, results, reportStart); err != nil {
@@ -549,7 +549,7 @@ func renderBranchReportFile(outputDir string, spec reportSpec, branch string, re
 }
 
 func renderLandingPage(outputDir string, links []landingLink) error {
-	path := filepath.Join(outputDir, "Home.md")
+	path := filepath.Join(outputDir, "README.md")
 	var b strings.Builder
 	data := landingTemplateData{Links: links}
 	if err := landingTemplate.Execute(&b, data); err != nil {
@@ -2709,11 +2709,11 @@ func componentFromRepo(repo string) string {
 }
 
 func reportOutputPath(outputDir, component string) string {
-	return filepath.Join(outputDir, component, "report.md")
+	return filepath.Join(outputDir, component, "README.md")
 }
 
 func branchReportOutputPath(outputDir, component, branch string) string {
-	return filepath.Join(outputDir, component, "branch", slugify(branch), "report.md")
+	return filepath.Join(outputDir, component, "branch", slugify(branch), "README.md")
 }
 
 func filterBranchesByPrefix(branches []string) ([]string, []string) {
@@ -2741,7 +2741,7 @@ func buildOtherBranchLinks(component string, branches []string) []branchLink {
 	for _, branch := range sorted {
 		links = append(links, branchLink{
 			Name: branch,
-			Path: filepath.ToSlash(filepath.Join("branch", slugify(branch), "report.md")),
+			Path: filepath.ToSlash(filepath.Join("branch", slugify(branch))) + "/",
 		})
 	}
 	return links

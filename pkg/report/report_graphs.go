@@ -832,6 +832,13 @@ type lineChartPath struct {
 	Name    string
 }
 
+type lineChartArea struct {
+	Name    string
+	Path    string
+	Color   string
+	Opacity float64
+}
+
 type lineChartSVGData struct {
 	Width           int
 	Height          int
@@ -847,6 +854,7 @@ type lineChartSVGData struct {
 	YTickLabelX     int
 	XTicks          []lineChartXTick
 	YTicks          []lineChartYTick
+	Areas           []lineChartArea
 	SeriesPaths     []lineChartPath
 	AxisLabel       string
 	BackgroundColor string
@@ -980,16 +988,133 @@ func renderBarChart(title string, series []barSeries, extraLabelSpace bool) stri
 
 func renderTotalsChart(points []dayPoint, title string) string {
 	chart := svgChart{Width: 900, Height: 320, Pad: 40}
-	series := []seriesLine{
-		{Name: chartSeriesNameFailures, Points: points},
-		{Name: chartSeriesNameRuns, Points: points},
-	}
-	return renderMultiSeriesChart(chart, title, series, func(p dayPoint, idx int) float64 {
-		if idx == 0 {
-			return float64(p.TotalFailures)
-		}
-		return float64(p.TotalRuns)
+	width := chart.Width
+	height := chart.Height
+	pad := chart.Pad
+	titlePad := 26
+	topPad := pad + titlePad + 8
+	bottomPad := pad + 20
+	leftPad := pad + 10
+	rightPad := pad
+
+	ordered := append([]dayPoint(nil), points...)
+	sort.Slice(ordered, func(i, j int) bool {
+		return ordered[i].Date.Before(ordered[j].Date)
 	})
+
+	maxVal := 1.0
+	minDate, maxDate := time.Time{}, time.Time{}
+	for _, point := range ordered {
+		runs := float64(point.TotalRuns)
+		successfulRuns := float64(calcSuccessfulRuns(point))
+		if runs > maxVal {
+			maxVal = runs
+		}
+		if successfulRuns > maxVal {
+			maxVal = successfulRuns
+		}
+		if minDate.IsZero() || point.Date.Before(minDate) {
+			minDate = point.Date
+		}
+		if maxDate.IsZero() || point.Date.After(maxDate) {
+			maxDate = point.Date
+		}
+	}
+
+	if minDate.IsZero() || maxDate.IsZero() {
+		minDate = time.Now().AddDate(0, 0, -1)
+		maxDate = time.Now()
+	}
+
+	plotWidth := float64(width - leftPad - rightPad)
+	plotHeight := float64(height - topPad - bottomPad)
+	x0 := leftPad
+	y0 := height - bottomPad
+	x1 := width - rightPad
+	y1 := topPad
+	data := lineChartSVGData{
+		Width:           width,
+		Height:          height,
+		Title:           title,
+		TitleX:          leftPad,
+		TitleY:          pad - 8,
+		Axis:            svgAxis{X0: x0, Y0: y0, X1: x1, Y1: y1},
+		AxisLabelX:      x0,
+		AxisLabelY:      y1 - 8,
+		XTickMarkBottom: y0,
+		XTickMarkTop:    y0 + 4,
+		XTickLabelY:     y0 + 18,
+		YTickLabelX:     x0 - 6,
+		AxisLabel:       chartLineAxisLabelRuns,
+		BackgroundColor: graphColorBackground,
+		AxisColor:       graphColorAxis,
+		XTickColor:      graphColorTick,
+		GridColor:       graphColorGrid,
+	}
+
+	totalDays := int(maxDate.Sub(minDate).Hours()/24) + 1
+	stepDays := totalDays / 6
+	if stepDays < 1 {
+		stepDays = 1
+	}
+	data.XTicks = make([]lineChartXTick, 0, (totalDays/stepDays)+2)
+	for day := 0; day <= totalDays; day += stepDays {
+		tickDate := minDate.AddDate(0, 0, day)
+		x := x0 + int(scaleTime(tickDate, minDate, maxDate, plotWidth))
+		data.XTicks = append(data.XTicks, lineChartXTick{
+			X:     x,
+			Label: tickDate.Format(lineDateLabelFmt),
+		})
+	}
+
+	yTicks := []float64{0, maxVal / 2, maxVal}
+	data.YTicks = make([]lineChartYTick, 0, len(yTicks))
+	for _, val := range yTicks {
+		y := y0 - int(scaleValue(val, maxVal, plotHeight))
+		data.YTicks = append(data.YTicks, lineChartYTick{
+			Y:      y,
+			LabelY: y + 4,
+			Label:  int(val),
+		})
+	}
+
+	runPoints := make([]svgPoint, 0, len(ordered))
+	successPoints := make([]svgPoint, 0, len(ordered))
+	for _, point := range ordered {
+		x := leftPad + int(scaleTime(point.Date, minDate, maxDate, plotWidth))
+		runY := topPad + int(plotHeight-scaleValue(float64(point.TotalRuns), maxVal, plotHeight))
+		successY := topPad + int(plotHeight-scaleValue(float64(calcSuccessfulRuns(point)), maxVal, plotHeight))
+
+		runPoints = append(runPoints, svgPoint{X: x, Y: runY})
+		successPoints = append(successPoints, svgPoint{X: x, Y: successY})
+	}
+
+	if len(runPoints) > 0 {
+		data.Areas = append(data.Areas, lineChartArea{
+			Name:    "failure-gap",
+			Path:    buildAreaPath(runPoints, successPoints),
+			Color:   graphColorFailureGap,
+			Opacity: graphColorFailureGapOpacity,
+		})
+		data.SeriesPaths = append(data.SeriesPaths,
+			lineChartPath{
+				Path:    buildLinePath(successPoints),
+				Color:   graphColorSuccessfulRuns,
+				LegendX: leftPad + 10,
+				LegendY: topPad + 12,
+				Name:    chartSeriesNameSuccessfulRuns,
+			},
+			lineChartPath{
+				Path:    buildLinePath(runPoints),
+				Color:   graphColorRunsTotal,
+				LegendX: leftPad + 10,
+				LegendY: topPad + 24,
+				Name:    chartSeriesNameRuns,
+			},
+		)
+	}
+
+	return renderSVGTemplate(lineChartSVGTemplate, data)
 }
 
 func renderSeriesChart(lines []seriesLine, title string) string {
@@ -1109,6 +1234,54 @@ func renderMultiSeriesChart(chart svgChart, title string, lines []seriesLine, va
 	}
 
 	return renderSVGTemplate(lineChartSVGTemplate, data)
+}
+
+type svgPoint struct {
+	X int
+	Y int
+}
+
+func calcSuccessfulRuns(point dayPoint) int {
+	successfulRuns := point.TotalRuns - point.TotalFailures
+	if successfulRuns < 0 {
+		return 0
+	}
+	return successfulRuns
+}
+
+func buildLinePath(points []svgPoint) string {
+	if len(points) == 0 {
+		return ""
+	}
+
+	var path strings.Builder
+	for i, point := range points {
+		if i == 0 {
+			path.WriteString(fmt.Sprintf("M %d %d", point.X, point.Y))
+		} else {
+			path.WriteString(fmt.Sprintf(" L %d %d", point.X, point.Y))
+		}
+	}
+
+	return path.String()
+}
+
+func buildAreaPath(upperPoints, lowerPoints []svgPoint) string {
+	if len(upperPoints) == 0 || len(upperPoints) != len(lowerPoints) {
+		return ""
+	}
+
+	var path strings.Builder
+	path.WriteString(fmt.Sprintf("M %d %d", upperPoints[0].X, upperPoints[0].Y))
+	for i := 1; i < len(upperPoints); i++ {
+		path.WriteString(fmt.Sprintf(" L %d %d", upperPoints[i].X, upperPoints[i].Y))
+	}
+	for i := len(lowerPoints) - 1; i >= 0; i-- {
+		path.WriteString(fmt.Sprintf(" L %d %d", lowerPoints[i].X, lowerPoints[i].Y))
+	}
+	path.WriteString(" Z")
+
+	return path.String()
 }
 
 func renderSVGTemplate(tmpl *template.Template, data any) string {

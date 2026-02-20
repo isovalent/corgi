@@ -65,6 +65,44 @@ func TestRenderSeriesChartUsesTemplateMarkup(t *testing.T) {
 	}
 }
 
+func TestRenderTotalsChartUsesSuccessfulRunsAndFailureGap(t *testing.T) {
+	points := []dayPoint{
+		{
+			Date:          time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC),
+			TotalRuns:     10,
+			TotalFailures: 3,
+		},
+		{
+			Date:          time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC),
+			TotalRuns:     12,
+			TotalFailures: 2,
+		},
+	}
+	svg := renderTotalsChart(points, chartTitleTotalFailures)
+
+	if !strings.Contains(svg, `data-chart="line"`) {
+		t.Fatalf("expected line chart template marker in totals chart output")
+	}
+	if !strings.Contains(svg, "Successful runs") {
+		t.Fatalf("expected successful runs legend label in totals chart output")
+	}
+	if !strings.Contains(svg, ">Runs</text>") {
+		t.Fatalf("expected runs legend label in totals chart output")
+	}
+	if !strings.Contains(svg, `stroke="#16a34a"`) {
+		t.Fatalf("expected successful runs line color in totals chart output")
+	}
+	if !strings.Contains(svg, `stroke="#111827"`) {
+		t.Fatalf("expected runs line color in totals chart output")
+	}
+	if !strings.Contains(svg, `data-area="failure-gap"`) {
+		t.Fatalf("expected failure gap area marker in totals chart output")
+	}
+	if !strings.Contains(svg, `fill="#ef4444"`) {
+		t.Fatalf("expected failure gap fill color in totals chart output")
+	}
+}
+
 func TestRenderSVGTemplateUsesErrorTemplateFallback(t *testing.T) {
 	broken := template.Must(template.New("broken").Parse(`{{ index . 0 }}`))
 	svg := renderSVGTemplate(broken, 42)

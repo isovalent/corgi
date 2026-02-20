@@ -53,8 +53,10 @@ const (
 	chartTitleBranchWorkflowFails = "Failures per branch and workflow"
 	chartTitleWorkflowRunFailures = "Workflow runs vs failures"
 	chartSeriesNameFailures       = "Failures"
+	chartSeriesNameSuccessfulRuns = "Successful runs"
 	chartSeriesNameRuns           = "Runs"
 	chartLineAxisLabel            = "Failures"
+	chartLineAxisLabelRuns        = "Runs"
 	errorChartWidth               = 800
 	errorChartHeight              = 80
 	graphColorBackground          = "white"
@@ -63,6 +65,10 @@ const (
 	graphColorGrid                = "#e5e7eb"
 	graphColorRuns                = "#2563eb"
 	graphColorFailures            = "#ef4444"
+	graphColorSuccessfulRuns      = "#16a34a"
+	graphColorRunsTotal           = "#111827"
+	graphColorFailureGap          = "#ef4444"
+	graphColorFailureGapOpacity   = 0.18
 	graphColorRunsOpacity         = 0.35
 	graphColorFailuresOpacity     = 0.8
 )

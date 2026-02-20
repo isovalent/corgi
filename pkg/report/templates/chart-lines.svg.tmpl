@@ -16,6 +16,10 @@
 <text x="{{ $.YTickLabelX }}" y="{{ .LabelY }}" font-size="10" font-family="sans-serif" text-anchor="end">{{ .Label }}</text>
 {{- end }}
 
+{{- range .Areas }}
+<path d="{{ .Path }}" fill="{{ .Color }}" fill-opacity="{{ .Opacity }}" stroke="none" data-area="{{ escapeXML .Name }}"/>
+{{- end }}
+
 {{- range .SeriesPaths }}
 <path d="{{ .Path }}" fill="none" stroke="{{ .Color }}" stroke-width="2"/>
 <text x="{{ .LegendX }}" y="{{ .LegendY }}" font-size="11" font-family="sans-serif" fill="{{ .Color }}">{{ escapeXML .Name }}</text>

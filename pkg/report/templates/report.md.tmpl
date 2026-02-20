@@ -1,4 +1,4 @@
-# {{ .Spec.Title }}
+## {{ .Spec.Title }}
 
 - Generated: {{ .Generated }}
 - Execution time: {{ .ExecutionTime }}
@@ -34,19 +34,19 @@
 {{- $days := .Window.Days }}
 {{- $prefix := graphPrefix $.Spec.Slug $days }}
 {{- $windowTag := windowTag $window }}
-## {{ windowTitle $window }}
+### {{ windowTitle $window }}
 
 {{ formatFailureRate .Graphs.TotalSeries }}
 
 {{- if and (eq $days 7) (gt (len .Trends) 0) }}
-### Trends ({{ $windowTag }})
+#### Trends ({{ $windowTag }})
 
 {{- range .Trends }}
 - {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
 {{- end }}
 
 {{- end }}
-### Graphs (all branches, {{ $windowTag }})
+#### Graphs (all branches, {{ $windowTag }})
 
 ![{{ chartTitleTotal }}](graphs/{{ $prefix }}-total.svg)
 
@@ -54,7 +54,7 @@
 
 ![{{ chartTitleBranch }}](graphs/{{ $prefix }}-branches.svg)
 
-### Per workflow CI failures ({{ $windowTag }})
+#### Per workflow CI failures ({{ $windowTag }})
 
 ![{{ chartTitleBars }}](graphs/{{ $prefix }}-workflow-bars.svg)
 
@@ -73,7 +73,7 @@
 </details>
 
 {{- if gt (len .OtherBranches) 0 }}
-### Per workflow+branch+test CI failures ({{ $windowTag }})
+#### Per workflow+branch+test CI failures ({{ $windowTag }})
 
 <details markdown="1"><summary>Table</summary>
 
@@ -92,11 +92,11 @@
 
 {{- range $branch := .BranchFailureGroupsByWorkflow }}
 
-### Branch {{ $branch.Branch }} (last {{ $days }} days)
+#### Branch {{ $branch.Branch }} (last {{ $days }} days)
 
 {{ formatFailureRate $branch.Graphs.TotalSeries }}
 
-#### Graphs (branch {{ $branch.Branch }}, last {{ $days }} days)
+##### Graphs (branch {{ $branch.Branch }}, last {{ $days }} days)
 
 ![{{ chartTitleTotal }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-total.svg)
 
@@ -104,7 +104,7 @@
 
 {{- if and (eq $days 7) (gt (len $branch.Trends) 0) }}
 
-#### Trends (branch {{ $branch.Branch }}, last {{ $days }} days)
+##### Trends (branch {{ $branch.Branch }}, last {{ $days }} days)
 
 {{- range $branch.Trends }}
 - {{ .Status }} `{{ .Workflow }}` {{ .Label }} ({{ .Previous }} -> {{ .Current }})
@@ -112,7 +112,7 @@
 
 {{- end }}
 
-#### Per workflow CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
+##### Per workflow CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
 
 ![{{ chartTitleBars }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflow-bars.svg)
 
@@ -130,7 +130,7 @@
 
 </details>
 
-#### Per workflow+test CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
+##### Per workflow+test CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
 
 <details markdown="1"><summary>Table</summary>
 
@@ -150,7 +150,7 @@
 
 {{- if gt (len .OtherBranches) 0 }}
 
-### Other branches ({{ $windowTag }})
+#### Other branches ({{ $windowTag }})
 
 {{- range .OtherBranches }}
 - [{{ .Name }}]({{ .Path }})

@@ -6,6 +6,7 @@ const (
 	templateReportPath  = "templates/report.md.tmpl"
 	templateLandingPath = "templates/landing.md.tmpl"
 	templateBranchPath  = "templates/branch.md.tmpl"
+	templateReportCSS   = "templates/report.css.tmpl"
 
 	barChartTemplatePath   = "templates/chart-bar.svg.tmpl"
 	lineChartTemplatePath  = "templates/chart-lines.svg.tmpl"
@@ -33,6 +34,7 @@ const (
 	failureStatFmt = "%d/%d (%.1f%%)"
 
 	readmeFileName   = "README.md"
+	reportCSSName    = "report.css"
 	branchDirName    = "branch"
 	mainBranchPrefix = "main"
 	unknownSlug      = "unknown"

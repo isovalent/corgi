@@ -464,6 +464,9 @@ func renderReportFile(outputDir string, spec reportSpec, results []reportResult,
 	if err := os.MkdirAll(reportDir, 0o755); err != nil {
 		return fmt.Errorf("unable to create report directory: %w", err)
 	}
+	if err := writeReportCSS(reportDir); err != nil {
+		return err
+	}
 	if err := os.WriteFile(path, []byte(b.String()), 0o644); err != nil {
 		return fmt.Errorf("unable to write report file %s: %w", path, err)
 	}
@@ -492,6 +495,7 @@ func renderBranchReportFile(outputDir string, spec reportSpec, branch string, re
 	path := branchReportOutputPath(outputDir, spec.Component, branch)
 	reportDir := filepath.Dir(path)
 	graphDir := filepath.Join(reportDir, "graphs")
+	componentDir := filepath.Join(outputDir, spec.Component)
 
 	if err := os.MkdirAll(graphDir, 0o755); err != nil {
 		return fmt.Errorf("unable to create branch report graphs directory: %w", err)
@@ -514,6 +518,9 @@ func renderBranchReportFile(outputDir string, spec reportSpec, branch string, re
 
 	if err := os.MkdirAll(reportDir, 0o755); err != nil {
 		return fmt.Errorf("unable to create branch report directory: %w", err)
+	}
+	if err := writeReportCSS(componentDir); err != nil {
+		return err
 	}
 	if err := os.WriteFile(path, []byte(b.String()), 0o644); err != nil {
 		return fmt.Errorf("unable to write branch report file %s: %w", path, err)
@@ -540,6 +547,18 @@ func renderLandingPage(outputDir string, links []landingLink) error {
 		return fmt.Errorf("unable to render landing template: %w", err)
 	}
 	return os.WriteFile(path, []byte(b.String()), 0o644)
+}
+
+func writeReportCSS(reportDir string) error {
+	content, err := reportTemplates.ReadFile(templateReportCSS)
+	if err != nil {
+		return fmt.Errorf("unable to read report css template: %w", err)
+	}
+	path := filepath.Join(reportDir, reportCSSName)
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		return fmt.Errorf("unable to write report css file %s: %w", path, err)
+	}
+	return nil
 }
 
 func formatDuration(d time.Duration) string {

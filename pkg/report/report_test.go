@@ -193,6 +193,27 @@ func TestRenderLandingPageWritesReadme(t *testing.T) {
 	}
 }
 
+func TestWriteReportCSSWritesFile(t *testing.T) {
+	outputDir := t.TempDir()
+	if err := writeReportCSS(outputDir); err != nil {
+		t.Fatalf("write report css: %v", err)
+	}
+
+	cssPath := filepath.Join(outputDir, reportCSSName)
+	content, err := os.ReadFile(cssPath)
+	if err != nil {
+		t.Fatalf("read report css: %v", err)
+	}
+
+	rendered := string(content)
+	if !strings.Contains(rendered, ".table-wrap") {
+		t.Fatalf("expected table styles in external css")
+	}
+	if !strings.Contains(rendered, ".right") {
+		t.Fatalf("expected shared branch styles in external css")
+	}
+}
+
 func TestReportTemplateIncludesGraphLayout(t *testing.T) {
 	data := reportTemplateData{
 		Spec: reportSpec{
@@ -298,8 +319,8 @@ func TestReportTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 	if !strings.Contains(rendered, "<div class=\"table-wrap\" markdown=\"1\">") {
 		t.Fatalf("expected responsive table wrapper for report tables")
 	}
-	if !strings.Contains(rendered, ".table-wrap {") || !strings.Contains(rendered, "overflow-x: auto;") {
-		t.Fatalf("expected responsive table CSS in report template output")
+	if !strings.Contains(rendered, "<link rel=\"stylesheet\" href=\"report.css\"/>") {
+		t.Fatalf("expected external stylesheet reference in report template output")
 	}
 	if !strings.Contains(rendered, "2/5 (40.0%)") {
 		t.Fatalf("expected failure/runs stat in report template output")
@@ -344,8 +365,8 @@ func TestBranchTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 	if !strings.Contains(rendered, "<div class=\"table-wrap\" markdown=\"1\">") {
 		t.Fatalf("expected responsive table wrapper for branch tables")
 	}
-	if !strings.Contains(rendered, ".table-wrap {") || !strings.Contains(rendered, "overflow-x: auto;") {
-		t.Fatalf("expected responsive table CSS in branch template output")
+	if !strings.Contains(rendered, "<link rel=\"stylesheet\" href=\"../../report.css\"/>") {
+		t.Fatalf("expected external stylesheet reference in branch template output")
 	}
 	if !strings.Contains(rendered, "2/5 (40.0%)") {
 		t.Fatalf("expected failure/runs stat in branch template output")

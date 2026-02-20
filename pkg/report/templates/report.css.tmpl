@@ -1,0 +1,27 @@
+.right {
+  text-align: right;
+}
+
+.table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrap table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table-wrap th,
+.table-wrap td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  vertical-align: top;
+}
+
+@media (max-width: 900px) {
+  .table-wrap table {
+    font-size: 12px;
+  }
+}

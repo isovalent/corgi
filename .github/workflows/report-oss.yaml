@@ -15,8 +15,12 @@ defaults:
     shell: bash
 
 jobs:
-  generate-reports:
+  build:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - name: Generate OSS reports
@@ -29,24 +33,41 @@ jobs:
             --runs-index ${{ env.RUNS_INDEX }} \
             --events ${{ env.EVENTS }} \
             --output-dir ./report-out
-      - name: Checkout wiki
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository }}.wiki
-          path: wiki
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update wiki pages
+      - name: Prepare Jekyll site
         run: |
-          cp -R ./report-out/. ./wiki/
-      - name: Commit and push wiki
-        run: |
-          cd wiki
-          if git status --porcelain | grep .; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "Update CI health reports" -s
-            git push origin master
-          else
-            echo "No changes to commit"
+          rm -rf site _site
+          mkdir -p site
+          cp -R ./report-out/. ./site/
+          if [ -f ./site/Home.md ]; then
+            mv ./site/Home.md ./site/index.md
           fi
+          cat > ./site/_config.yml <<'EOF'
+          title: OSS CI Health Reports
+          markdown: kramdown
+          EOF
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./site
+          destination: ./_site
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+  deploy:
+    runs-on: ubuntu-22.04
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

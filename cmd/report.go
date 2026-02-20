@@ -2816,10 +2816,39 @@ func renderBarChart(title string, series []barSeries, extraLabelSpace bool) stri
 	padRight := 40
 	padTop := 60
 	padBottom := 60
+	labelAngle := 55.0
 	if extraLabelSpace {
 		chart.Height = 520
 		padTop = 70
 		padBottom = 120
+	}
+	if extraLabelSpace && len(series) > 0 {
+		maxLabelChars := 0
+		for _, item := range series {
+			if n := len(item.Label); n > maxLabelChars {
+				maxLabelChars = n
+			}
+		}
+		// Approximate text width for sizing/padding to avoid clipping rotated labels.
+		maxLabelWidthPx := float64(maxLabelChars) * 6.0
+		angleRad := labelAngle * math.Pi / 180.0
+		labelHoriz := int(math.Ceil(math.Cos(angleRad)*maxLabelWidthPx)) + 24
+		labelVert := int(math.Ceil(math.Sin(angleRad)*maxLabelWidthPx)) + 44
+		if labelHoriz > padRight {
+			padRight = labelHoriz
+		}
+		if labelVert > padBottom {
+			padBottom = labelVert
+		}
+		minPlotWidth := int(math.Ceil(float64(len(series)) * 36.0))
+		minWidth := padLeft + padRight + minPlotWidth
+		if minWidth > chart.Width {
+			chart.Width = minWidth
+		}
+		minHeight := padTop + padBottom + 260
+		if minHeight > chart.Height {
+			chart.Height = minHeight
+		}
 	}
 	width := chart.Width
 	height := chart.Height
@@ -2864,7 +2893,7 @@ func renderBarChart(title string, series []barSeries, extraLabelSpace bool) stri
 		b.WriteString(fmt.Sprintf("<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"#2563eb\" fill-opacity=\"0.35\"/>", x, yRuns, widthPx, runsHeight))
 		b.WriteString(fmt.Sprintf("<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"#ef4444\" fill-opacity=\"0.8\"/>", x, yFails, widthPx, failsHeight))
 
-		label := truncateLabel(item.Label, 18)
+		label := item.Label
 		labelY := y0 + 30
 		b.WriteString(fmt.Sprintf("<text x=\"%.2f\" y=\"%d\" font-size=\"10\" font-family=\"sans-serif\" text-anchor=\"start\" transform=\"rotate(55 %.2f,%d)\">%s</text>",
 			x, labelY, x, labelY, escapeXML(label)))
@@ -2872,13 +2901,6 @@ func renderBarChart(title string, series []barSeries, extraLabelSpace bool) stri
 
 	b.WriteString("</svg>")
 	return b.String()
-}
-
-func truncateLabel(label string, max int) string {
-	if len(label) <= max {
-		return label
-	}
-	return label[:max-1] + "…"
 }
 
 func renderTotalsChart(points []dayPoint, title string) string {

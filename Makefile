@@ -33,6 +33,43 @@ lint-fix:
 clean: # Clean the local generated artifacts
 	rm -fr -- corgi
 
+.PHONY: web-report
+web-report: # Generate reports and serve them via Jekyll
+	@TMP_BASE=$${WEB_REPORT_TMPDIR:-/tmp}; \
+	REPORT_TMP=$${REPORT_TMP:-$$(mktemp -d "$$TMP_BASE/corgi_pages_XXXXXX")}; \
+	command -v jekyll >/dev/null 2>&1 || { echo "jekyll is required in PATH" >&2; exit 1; }; \
+	echo "Using report output: $$REPORT_TMP"; \
+	if [ "$${WEB_REPORT_SKIP_GENERATION:-0}" != "1" ]; then \
+		$(GO) run . report --output-dir "$$REPORT_TMP"; \
+	else \
+		echo "Skipping report generation (WEB_REPORT_SKIP_GENERATION=1)"; \
+	fi; \
+	if [ -f "$$REPORT_TMP/Home.md" ] && [ ! -f "$$REPORT_TMP/README.md" ]; then \
+		cp "$$REPORT_TMP/Home.md" "$$REPORT_TMP/README.md"; \
+	fi; \
+	LOCAL_CFG="$$REPORT_TMP/_config.local.yml"; \
+	printf '%s\n' \
+		'title: OSS CI Health Reports' \
+		'markdown: kramdown' \
+		'kramdown:' \
+		'  input: GFM' \
+		'plugins:' \
+		'  - jekyll-relative-links' \
+		'  - jekyll-optional-front-matter' \
+		'  - jekyll-readme-index' \
+		'relative_links:' \
+		'  enabled: true' \
+		'  collections: true' \
+		'readme_index:' \
+		'  enabled: true' > "$$LOCAL_CFG"; \
+	if [ -f "$$REPORT_TMP/_config.yml" ]; then \
+		CONFIG_FILES="$$REPORT_TMP/_config.yml,$$LOCAL_CFG"; \
+	else \
+		CONFIG_FILES="$$LOCAL_CFG"; \
+	fi; \
+	echo "Starting Jekyll at http://127.0.0.1:4000"; \
+	jekyll serve --host 127.0.0.1 --port 4000 --source "$$REPORT_TMP" --destination "$$REPORT_TMP/_site" --config "$$CONFIG_FILES"
+
 .PHONY: kube-test
 kube-test: opensearch-values.yaml # Set up a kube environment with opensearch
 	kubectl create namespace corgi-test \

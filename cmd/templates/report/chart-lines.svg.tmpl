@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="{{ .Width }}" height="{{ .Height }}" data-chart="line">
+<rect width="100%" height="100%" fill="white"/>
+<text x="{{ .TitleX }}" y="{{ .TitleY }}" font-size="14" font-family="sans-serif">{{ escapeXML .Title }}</text>
+
+<line x1="{{ .Axis.X0 }}" y1="{{ .Axis.Y0 }}" x2="{{ .Axis.X1 }}" y2="{{ .Axis.Y0 }}" stroke="#1f2937" stroke-width="1"/>
+<line x1="{{ .Axis.X0 }}" y1="{{ .Axis.Y0 }}" x2="{{ .Axis.X0 }}" y2="{{ .Axis.Y1 }}" stroke="#1f2937" stroke-width="1"/>
+<text x="{{ .AxisLabelX }}" y="{{ .AxisLabelY }}" font-size="10" font-family="sans-serif">Failures</text>
+
+{{- range .XTicks }}
+<line x1="{{ .X }}" y1="{{ $.XTickMarkBottom }}" x2="{{ .X }}" y2="{{ $.XTickMarkTop }}" stroke="#9ca3af" stroke-width="1"/>
+<text x="{{ .X }}" y="{{ $.XTickLabelY }}" font-size="10" font-family="sans-serif" text-anchor="middle">{{ .Label }}</text>
+{{- end }}
+
+{{- range .YTicks }}
+<line x1="{{ $.Axis.X0 }}" y1="{{ .Y }}" x2="{{ $.Axis.X1 }}" y2="{{ .Y }}" stroke="#e5e7eb" stroke-width="1"/>
+<text x="{{ $.YTickLabelX }}" y="{{ .LabelY }}" font-size="10" font-family="sans-serif" text-anchor="end">{{ .Label }}</text>
+{{- end }}
+
+{{- range .SeriesPaths }}
+<path d="{{ .Path }}" fill="none" stroke="{{ .Color }}" stroke-width="2"/>
+<text x="{{ .LegendX }}" y="{{ .LegendY }}" font-size="11" font-family="sans-serif" fill="{{ .Color }}">{{ escapeXML .Name }}</text>
+{{- end }}
+</svg>

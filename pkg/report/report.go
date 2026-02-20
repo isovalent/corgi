@@ -128,8 +128,9 @@ type landingTemplateData struct {
 }
 
 type branchLink struct {
-	Name string
-	Path string
+	Name           string
+	Path           string
+	FailureSummary string
 }
 
 type reportResult struct {
@@ -387,7 +388,7 @@ func buildReportWindow(
 		BranchWorkflowSuiteFailures:   branchWorkflowSuiteFailures,
 		BranchFailureGroupsByWorkflow: mainBranchResults,
 		OtherBranchResults:            otherBranchResults,
-		OtherBranches:                 buildOtherBranchLinks(componentFromRepo(repo), otherBranches),
+		OtherBranches:                 buildOtherBranchLinks(otherBranchResults),
 	}, nil
 }
 
@@ -2200,20 +2201,42 @@ func filterBranchesByPrefix(branches []string) ([]string, []string) {
 	return mainBranches, otherBranches
 }
 
-func buildOtherBranchLinks(component string, branches []string) []branchLink {
-	if len(branches) == 0 {
+func buildOtherBranchLinks(results []branchResult) []branchLink {
+	if len(results) == 0 {
 		return nil
 	}
-	sorted := append([]string(nil), branches...)
-	sort.Strings(sorted)
+	sorted := append([]branchResult(nil), results...)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Branch < sorted[j].Branch
+	})
 	links := make([]branchLink, 0, len(sorted))
 	for _, branch := range sorted {
+		failedRuns, runs := summarizeFailureRate(branch.Graphs.TotalSeries)
 		links = append(links, branchLink{
-			Name: branch,
-			Path: filepath.ToSlash(filepath.Join(branchDirName, slugify(branch))) + "/",
+			Name:           branch.Branch,
+			Path:           filepath.ToSlash(filepath.Join(branchDirName, slugify(branch.Branch))) + "/",
+			FailureSummary: formatFailureSummary(failedRuns, runs),
 		})
 	}
 	return links
+}
+
+func summarizeFailureRate(points []dayPoint) (int, int) {
+	totalRuns := 0
+	totalFailures := 0
+	for _, point := range points {
+		totalRuns += point.TotalRuns
+		totalFailures += point.TotalFailures
+	}
+	return totalFailures, totalRuns
+}
+
+func formatFailureSummary(failures, totalRuns int) string {
+	percent := 0.0
+	if totalRuns > 0 {
+		percent = (float64(failures) / float64(totalRuns)) * 100
+	}
+	return fmt.Sprintf("%d / %d (%.1f%%)", failures, totalRuns, percent)
 }
 
 func isMainBranch(branch string) bool {

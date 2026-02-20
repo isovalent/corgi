@@ -155,7 +155,7 @@
 #### Other branches ({{ $windowTag }})
 
 {{ range .OtherBranches }}
-  - [{{ .Name }}]({{ .Path }})
+  - [{{ .Name }}]({{ .Path }}): {{ .FailureSummary }}
 {{ end }}
 
 {{ end }}

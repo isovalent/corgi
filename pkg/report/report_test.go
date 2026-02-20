@@ -145,14 +145,32 @@ func TestFilterBranchesByPrefix(t *testing.T) {
 }
 
 func TestBuildOtherBranchLinks(t *testing.T) {
-	links := buildOtherBranchLinks("cilium", []string{"release-1.0", "feature/foo"})
+	links := buildOtherBranchLinks([]branchResult{
+		{
+			Branch: "release-1.0",
+			Graphs: graphBundle{
+				TotalSeries: []dayPoint{
+					{TotalRuns: 4, TotalFailures: 1},
+					{TotalRuns: 6, TotalFailures: 2},
+				},
+			},
+		},
+		{
+			Branch: "feature/foo",
+			Graphs: graphBundle{
+				TotalSeries: []dayPoint{
+					{TotalRuns: 5, TotalFailures: 1},
+				},
+			},
+		},
+	})
 	if len(links) != 2 {
 		t.Fatalf("unexpected link count: %d", len(links))
 	}
-	if links[0].Name != "feature/foo" || links[0].Path != "branch/feature-foo/" {
+	if links[0].Name != "feature/foo" || links[0].Path != "branch/feature-foo/" || links[0].FailureSummary != "1 / 5 (20.0%)" {
 		t.Fatalf("unexpected first link: %+v", links[0])
 	}
-	if links[1].Name != "release-1.0" || links[1].Path != "branch/release-1-0/" {
+	if links[1].Name != "release-1.0" || links[1].Path != "branch/release-1-0/" || links[1].FailureSummary != "3 / 10 (30.0%)" {
 		t.Fatalf("unexpected second link: %+v", links[1])
 	}
 }
@@ -400,7 +418,7 @@ func TestReportTemplateSeparatesOtherBranchesListFromNextWindow(t *testing.T) {
 					Until: time.Date(2026, 2, 20, 0, 0, 0, 0, time.UTC),
 				},
 				OtherBranches: []branchLink{
-					{Name: "v1.19", Path: "branch/v1-19/"},
+					{Name: "v1.19", Path: "branch/v1-19/", FailureSummary: "1 / 2 (50.0%)"},
 				},
 			},
 			{
@@ -419,7 +437,7 @@ func TestReportTemplateSeparatesOtherBranchesListFromNextWindow(t *testing.T) {
 	}
 
 	rendered := out.String()
-	const listItem = "- [v1.19](branch/v1-19/)"
+	const listItem = "- [v1.19](branch/v1-19/): 1 / 2 (50.0%)"
 	const nextHeading = "## Last 14 days (2026-02-06 to 2026-02-20)"
 	listIdx := strings.Index(rendered, listItem)
 	if listIdx == -1 {

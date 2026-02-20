@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="{{ .Width }}" height="{{ .Height }}" data-chart="bar">
-<rect width="100%" height="100%" fill="white"/>
+<rect width="100%" height="100%" fill="{{ .BackgroundColor }}"/>
 <text x="{{ .TitleX }}" y="{{ .TitleY }}" font-size="14" font-family="sans-serif">{{ escapeXML .Title }}</text>
-<line x1="{{ .Axis.X0 }}" y1="{{ .Axis.Y0 }}" x2="{{ .Axis.X1 }}" y2="{{ .Axis.Y0 }}" stroke="#1f2937" stroke-width="1"/>
-<line x1="{{ .Axis.X0 }}" y1="{{ .Axis.Y0 }}" x2="{{ .Axis.X0 }}" y2="{{ .Axis.Y1 }}" stroke="#1f2937" stroke-width="1"/>
+<line x1="{{ .Axis.X0 }}" y1="{{ .Axis.Y0 }}" x2="{{ .Axis.X1 }}" y2="{{ .Axis.Y0 }}" stroke="{{ .AxisColor }}" stroke-width="1"/>
+<line x1="{{ .Axis.X0 }}" y1="{{ .Axis.Y0 }}" x2="{{ .Axis.X0 }}" y2="{{ .Axis.Y1 }}" stroke="{{ .AxisColor }}" stroke-width="1"/>
 {{- range .Bars }}
-<rect x="{{ printf "%.2f" .X }}" y="{{ printf "%.2f" .YRuns }}" width="{{ printf "%.2f" .Width }}" height="{{ printf "%.2f" .RunsHeight }}" fill="#2563eb" fill-opacity="0.35"/>
-<rect x="{{ printf "%.2f" .X }}" y="{{ printf "%.2f" .YFails }}" width="{{ printf "%.2f" .Width }}" height="{{ printf "%.2f" .FailsHeight }}" fill="#ef4444" fill-opacity="0.8"/>
+<rect x="{{ printf "%.2f" .X }}" y="{{ printf "%.2f" .YRuns }}" width="{{ printf "%.2f" .Width }}" height="{{ printf "%.2f" .RunsHeight }}" fill="{{ $.RunsColor }}" fill-opacity="{{ printf "%.2f" $.RunsOpacity }}"/>
+<rect x="{{ printf "%.2f" .X }}" y="{{ printf "%.2f" .YFails }}" width="{{ printf "%.2f" .Width }}" height="{{ printf "%.2f" .FailsHeight }}" fill="{{ $.FailsColor }}" fill-opacity="{{ printf "%.2f" $.FailsOpacity }}"/>
 <text x="{{ printf "%.2f" .X }}" y="{{ .LabelY }}" font-size="10" font-family="sans-serif" text-anchor="start" transform="rotate(55 {{ printf "%.2f" .X }},{{ .LabelY }})">{{ escapeXML .Label }}</text>
 {{- end }}
 </svg>

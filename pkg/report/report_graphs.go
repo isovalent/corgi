@@ -17,12 +17,17 @@ import (
 
 var barChartSVGTemplate = template.Must(template.New("chart-bar.svg.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
 	reportTemplates,
-	"templates/chart-bar.svg.tmpl",
+	barChartTemplatePath,
 ))
 
 var lineChartSVGTemplate = template.Must(template.New("chart-lines.svg.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
 	reportTemplates,
-	"templates/chart-lines.svg.tmpl",
+	lineChartTemplatePath,
+))
+
+var errorChartSVGTemplate = template.Must(template.New("chart-error.svg.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
+	reportTemplates,
+	errorChartTemplatePath,
 ))
 
 type graphBundle struct {
@@ -55,7 +60,7 @@ func buildGraphData(
 		return graphBundle{}, err
 	}
 
-	topWorkflows, err := queryTopWorkflows(ctx, logger, client, params, repo, window, 5)
+	topWorkflows, err := queryTopWorkflows(ctx, logger, client, params, repo, window, graphTopSeriesLimit)
 	if err != nil {
 		return graphBundle{}, err
 	}
@@ -68,7 +73,7 @@ func buildGraphData(
 		workflowLines = append(workflowLines, seriesLine{Name: wf, Points: points})
 	}
 
-	topBranches, err := queryTopBranchWorkflows(ctx, logger, client, params, repo, window, 5)
+	topBranches, err := queryTopBranchWorkflows(ctx, logger, client, params, repo, window, graphTopSeriesLimit)
 	if err != nil {
 		return graphBundle{}, err
 	}
@@ -238,7 +243,7 @@ func buildBranchGraphData(
 		return graphBundle{}, err
 	}
 
-	topWorkflows, err := queryTopWorkflowsForBranch(ctx, logger, client, params, repo, window, branch, 5)
+	topWorkflows, err := queryTopWorkflowsForBranch(ctx, logger, client, params, repo, window, branch, graphTopSeriesLimit)
 	if err != nil {
 		return graphBundle{}, err
 	}
@@ -742,16 +747,16 @@ func branchGraphPrefix(slug string, days int, branch string) string {
 
 func writeGraphBundle(graphDir, prefix string, graphs graphBundle) error {
 	if err := writeSVG(filepath.Join(graphDir, fmt.Sprintf("%s-total.svg", prefix)),
-		renderTotalsChart(graphs.TotalSeries, "Total failures vs runs")); err != nil {
+		renderTotalsChart(graphs.TotalSeries, chartTitleTotalFailures)); err != nil {
 		return err
 	}
 	if err := writeSVG(filepath.Join(graphDir, fmt.Sprintf("%s-workflows.svg", prefix)),
-		renderSeriesChart(graphs.WorkflowLines, "Failures per workflow")); err != nil {
+		renderSeriesChart(graphs.WorkflowLines, chartTitleWorkflowFailures)); err != nil {
 		return err
 	}
 	if len(graphs.BranchLines) > 0 {
 		if err := writeSVG(filepath.Join(graphDir, fmt.Sprintf("%s-branches.svg", prefix)),
-			renderSeriesChart(graphs.BranchLines, "Failures per branch and workflow")); err != nil {
+			renderSeriesChart(graphs.BranchLines, chartTitleBranchWorkflowFails)); err != nil {
 			return err
 		}
 	}
@@ -764,7 +769,7 @@ func writeSVG(path string, content string) error {
 
 func writeWorkflowBars(graphDir, prefix string, bars []workflowBar) error {
 	path := filepath.Join(graphDir, fmt.Sprintf("%s-workflow-bars.svg", prefix))
-	content := renderBarChart("Workflow runs vs failures", toWorkflowBarSeries(bars), true)
+	content := renderBarChart(chartTitleWorkflowRunFailures, toWorkflowBarSeries(bars), true)
 	return writeSVG(path, content)
 }
 
@@ -793,13 +798,19 @@ type barChartSVGBar struct {
 }
 
 type barChartSVGData struct {
-	Width  int
-	Height int
-	Title  string
-	TitleX int
-	TitleY int
-	Axis   svgAxis
-	Bars   []barChartSVGBar
+	Width           int
+	Height          int
+	Title           string
+	TitleX          int
+	TitleY          int
+	Axis            svgAxis
+	BackgroundColor string
+	AxisColor       string
+	RunsColor       string
+	RunsOpacity     float64
+	FailsColor      string
+	FailsOpacity    float64
+	Bars            []barChartSVGBar
 }
 
 type lineChartXTick struct {
@@ -837,6 +848,18 @@ type lineChartSVGData struct {
 	XTicks          []lineChartXTick
 	YTicks          []lineChartYTick
 	SeriesPaths     []lineChartPath
+	AxisLabel       string
+	BackgroundColor string
+	AxisColor       string
+	XTickColor      string
+	GridColor       string
+}
+
+type errorChartSVGData struct {
+	Width           int
+	Height          int
+	BackgroundColor string
+	Message         string
 }
 
 func toWorkflowBarSeries(bars []workflowBar) []barSeries {
@@ -895,11 +918,17 @@ func renderBarChart(title string, series []barSeries, extraLabelSpace bool) stri
 	height := chart.Height
 
 	data := barChartSVGData{
-		Width:  width,
-		Height: height,
-		Title:  title,
-		TitleX: padLeft,
-		TitleY: padTop - 30,
+		Width:           width,
+		Height:          height,
+		Title:           title,
+		TitleX:          padLeft,
+		TitleY:          padTop - 30,
+		BackgroundColor: graphColorBackground,
+		AxisColor:       graphColorAxis,
+		RunsColor:       graphColorRuns,
+		RunsOpacity:     graphColorRunsOpacity,
+		FailsColor:      graphColorFailures,
+		FailsOpacity:    graphColorFailuresOpacity,
 	}
 	if len(series) == 0 {
 		return renderSVGTemplate(barChartSVGTemplate, data)
@@ -952,8 +981,8 @@ func renderBarChart(title string, series []barSeries, extraLabelSpace bool) stri
 func renderTotalsChart(points []dayPoint, title string) string {
 	chart := svgChart{Width: 900, Height: 320, Pad: 40}
 	series := []seriesLine{
-		{Name: "Failures", Points: points},
-		{Name: "Runs", Points: points},
+		{Name: chartSeriesNameFailures, Points: points},
+		{Name: chartSeriesNameRuns, Points: points},
 	}
 	return renderMultiSeriesChart(chart, title, series, func(p dayPoint, idx int) float64 {
 		if idx == 0 {
@@ -1002,8 +1031,6 @@ func renderMultiSeriesChart(chart svgChart, title string, lines []seriesLine, va
 		maxDate = time.Now()
 	}
 
-	colors := []string{"#ef4444", "#2563eb", "#16a34a", "#f59e0b", "#7c3aed"}
-
 	plotWidth := float64(width - leftPad - rightPad)
 	plotHeight := float64(height - topPad - bottomPad)
 	x0 := leftPad
@@ -1023,6 +1050,11 @@ func renderMultiSeriesChart(chart svgChart, title string, lines []seriesLine, va
 		XTickMarkTop:    y0 + 4,
 		XTickLabelY:     y0 + 18,
 		YTickLabelX:     x0 - 6,
+		AxisLabel:       chartLineAxisLabel,
+		BackgroundColor: graphColorBackground,
+		AxisColor:       graphColorAxis,
+		XTickColor:      graphColorTick,
+		GridColor:       graphColorGrid,
 	}
 
 	totalDays := int(maxDate.Sub(minDate).Hours()/24) + 1
@@ -1036,7 +1068,7 @@ func renderMultiSeriesChart(chart svgChart, title string, lines []seriesLine, va
 		x := x0 + int(scaleTime(tickDate, minDate, maxDate, plotWidth))
 		data.XTicks = append(data.XTicks, lineChartXTick{
 			X:     x,
-			Label: tickDate.Format("Jan-02"),
+			Label: tickDate.Format(lineDateLabelFmt),
 		})
 	}
 
@@ -1056,7 +1088,7 @@ func renderMultiSeriesChart(chart svgChart, title string, lines []seriesLine, va
 		if len(line.Points) == 0 {
 			continue
 		}
-		color := colors[i%len(colors)]
+		color := lineSeriesColors[i%len(lineSeriesColors)]
 		var path strings.Builder
 		for idx, point := range line.Points {
 			x := leftPad + int(scaleTime(point.Date, minDate, maxDate, plotWidth))
@@ -1082,10 +1114,16 @@ func renderMultiSeriesChart(chart svgChart, title string, lines []seriesLine, va
 func renderSVGTemplate(tmpl *template.Template, data any) string {
 	var b strings.Builder
 	if err := tmpl.Execute(&b, data); err != nil {
-		return fmt.Sprintf(
-			"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"80\"><rect width=\"100%%\" height=\"100%%\" fill=\"white\"/><text x=\"8\" y=\"20\" font-size=\"12\" font-family=\"sans-serif\">%s</text></svg>",
-			escapeXML(err.Error()),
-		)
+		b.Reset()
+		fallback := errorChartSVGData{
+			Width:           errorChartWidth,
+			Height:          errorChartHeight,
+			BackgroundColor: graphColorBackground,
+			Message:         err.Error(),
+		}
+		if fallbackErr := errorChartSVGTemplate.Execute(&b, fallback); fallbackErr != nil {
+			return ""
+		}
 	}
 	return b.String()
 }

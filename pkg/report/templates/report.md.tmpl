@@ -48,15 +48,15 @@
 {{- end }}
 ### Graphs (all branches, {{ $windowTag }})
 
-![Total failures vs runs](graphs/{{ $prefix }}-total.svg)
+![{{ chartTitleTotal }}](graphs/{{ $prefix }}-total.svg)
 
-![Failures per workflow](graphs/{{ $prefix }}-workflows.svg)
+![{{ chartTitleWf }}](graphs/{{ $prefix }}-workflows.svg)
 
-![Failures per branch and workflow](graphs/{{ $prefix }}-branches.svg)
+![{{ chartTitleBranch }}](graphs/{{ $prefix }}-branches.svg)
 
 ### Per workflow CI failures ({{ $windowTag }})
 
-![Workflow runs vs failures](graphs/{{ $prefix }}-workflow-bars.svg)
+![{{ chartTitleBars }}](graphs/{{ $prefix }}-workflow-bars.svg)
 
 <details markdown="1"><summary>Table</summary>
 
@@ -98,9 +98,9 @@
 
 #### Graphs (branch {{ $branch.Branch }}, last {{ $days }} days)
 
-![Total failures vs runs](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-total.svg)
+![{{ chartTitleTotal }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-total.svg)
 
-![Failures per workflow](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflows.svg)
+![{{ chartTitleWf }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflows.svg)
 
 {{- if and (eq $days 7) (gt (len $branch.Trends) 0) }}
 
@@ -114,7 +114,7 @@
 
 #### Per workflow CI failures (branch {{ $branch.Branch }}, last {{ $days }} days)
 
-![Workflow runs vs failures](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflow-bars.svg)
+![{{ chartTitleBars }}](graphs/{{ branchGraphPrefix $.Spec.Slug $days $branch.Branch }}-workflow-bars.svg)
 
 <details markdown="1"><summary>Table</summary>
 

@@ -177,29 +177,29 @@ var reportTemplates embed.FS
 
 var reportTemplate = template.Must(template.New("report.md.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
 	reportTemplates,
-	"templates/report.md.tmpl",
+	templateReportPath,
 ))
 
 var landingTemplate = template.Must(template.New("landing.md.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
 	reportTemplates,
-	"templates/landing.md.tmpl",
+	templateLandingPath,
 ))
 
 var branchTemplate = template.Must(template.New("branch.md.tmpl").Funcs(reportTemplateFuncs()).ParseFS(
 	reportTemplates,
-	"templates/branch.md.tmpl",
+	templateBranchPath,
 ))
 
 func DefaultParams() Params {
 	return Params{
-		RunsIndex:  "runs-oss",
-		Repos:      []string{"cilium/cilium", "cilium/tetragon"},
-		Events:     []string{"schedule", "push", "workflow_dispatch"},
-		Top:        50,
-		Days:       []int{7, 14, 30, 60, 90},
-		MaxLinks:   5,
-		FailStatus: []string{"failure"},
-		TestStatus: []string{"failed", "error"},
+		RunsIndex:  defaultRunsIndex,
+		Repos:      append([]string(nil), defaultRepos...),
+		Events:     append([]string(nil), defaultEvents...),
+		Top:        defaultTop,
+		Days:       append([]int(nil), defaultDays...),
+		MaxLinks:   defaultMaxLinks,
+		FailStatus: append([]string(nil), defaultFailStatus...),
+		TestStatus: append([]string(nil), defaultTestStatus...),
 	}
 }
 
@@ -244,20 +244,7 @@ func Run(ctx context.Context, params *Params) error {
 		return fmt.Errorf("unable to create OpenSearch client: %w", err)
 	}
 
-	reportSpecs := []reportSpec{
-		{
-			Title:      "Cilium OSS: CI health report",
-			Slug:       "Cilium-OSS-CI-health-report",
-			Repository: "cilium/cilium",
-			Component:  componentFromRepo("cilium/cilium"),
-		},
-		{
-			Title:      "Tetragon OSS: CI health report",
-			Slug:       "Tetragon-OSS-CI-health-report",
-			Repository: "cilium/tetragon",
-			Component:  componentFromRepo("cilium/tetragon"),
-		},
-	}
+	reportSpecs := append([]reportSpec(nil), defaultReportSpecs...)
 
 	now := time.Now().Local()
 	windows := buildReportWindows(now, params.Days)
@@ -545,7 +532,7 @@ func renderBranchReportFile(outputDir string, spec reportSpec, branch string, re
 }
 
 func renderLandingPage(outputDir string, links []landingLink) error {
-	path := filepath.Join(outputDir, "README.md")
+	path := filepath.Join(outputDir, readmeFileName)
 	var b strings.Builder
 	data := landingTemplateData{Links: links}
 	if err := landingTemplate.Execute(&b, data); err != nil {
@@ -570,15 +557,31 @@ func formatDuration(d time.Duration) string {
 }
 
 func windowTitle(window reportWindow) string {
-	return fmt.Sprintf("Last %d days (%s to %s)",
+	return fmt.Sprintf(windowTitleFmt,
 		window.Days,
-		window.Since.Format("2006-01-02"),
-		window.Until.Format("2006-01-02"),
+		window.Since.Format(windowDateLayout),
+		window.Until.Format(windowDateLayout),
 	)
 }
 
 func windowTag(window reportWindow) string {
-	return fmt.Sprintf("last %d days", window.Days)
+	return fmt.Sprintf(windowTagFmt, window.Days)
+}
+
+func chartTitleTotal() string {
+	return chartTitleTotalFailures
+}
+
+func chartTitleWorkflow() string {
+	return chartTitleWorkflowFailures
+}
+
+func chartTitleBranchWorkflow() string {
+	return chartTitleBranchWorkflowFails
+}
+
+func chartTitleWorkflowBars() string {
+	return chartTitleWorkflowRunFailures
 }
 
 func addOne(value int) int {
@@ -598,6 +601,10 @@ func reportTemplateFuncs() template.FuncMap {
 		"add1":              addOne,
 		"formatFailureRate": formatFailureRate,
 		"formatFailureStat": formatFailureStat,
+		"chartTitleTotal":   chartTitleTotal,
+		"chartTitleWf":      chartTitleWorkflow,
+		"chartTitleBranch":  chartTitleBranchWorkflow,
+		"chartTitleBars":    chartTitleWorkflowBars,
 	}
 }
 
@@ -612,7 +619,7 @@ func formatFailureRate(points []dayPoint) string {
 	if totalRuns > 0 {
 		percent = (float64(totalFailures) / float64(totalRuns)) * 100
 	}
-	return fmt.Sprintf("Failures: %d / %d (%.1f%%)", totalFailures, totalRuns, percent)
+	return fmt.Sprintf(failureRateFmt, totalFailures, totalRuns, percent)
 }
 
 func formatFailureStat(failures, totalRuns int) string {
@@ -620,7 +627,7 @@ func formatFailureStat(failures, totalRuns int) string {
 	if totalRuns > 0 {
 		percent = (float64(failures) / float64(totalRuns)) * 100
 	}
-	return fmt.Sprintf("%d/%d (%.1f%%)", failures, totalRuns, percent)
+	return fmt.Sprintf(failureStatFmt, failures, totalRuns, percent)
 }
 
 func queryWorkflowRunTotals(
@@ -1692,26 +1699,26 @@ func renderLinks(links []reportLink) string {
 	for _, link := range links {
 		parts := make([]string, 0, 2)
 		if link.Workflow != "" {
-			label := "run"
+			label := runLinkLabel
 			runID := link.RunID
 			if runID == 0 {
 				runID = parseRunID(link.Workflow)
 			}
 			if runID > 0 {
-				label = fmt.Sprintf("run#%d", runID)
+				label = fmt.Sprintf(runLinkFmt, runID)
 			} else if link.RunNumber > 0 {
-				label = fmt.Sprintf("run#%d", link.RunNumber)
+				label = fmt.Sprintf(runLinkFmt, link.RunNumber)
 			}
-			parts = append(parts, fmt.Sprintf("[%s](%s)", label, link.Workflow))
+			parts = append(parts, fmt.Sprintf(markdownLinkFmt, label, link.Workflow))
 		}
 		if link.Job != "" {
-			parts = append(parts, fmt.Sprintf("[job](%s)", link.Job))
+			parts = append(parts, fmt.Sprintf(markdownLinkFmt, jobLinkLabel, link.Job))
 		}
 		if len(parts) > 0 {
-			entries = append(entries, strings.Join(parts, " / "))
+			entries = append(entries, strings.Join(parts, linkPartsSep))
 		}
 	}
-	return strings.Join(entries, ", ")
+	return strings.Join(entries, linkEntriesSep)
 }
 
 func formatOwners(testOwners, suiteOwners []string) string {
@@ -2140,16 +2147,16 @@ func normalizeFailureMessage(input string) string {
 
 func slugify(input string) string {
 	slug := strings.ToLower(input)
-	slug = regexp.MustCompile(`[^a-z0-9]+`).ReplaceAllString(slug, "-")
+	slug = slugifyRegex.ReplaceAllString(slug, "-")
 	slug = strings.Trim(slug, "-")
 	if slug == "" {
-		return "unknown"
+		return unknownSlug
 	}
 	return slug
 }
 
 func parseRunID(link string) int64 {
-	matches := regexp.MustCompile(`/actions/runs/([0-9]+)`).FindStringSubmatch(link)
+	matches := runIDRegex.FindStringSubmatch(link)
 	if len(matches) < 2 {
 		return 0
 	}
@@ -2171,11 +2178,11 @@ func componentFromRepo(repo string) string {
 }
 
 func reportOutputPath(outputDir, component string) string {
-	return filepath.Join(outputDir, component, "README.md")
+	return filepath.Join(outputDir, component, readmeFileName)
 }
 
 func branchReportOutputPath(outputDir, component, branch string) string {
-	return filepath.Join(outputDir, component, "branch", slugify(branch), "README.md")
+	return filepath.Join(outputDir, component, branchDirName, slugify(branch), readmeFileName)
 }
 
 func filterBranchesByPrefix(branches []string) ([]string, []string) {
@@ -2203,12 +2210,12 @@ func buildOtherBranchLinks(component string, branches []string) []branchLink {
 	for _, branch := range sorted {
 		links = append(links, branchLink{
 			Name: branch,
-			Path: filepath.ToSlash(filepath.Join("branch", slugify(branch))) + "/",
+			Path: filepath.ToSlash(filepath.Join(branchDirName, slugify(branch))) + "/",
 		})
 	}
 	return links
 }
 
 func isMainBranch(branch string) bool {
-	return strings.HasPrefix(branch, "main")
+	return strings.HasPrefix(branch, mainBranchPrefix)
 }

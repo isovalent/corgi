@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"text/template"
 	"time"
 )
 
@@ -61,6 +62,18 @@ func TestRenderSeriesChartUsesTemplateMarkup(t *testing.T) {
 	svg := renderSeriesChart(lines, "Failures per workflow")
 	if !strings.Contains(svg, `data-chart="line"`) {
 		t.Fatalf("expected line chart template marker in svg output")
+	}
+}
+
+func TestRenderSVGTemplateUsesErrorTemplateFallback(t *testing.T) {
+	broken := template.Must(template.New("broken").Parse(`{{ index . 0 }}`))
+	svg := renderSVGTemplate(broken, 42)
+
+	if !strings.Contains(svg, `data-chart="error"`) {
+		t.Fatalf("expected error chart template marker in fallback svg output")
+	}
+	if !strings.Contains(svg, "can't index item") {
+		t.Fatalf("expected template execution error message in fallback output")
 	}
 }
 

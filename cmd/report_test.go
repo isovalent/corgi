@@ -259,6 +259,12 @@ func TestReportTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 	if !strings.Contains(rendered, "<details markdown=\"1\"><summary>Table</summary>") {
 		t.Fatalf("expected markdown-enabled details wrapper for report tables")
 	}
+	if !strings.Contains(rendered, "<div class=\"table-wrap\" markdown=\"1\">") {
+		t.Fatalf("expected responsive table wrapper for report tables")
+	}
+	if !strings.Contains(rendered, ".table-wrap {") || !strings.Contains(rendered, "overflow-x: auto;") {
+		t.Fatalf("expected responsive table CSS in report template output")
+	}
 }
 
 func TestBranchTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
@@ -287,6 +293,12 @@ func TestBranchTemplateEnablesMarkdownInDetailsTables(t *testing.T) {
 	rendered := out.String()
 	if !strings.Contains(rendered, "<details markdown=\"1\"><summary>Table</summary>") {
 		t.Fatalf("expected markdown-enabled details wrapper for branch tables")
+	}
+	if !strings.Contains(rendered, "<div class=\"table-wrap\" markdown=\"1\">") {
+		t.Fatalf("expected responsive table wrapper for branch tables")
+	}
+	if !strings.Contains(rendered, ".table-wrap {") || !strings.Contains(rendered, "overflow-x: auto;") {
+		t.Fatalf("expected responsive table CSS in branch template output")
 	}
 }
 

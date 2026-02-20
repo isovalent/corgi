@@ -4,6 +4,32 @@
 - Execution time: {{ .ExecutionTime }}
 - [Back to main report](../../)
 
+<style>
+  .table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .table-wrap table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .table-wrap th,
+  .table-wrap td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
+  }
+
+  @media (max-width: 900px) {
+    .table-wrap table {
+      font-size: 12px;
+    }
+  }
+</style>
+
 {{- range .Results }}
 {{- $window := .Window }}
 {{- $days := .Window.Days }}
@@ -36,11 +62,15 @@
 
 <details markdown="1"><summary>Table</summary>
 
+<div class="table-wrap" markdown="1">
+
 | Rank | Workflow | Test suite | Test owners | Suite owners | Failures | Links |
 | --- | --- | --- | --- | --- | --- | --- |
 {{- range $i, $wf := .Result.WorkflowFailures }}
 | {{ add1 $i }} | {{ escapePipes $wf.Workflow }} | {{ escapePipes (join $wf.TestSuites ", ") }} | {{ escapePipes (join $wf.TestCaseOwners ", ") }} | {{ escapePipes (join $wf.TestSuiteOwners ", ") }} | {{ $wf.Count }} | {{ renderLinks $wf.Links }} |
 {{- end }}
+
+</div>
 
 </details>
 
@@ -48,11 +78,15 @@
 
 <details markdown="1"><summary>Table</summary>
 
+<div class="table-wrap" markdown="1">
+
 | Rank | Workflow | Test suite | Test case | Failure | Test owners | Suite owners | Failures | Links |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 {{- range $i, $group := .Result.WorkflowSuiteFailures }}
 | {{ add1 $i }} | {{ escapePipes $group.Workflow }} | {{ escapePipes $group.TestSuite }} | {{ escapePipes $group.TestCaseName }} | {{ escapePipes $group.FailureMessage }} | {{ escapePipes (join $group.TestCaseOwners ", ") }} | {{ escapePipes (join $group.TestSuiteOwners ", ") }} | {{ $group.Count }} | {{ renderLinks $group.Links }} |
 {{- end }}
+
+</div>
 
 </details>
 

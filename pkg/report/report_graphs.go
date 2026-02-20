@@ -97,65 +97,7 @@ func queryWorkflowBars(
 	repo string,
 	window reportWindow,
 ) ([]workflowBar, error) {
-	query := map[string]any{
-		"size": 0,
-		"query": map[string]any{
-			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-				},
-			},
-		},
-		"aggs": map[string]any{
-			"workflows": map[string]any{
-				"terms": map[string]any{
-					"field": "workflow_name.keyword",
-					"size":  params.Top,
-				},
-				"aggs": map[string]any{
-					"failures": map[string]any{
-						"filter": map[string]any{
-							"terms": map[string]any{"workflow_conclusion": params.FailStatus},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	addWorkflowExclusions(query)
-
-	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
-	if err != nil {
-		return nil, err
-	}
-	buckets, err := getBuckets(resp, "workflows")
-	if err != nil {
-		return nil, err
-	}
-
-	results := make([]workflowBar, 0, len(buckets))
-	for _, bucket := range buckets {
-		workflow := getString(bucket, "key")
-		total := getInt(bucket, "doc_count")
-		failures := 0
-		if failAgg, ok := bucket["failures"].(map[string]any); ok {
-			failures = getInt(failAgg, "doc_count")
-		}
-		results = append(results, workflowBar{Workflow: workflow, TotalRuns: total, TotalFails: failures})
-	}
-
-	sort.Slice(results, func(i, j int) bool {
-		if results[i].TotalRuns == results[j].TotalRuns {
-			return results[i].TotalFails > results[j].TotalFails
-		}
-		return results[i].TotalRuns > results[j].TotalRuns
-	})
-
-	return results, nil
+	return queryWorkflowBarsWithMust(ctx, logger, client, params, buildWorkflowRunMust(window, repo, params.Events))
 }
 
 func queryWorkflowBarsForBranch(
@@ -167,17 +109,27 @@ func queryWorkflowBarsForBranch(
 	window reportWindow,
 	branch string,
 ) ([]workflowBar, error) {
+	return queryWorkflowBarsWithMust(
+		ctx,
+		logger,
+		client,
+		params,
+		buildWorkflowRunMust(window, repo, params.Events, buildTermFilter("head_branch.keyword", branch)),
+	)
+}
+
+func queryWorkflowBarsWithMust(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	must []any,
+) ([]workflowBar, error) {
 	query := map[string]any{
 		"size": 0,
 		"query": map[string]any{
 			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermFilter("head_branch.keyword", branch),
-				},
+				"must": must,
 			},
 		},
 		"aggs": map[string]any{
@@ -267,65 +219,7 @@ func queryDailyTotals(
 	repo string,
 	window reportWindow,
 ) ([]dayPoint, error) {
-	query := map[string]any{
-		"size": 0,
-		"query": map[string]any{
-			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-				},
-			},
-		},
-		"aggs": map[string]any{
-			"per_day": map[string]any{
-				"date_histogram": map[string]any{
-					"field":             "workflow_run_started_at",
-					"calendar_interval": "1d",
-					"min_doc_count":     1,
-				},
-				"aggs": map[string]any{
-					"failures": map[string]any{
-						"filter": map[string]any{
-							"terms": map[string]any{"workflow_conclusion": params.FailStatus},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	addWorkflowExclusions(query)
-
-	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
-	if err != nil {
-		return nil, err
-	}
-
-	buckets, err := getBuckets(resp, "per_day")
-	if err != nil {
-		return nil, err
-	}
-
-	points := make([]dayPoint, 0, len(buckets))
-	for _, bucket := range buckets {
-		keyMillis := getInt64(bucket, "key")
-		date := time.UnixMilli(keyMillis)
-		total := getInt(bucket, "doc_count")
-		failures := 0
-		if failuresAgg, ok := bucket["failures"].(map[string]any); ok {
-			failures = getInt(failuresAgg, "doc_count")
-		}
-		points = append(points, dayPoint{
-			Date:          date,
-			TotalRuns:     total,
-			TotalFailures: failures,
-		})
-	}
-
-	return points, nil
+	return queryDailyWorkflowRunSeries(ctx, logger, client, params, buildWorkflowRunMust(window, repo, params.Events))
 }
 
 func queryDailyTotalsForBranch(
@@ -337,17 +231,27 @@ func queryDailyTotalsForBranch(
 	window reportWindow,
 	branch string,
 ) ([]dayPoint, error) {
+	return queryDailyWorkflowRunSeries(
+		ctx,
+		logger,
+		client,
+		params,
+		buildWorkflowRunMust(window, repo, params.Events, buildTermFilter("head_branch.keyword", branch)),
+	)
+}
+
+func queryDailyWorkflowRunSeries(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	must []any,
+) ([]dayPoint, error) {
 	query := map[string]any{
 		"size": 0,
 		"query": map[string]any{
 			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermFilter("head_branch.keyword", branch),
-				},
+				"must": must,
 			},
 		},
 		"aggs": map[string]any{
@@ -380,46 +284,14 @@ func queryTopWorkflows(
 	window reportWindow,
 	limit int,
 ) ([]string, error) {
-	query := map[string]any{
-		"size": 0,
-		"query": map[string]any{
-			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermsFilter("workflow_conclusion", params.FailStatus),
-				},
-			},
-		},
-		"aggs": map[string]any{
-			"workflows": map[string]any{
-				"terms": map[string]any{
-					"field": "workflow_name.keyword",
-					"size":  limit,
-				},
-			},
-		},
-	}
-
-	addWorkflowExclusions(query)
-
-	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
-	if err != nil {
-		return nil, err
-	}
-
-	buckets, err := getBuckets(resp, "workflows")
-	if err != nil {
-		return nil, err
-	}
-
-	results := make([]string, 0, len(buckets))
-	for _, bucket := range buckets {
-		results = append(results, getString(bucket, "key"))
-	}
-	return results, nil
+	return queryTopWorkflowsWithMust(
+		ctx,
+		logger,
+		client,
+		params,
+		limit,
+		buildWorkflowRunMust(window, repo, params.Events, buildTermsFilter("workflow_conclusion", params.FailStatus)),
+	)
 }
 
 func queryTopWorkflowsForBranch(
@@ -432,18 +304,35 @@ func queryTopWorkflowsForBranch(
 	branch string,
 	limit int,
 ) ([]string, error) {
+	return queryTopWorkflowsWithMust(
+		ctx,
+		logger,
+		client,
+		params,
+		limit,
+		buildWorkflowRunMust(
+			window,
+			repo,
+			params.Events,
+			buildTermsFilter("workflow_conclusion", params.FailStatus),
+			buildTermFilter("head_branch.keyword", branch),
+		),
+	)
+}
+
+func queryTopWorkflowsWithMust(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	limit int,
+	must []any,
+) ([]string, error) {
 	query := map[string]any{
 		"size": 0,
 		"query": map[string]any{
 			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermsFilter("workflow_conclusion", params.FailStatus),
-					buildTermFilter("head_branch.keyword", branch),
-				},
+				"must": must,
 			},
 		},
 		"aggs": map[string]any{
@@ -492,13 +381,9 @@ func queryTopBranchWorkflows(
 			"size": 0,
 			"query": map[string]any{
 				"bool": map[string]any{
-					"must": []any{
-						buildRangeFilter(window.Since, window.Until),
-						buildTypeFilter("workflow_run"),
-						buildRepoTermFilter(repo),
-						buildEventTermsFilter(params.Events),
-						buildTermsFilter("workflow_conclusion", params.FailStatus),
-					},
+					"must": buildWorkflowRunMust(
+						window, repo, params.Events, buildTermsFilter("workflow_conclusion", params.FailStatus),
+					),
 				},
 			},
 			"aggs": map[string]any{
@@ -571,38 +456,13 @@ func queryDailyByWorkflow(
 	window reportWindow,
 	workflow string,
 ) ([]dayPoint, error) {
-	query := map[string]any{
-		"size": 0,
-		"query": map[string]any{
-			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermFilter("workflow_name.keyword", workflow),
-				},
-			},
-		},
-		"aggs": map[string]any{
-			"per_day": map[string]any{
-				"date_histogram": map[string]any{
-					"field":             "workflow_run_started_at",
-					"calendar_interval": "1d",
-					"min_doc_count":     1,
-				},
-				"aggs": map[string]any{
-					"failures": map[string]any{
-						"filter": map[string]any{
-							"terms": map[string]any{"workflow_conclusion": params.FailStatus},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	return queryDailySeries(ctx, logger, client, params.RunsIndex, query)
+	return queryDailyWorkflowRunSeries(
+		ctx,
+		logger,
+		client,
+		params,
+		buildWorkflowRunMust(window, repo, params.Events, buildTermFilter("workflow_name.keyword", workflow)),
+	)
 }
 
 func queryDailyByWorkflowForBranch(
@@ -615,39 +475,7 @@ func queryDailyByWorkflowForBranch(
 	branch string,
 	workflow string,
 ) ([]dayPoint, error) {
-	query := map[string]any{
-		"size": 0,
-		"query": map[string]any{
-			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermFilter("workflow_name.keyword", workflow),
-					buildTermFilter("head_branch.keyword", branch),
-				},
-			},
-		},
-		"aggs": map[string]any{
-			"per_day": map[string]any{
-				"date_histogram": map[string]any{
-					"field":             "workflow_run_started_at",
-					"calendar_interval": "1d",
-					"min_doc_count":     1,
-				},
-				"aggs": map[string]any{
-					"failures": map[string]any{
-						"filter": map[string]any{
-							"terms": map[string]any{"workflow_conclusion": params.FailStatus},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	return queryDailySeries(ctx, logger, client, params.RunsIndex, query)
+	return queryDailyByBranchWorkflow(ctx, logger, client, params, repo, window, branch, workflow)
 }
 
 func queryDailyByBranchWorkflow(
@@ -660,39 +488,19 @@ func queryDailyByBranchWorkflow(
 	branch string,
 	workflow string,
 ) ([]dayPoint, error) {
-	query := map[string]any{
-		"size": 0,
-		"query": map[string]any{
-			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermFilter("workflow_name.keyword", workflow),
-					buildTermFilter("head_branch.keyword", branch),
-				},
-			},
-		},
-		"aggs": map[string]any{
-			"per_day": map[string]any{
-				"date_histogram": map[string]any{
-					"field":             "workflow_run_started_at",
-					"calendar_interval": "1d",
-					"min_doc_count":     1,
-				},
-				"aggs": map[string]any{
-					"failures": map[string]any{
-						"filter": map[string]any{
-							"terms": map[string]any{"workflow_conclusion": params.FailStatus},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	return queryDailySeries(ctx, logger, client, params.RunsIndex, query)
+	return queryDailyWorkflowRunSeries(
+		ctx,
+		logger,
+		client,
+		params,
+		buildWorkflowRunMust(
+			window,
+			repo,
+			params.Events,
+			buildTermFilter("workflow_name.keyword", workflow),
+			buildTermFilter("head_branch.keyword", branch),
+		),
+	)
 }
 
 func queryDailySeries(
@@ -1323,14 +1131,4 @@ func scaleTime(t, min, max time.Time, width float64) float64 {
 		return 0
 	}
 	return ((float64(t.Unix()) - minUnix) / (maxUnix - minUnix)) * width
-}
-
-func escapeXML(input string) string {
-	replacer := strings.NewReplacer(
-		"&", "&amp;",
-		"<", "&lt;",
-		">", "&gt;",
-		"\"", "&quot;",
-	)
-	return replacer.Replace(input)
 }

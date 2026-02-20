@@ -7,11 +7,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -253,7 +256,7 @@ func Run(ctx context.Context, params *Params) error {
 	landingLinks := make([]landingLink, 0, len(reportSpecs))
 
 	for _, spec := range reportSpecs {
-		if !contains(params.Repos, spec.Repository) {
+		if !slices.Contains(params.Repos, spec.Repository) {
 			logger.Debug("Skipping repository not requested", "repo", spec.Repository)
 			continue
 		}
@@ -588,26 +591,6 @@ func windowTag(window reportWindow) string {
 	return fmt.Sprintf(windowTagFmt, window.Days)
 }
 
-func chartTitleTotal() string {
-	return chartTitleTotalFailures
-}
-
-func chartTitleWorkflow() string {
-	return chartTitleWorkflowFailures
-}
-
-func chartTitleBranchWorkflow() string {
-	return chartTitleBranchWorkflowFails
-}
-
-func chartTitleWorkflowBars() string {
-	return chartTitleWorkflowRunFailures
-}
-
-func addOne(value int) int {
-	return value + 1
-}
-
 func reportTemplateFuncs() template.FuncMap {
 	return template.FuncMap{
 		"windowTitle":       windowTitle,
@@ -615,16 +598,26 @@ func reportTemplateFuncs() template.FuncMap {
 		"graphPrefix":       graphPrefix,
 		"branchGraphPrefix": branchGraphPrefix,
 		"escapePipes":       escapePipes,
-		"escapeXML":         escapeXML,
+		"escapeXML":         html.EscapeString,
 		"renderLinks":       renderLinks,
 		"join":              strings.Join,
-		"add1":              addOne,
+		"add1": func(value int) int {
+			return value + 1
+		},
 		"formatFailureRate": formatFailureRate,
 		"formatFailureStat": formatFailureStat,
-		"chartTitleTotal":   chartTitleTotal,
-		"chartTitleWf":      chartTitleWorkflow,
-		"chartTitleBranch":  chartTitleBranchWorkflow,
-		"chartTitleBars":    chartTitleWorkflowBars,
+		"chartTitleTotal": func() string {
+			return chartTitleTotalFailures
+		},
+		"chartTitleWf": func() string {
+			return chartTitleWorkflowFailures
+		},
+		"chartTitleBranch": func() string {
+			return chartTitleBranchWorkflowFails
+		},
+		"chartTitleBars": func() string {
+			return chartTitleWorkflowRunFailures
+		},
 	}
 }
 
@@ -662,12 +655,7 @@ func queryWorkflowRunTotals(
 		"size": 0,
 		"query": map[string]any{
 			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-				},
+				"must": buildWorkflowRunMust(window, repo, params.Events),
 			},
 		},
 		"aggs": map[string]any{
@@ -719,12 +707,7 @@ func queryBranchWorkflowRunTotals(
 			"size": 0,
 			"query": map[string]any{
 				"bool": map[string]any{
-					"must": []any{
-						buildRangeFilter(window.Since, window.Until),
-						buildTypeFilter("workflow_run"),
-						buildRepoTermFilter(repo),
-						buildEventTermsFilter(params.Events),
-					},
+					"must": buildWorkflowRunMust(window, repo, params.Events),
 				},
 			},
 			"aggs": map[string]any{
@@ -816,79 +799,7 @@ func queryWorkflowFailures(
 	repo string,
 	window reportWindow,
 ) ([]workflowCount, error) {
-	query := map[string]any{
-		"size": 0,
-		"query": map[string]any{
-			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermsFilter("workflow_conclusion", params.FailStatus),
-				},
-			},
-		},
-		"aggs": map[string]any{
-			"workflows": map[string]any{
-				"terms": map[string]any{
-					"field": "workflow_name.keyword",
-					"size":  1000,
-				},
-				"aggs": map[string]any{
-					"sample": buildTopHitsAgg(params.MaxLinks),
-				},
-			},
-		},
-	}
-
-	addWorkflowExclusions(query)
-
-	resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
-	if err != nil {
-		return nil, err
-	}
-
-	buckets, err := getBuckets(resp, "workflows")
-	if err != nil {
-		return nil, err
-	}
-
-	results := make([]workflowCount, 0, len(buckets))
-	for _, bucket := range buckets {
-		key := getString(bucket, "key")
-		count := getInt(bucket, "doc_count")
-		links := extractLinksFromBucket(bucket, params.MaxLinks)
-		testOwners, suiteOwners := extractOwnersFromBucket(bucket)
-		results = append(results, workflowCount{
-			Workflow:        key,
-			Count:           count,
-			TestCaseOwners:  uniqueSorted(testOwners),
-			TestSuiteOwners: uniqueSorted(suiteOwners),
-			Links:           links,
-		})
-	}
-
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].Count > results[j].Count
-	})
-	if len(results) > params.Top {
-		results = results[:params.Top]
-	}
-
-	for i := range results {
-		suites, testOwners, suiteOwners, err := queryWorkflowFailureMeta(
-			ctx, logger, client, params, repo, window, results[i].Workflow, "",
-		)
-		if err != nil {
-			return nil, err
-		}
-		results[i].TestSuites = suites
-		results[i].TestCaseOwners = testOwners
-		results[i].TestSuiteOwners = suiteOwners
-	}
-
-	return results, nil
+	return queryWorkflowFailuresWithBranch(ctx, logger, client, params, repo, window, "")
 }
 
 func queryWorkflowFailuresForBranch(
@@ -900,18 +811,28 @@ func queryWorkflowFailuresForBranch(
 	window reportWindow,
 	branch string,
 ) ([]workflowCount, error) {
+	return queryWorkflowFailuresWithBranch(ctx, logger, client, params, repo, window, branch)
+}
+
+func queryWorkflowFailuresWithBranch(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	repo string,
+	window reportWindow,
+	branch string,
+) ([]workflowCount, error) {
+	must := buildWorkflowRunMust(window, repo, params.Events, buildTermsFilter("workflow_conclusion", params.FailStatus))
+	if branch != "" {
+		must = append(must, buildTermFilter("head_branch.keyword", branch))
+	}
+
 	query := map[string]any{
 		"size": 0,
 		"query": map[string]any{
 			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermsFilter("workflow_conclusion", params.FailStatus),
-					buildTermFilter("head_branch.keyword", branch),
-				},
+				"must": must,
 			},
 		},
 		"aggs": map[string]any{
@@ -943,8 +864,7 @@ func queryWorkflowFailuresForBranch(
 	for _, bucket := range buckets {
 		key := getString(bucket, "key")
 		count := getInt(bucket, "doc_count")
-		links := extractLinksFromBucket(bucket, params.MaxLinks)
-		testOwners, suiteOwners := extractOwnersFromBucket(bucket)
+		links, testOwners, suiteOwners, _ := extractBucketDetails(bucket, params.MaxLinks)
 		results = append(results, workflowCount{
 			Workflow:        key,
 			Count:           count,
@@ -988,13 +908,9 @@ func queryFailureBranches(
 		"size": 0,
 		"query": map[string]any{
 			"bool": map[string]any{
-				"must": []any{
-					buildRangeFilter(window.Since, window.Until),
-					buildTypeFilter("workflow_run"),
-					buildRepoTermFilter(repo),
-					buildEventTermsFilter(params.Events),
-					buildTermsFilter("workflow_conclusion", params.FailStatus),
-				},
+				"must": buildWorkflowRunMust(
+					window, repo, params.Events, buildTermsFilter("workflow_conclusion", params.FailStatus),
+				),
 			},
 		},
 		"aggs": map[string]any{
@@ -1047,53 +963,9 @@ func buildTrends(
 	repo string,
 	window reportWindow,
 ) ([]trendItem, error) {
-	current, err := queryFailureGroups(ctx, logger, client, params, repo, window)
-	if err != nil {
-		return nil, err
-	}
-
-	prevWindow := reportWindow{
-		Since: window.Since.AddDate(0, 0, -window.Days),
-		Until: window.Since,
-		Days:  window.Days,
-	}
-	previous, err := queryFailureGroups(ctx, logger, client, params, repo, prevWindow)
-	if err != nil {
-		return nil, err
-	}
-
-	prevMap := map[string]int{}
-	for _, item := range previous {
-		prevMap[item.Key] = item.Count
-	}
-
-	trends := make([]trendItem, 0, len(current))
-	for _, item := range current {
-		prev := prevMap[item.Key]
-		status := "🟠"
-		if item.Count < prev {
-			status = "🟢"
-		} else if item.Count > prev {
-			status = "🔴"
-		}
-		label := fmt.Sprintf("`%s` `%s`", item.TestCaseName, item.FailureMessage)
-		trends = append(trends, trendItem{
-			Workflow: item.Workflow,
-			Label:    label,
-			Current:  item.Count,
-			Previous: prev,
-			Status:   status,
-		})
-	}
-
-	sort.Slice(trends, func(i, j int) bool {
-		return trends[i].Current > trends[j].Current
+	return buildTrendsForWindow(params.Top, window, func(w reportWindow) ([]reportGroup, error) {
+		return queryFailureGroups(ctx, logger, client, params, repo, w)
 	})
-	if len(trends) > params.Top {
-		trends = trends[:params.Top]
-	}
-
-	return trends, nil
 }
 
 func buildTrendsForBranch(
@@ -1105,7 +977,17 @@ func buildTrendsForBranch(
 	window reportWindow,
 	branch string,
 ) ([]trendItem, error) {
-	current, err := queryFailureGroupsForBranch(ctx, logger, client, params, repo, window, branch)
+	return buildTrendsForWindow(params.Top, window, func(w reportWindow) ([]reportGroup, error) {
+		return queryFailureGroupsForBranch(ctx, logger, client, params, repo, w, branch)
+	})
+}
+
+func buildTrendsForWindow(
+	top int,
+	window reportWindow,
+	queryFn func(reportWindow) ([]reportGroup, error),
+) ([]trendItem, error) {
+	current, err := queryFn(window)
 	if err != nil {
 		return nil, err
 	}
@@ -1115,7 +997,7 @@ func buildTrendsForBranch(
 		Until: window.Since,
 		Days:  window.Days,
 	}
-	previous, err := queryFailureGroupsForBranch(ctx, logger, client, params, repo, prevWindow, branch)
+	previous, err := queryFn(prevWindow)
 	if err != nil {
 		return nil, err
 	}
@@ -1147,8 +1029,8 @@ func buildTrendsForBranch(
 	sort.Slice(trends, func(i, j int) bool {
 		return trends[i].Current > trends[j].Current
 	})
-	if len(trends) > params.Top {
-		trends = trends[:params.Top]
+	if len(trends) > top {
+		trends = trends[:top]
 	}
 
 	return trends, nil
@@ -1164,14 +1046,13 @@ func queryWorkflowFailureMeta(
 	workflow string,
 	branch string,
 ) ([]string, []string, []string, error) {
-	must := []any{
-		buildRangeFilter(window.Since, window.Until),
-		buildTypeFilter("test_case"),
-		buildRepoTermFilter(repo),
-		buildEventTermsFilter(params.Events),
-		buildTermsFilter("test_case_status", params.TestStatus),
+	must := buildTestCaseFailureMust(
+		window,
+		repo,
+		params.Events,
+		params.TestStatus,
 		buildTermFilter("workflow_name.keyword", workflow),
-	}
+	)
 	if branch != "" {
 		must = append(must, buildTermFilter("head_branch.keyword", branch))
 	}
@@ -1259,15 +1140,10 @@ func scanFailureOwners(
 		}
 	}
 
-	return uniqueSorted(keysFromSet(suites)), uniqueSorted(keysFromSet(testOwners)), uniqueSorted(keysFromSet(suiteOwners)), nil
-}
-
-func keysFromSet(input map[string]struct{}) []string {
-	result := make([]string, 0, len(input))
-	for key := range input {
-		result = append(result, key)
-	}
-	return result
+	return uniqueSorted(slices.Collect(maps.Keys(suites))),
+		uniqueSorted(slices.Collect(maps.Keys(testOwners))),
+		uniqueSorted(slices.Collect(maps.Keys(suiteOwners))),
+		nil
 }
 
 func queryBranchWorkflowSuiteFailures(
@@ -1286,13 +1162,7 @@ func queryBranchWorkflowSuiteFailures(
 			"size": 0,
 			"query": map[string]any{
 				"bool": map[string]any{
-					"must": []any{
-						buildRangeFilter(window.Since, window.Until),
-						buildTypeFilter("test_case"),
-						buildRepoTermFilter(repo),
-						buildEventTermsFilter(params.Events),
-						buildTermsFilter("test_case_status", params.TestStatus),
-					},
+					"must": buildTestCaseFailureMust(window, repo, params.Events, params.TestStatus),
 				},
 			},
 			"aggs": map[string]any{
@@ -1339,8 +1209,7 @@ func queryBranchWorkflowSuiteFailures(
 			workflow := getStringFromMap(keyMap, "workflow")
 			suite := getStringFromMap(keyMap, "suite")
 			count := getInt(bucket, "doc_count")
-			links := extractLinksFromBucket(bucket, params.MaxLinks)
-			testOwners, suiteOwners := extractOwnersFromBucket(bucket)
+			links, testOwners, suiteOwners, _ := extractBucketDetails(bucket, params.MaxLinks)
 			results = append(results, workflowSuiteCount{
 				Branch:          branch,
 				Workflow:        workflow,
@@ -1385,14 +1254,13 @@ func queryWorkflowSuiteFailureGroupsForBranch(
 			"size": 0,
 			"query": map[string]any{
 				"bool": map[string]any{
-					"must": []any{
-						buildRangeFilter(window.Since, window.Until),
-						buildTypeFilter("test_case"),
-						buildRepoTermFilter(repo),
-						buildEventTermsFilter(params.Events),
-						buildTermsFilter("test_case_status", params.TestStatus),
+					"must": buildTestCaseFailureMust(
+						window,
+						repo,
+						params.Events,
+						params.TestStatus,
 						buildTermFilter("head_branch.keyword", branch),
-					},
+					),
 				},
 			},
 			"aggs": map[string]any{
@@ -1442,8 +1310,7 @@ func queryWorkflowSuiteFailureGroupsForBranch(
 			message := getStringFromMap(keyMap, "message")
 			normalized := normalizeFailureMessage(message)
 			count := getInt(bucket, "doc_count")
-			links := extractLinksFromBucket(bucket, params.MaxLinks)
-			testOwners, suiteOwners := extractOwnersFromBucket(bucket)
+			links, testOwners, suiteOwners, _ := extractBucketDetails(bucket, params.MaxLinks)
 
 			key := fmt.Sprintf("%s::%s::%s::%s", branch, workflow, testCase, normalized)
 			group, ok := groups[key]
@@ -1494,109 +1361,14 @@ func queryFailureGroups(
 	repo string,
 	window reportWindow,
 ) ([]reportGroup, error) {
-	groups := map[string]*reportGroup{}
-	var afterKey map[string]any
-
-	for {
-		query := map[string]any{
-			"size": 0,
-			"query": map[string]any{
-				"bool": map[string]any{
-					"must": []any{
-						buildRangeFilter(window.Since, window.Until),
-						buildTypeFilter("test_case"),
-						buildRepoTermFilter(repo),
-						buildEventTermsFilter(params.Events),
-						buildTermsFilter("test_case_status", params.TestStatus),
-					},
-				},
-			},
-			"aggs": map[string]any{
-				"failures": map[string]any{
-					"composite": map[string]any{
-						"size": 1000,
-						"sources": []any{
-							map[string]any{"workflow": map[string]any{"terms": map[string]any{"field": "workflow_name.keyword"}}},
-							map[string]any{"test_case": map[string]any{"terms": map[string]any{"field": "test_case_name.keyword"}}},
-							map[string]any{"message": map[string]any{"terms": map[string]any{"field": "test_case_failure_message.keyword"}}},
-						},
-					},
-					"aggs": map[string]any{
-						"sample": buildTopHitsAgg(params.MaxLinks),
-					},
-				},
-			},
-		}
-
-		if afterKey != nil {
-			query["aggs"].(map[string]any)["failures"].(map[string]any)["composite"].(map[string]any)["after"] = afterKey
-		}
-
-		addWorkflowExclusions(query)
-
-		resp, err := doSearch(ctx, logger, client, params.RunsIndex, query)
-		if err != nil {
-			return nil, err
-		}
-
-		agg, err := getAgg(resp, "failures")
-		if err != nil {
-			return nil, err
-		}
-
-		buckets, err := getBucketArray(agg)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, bucket := range buckets {
-			keyMap := getMap(bucket, "key")
-			workflow := getStringFromMap(keyMap, "workflow")
-			testCase := getStringFromMap(keyMap, "test_case")
-			message := getStringFromMap(keyMap, "message")
-			count := getInt(bucket, "doc_count")
-			normalized := normalizeFailureMessage(message)
-			key := fmt.Sprintf("%s::%s::%s", workflow, testCase, normalized)
-
-			group, ok := groups[key]
-			if !ok {
-				group = &reportGroup{
-					Key:            key,
-					TestCaseName:   testCase,
-					FailureMessage: normalized,
-					Workflow:       workflow,
-				}
-				groups[key] = group
-			}
-			group.Count += count
-
-			links, owners, suiteOwners := extractFailureGroupDetails(bucket, params.MaxLinks)
-			group.Links = mergeLinks(group.Links, links, params.MaxLinks)
-			group.TestCaseOwners = mergeStrings(group.TestCaseOwners, owners)
-			group.TestSuiteOwners = mergeStrings(group.TestSuiteOwners, suiteOwners)
-		}
-
-		afterKey, _ = agg["after_key"].(map[string]any)
-		if afterKey == nil {
-			break
-		}
-	}
-
-	results := make([]reportGroup, 0, len(groups))
-	for _, group := range groups {
-		group.TestCaseOwners = uniqueSorted(group.TestCaseOwners)
-		group.TestSuiteOwners = uniqueSorted(group.TestSuiteOwners)
-		results = append(results, *group)
-	}
-
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].Count > results[j].Count
-	})
-	if len(results) > params.Top {
-		results = results[:params.Top]
-	}
-
-	return results, nil
+	return queryFailureGroupsWithMust(
+		ctx,
+		logger,
+		client,
+		params,
+		buildTestCaseFailureMust(window, repo, params.Events, params.TestStatus),
+		true,
+	)
 }
 
 func queryFailureGroupsForBranch(
@@ -1608,38 +1380,57 @@ func queryFailureGroupsForBranch(
 	window reportWindow,
 	branch string,
 ) ([]reportGroup, error) {
+	return queryFailureGroupsWithMust(
+		ctx,
+		logger,
+		client,
+		params,
+		buildTestCaseFailureMust(
+			window,
+			repo,
+			params.Events,
+			params.TestStatus,
+			buildTermFilter("head_branch.keyword", branch),
+		),
+		false,
+	)
+}
+
+func queryFailureGroupsWithMust(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *opensearch.Client,
+	params *Params,
+	must []any,
+	includeDetails bool,
+) ([]reportGroup, error) {
 	groups := map[string]*reportGroup{}
 	var afterKey map[string]any
 
 	for {
+		failuresAgg := map[string]any{
+			"composite": map[string]any{
+				"size": 1000,
+				"sources": []any{
+					map[string]any{"workflow": map[string]any{"terms": map[string]any{"field": "workflow_name.keyword"}}},
+					map[string]any{"test_case": map[string]any{"terms": map[string]any{"field": "test_case_name.keyword"}}},
+					map[string]any{"message": map[string]any{"terms": map[string]any{"field": "test_case_failure_message.keyword"}}},
+				},
+			},
+		}
+		if includeDetails {
+			failuresAgg["aggs"] = map[string]any{"sample": buildTopHitsAgg(params.MaxLinks)}
+		}
+
 		query := map[string]any{
 			"size": 0,
 			"query": map[string]any{
 				"bool": map[string]any{
-					"must": []any{
-						buildRangeFilter(window.Since, window.Until),
-						buildTypeFilter("test_case"),
-						buildRepoTermFilter(repo),
-						buildEventTermsFilter(params.Events),
-						buildTermsFilter("test_case_status", params.TestStatus),
-						buildTermFilter("head_branch.keyword", branch),
-					},
+					"must": must,
 				},
 			},
 			"aggs": map[string]any{
-				"failures": map[string]any{
-					"composite": map[string]any{
-						"size": 1000,
-						"sources": []any{
-							map[string]any{"workflow": map[string]any{"terms": map[string]any{"field": "workflow_name.keyword"}}},
-							map[string]any{"test_case": map[string]any{"terms": map[string]any{"field": "test_case_name.keyword"}}},
-							map[string]any{"message": map[string]any{"terms": map[string]any{"field": "test_case_failure_message.keyword"}}},
-						},
-					},
-					"aggs": map[string]any{
-						"sample": buildTopHitsAgg(params.MaxLinks),
-					},
-				},
+				"failures": failuresAgg,
 			},
 		}
 
@@ -1684,6 +1475,13 @@ func queryFailureGroupsForBranch(
 				groups[key] = group
 			}
 			group.Count += count
+
+			if includeDetails {
+				links, owners, suiteOwners, _ := extractBucketDetails(bucket, params.MaxLinks)
+				group.Links = mergeLinks(group.Links, links, params.MaxLinks)
+				group.TestCaseOwners = mergeStrings(group.TestCaseOwners, owners)
+				group.TestSuiteOwners = mergeStrings(group.TestSuiteOwners, suiteOwners)
+			}
 		}
 
 		afterKey, _ = agg["after_key"].(map[string]any)
@@ -1694,6 +1492,10 @@ func queryFailureGroupsForBranch(
 
 	results := make([]reportGroup, 0, len(groups))
 	for _, group := range groups {
+		if includeDetails {
+			group.TestCaseOwners = uniqueSorted(group.TestCaseOwners)
+			group.TestSuiteOwners = uniqueSorted(group.TestSuiteOwners)
+		}
 		results = append(results, *group)
 	}
 
@@ -1739,17 +1541,6 @@ func renderLinks(links []reportLink) string {
 		}
 	}
 	return strings.Join(entries, linkEntriesSep)
-}
-
-func formatOwners(testOwners, suiteOwners []string) string {
-	parts := []string{}
-	if len(testOwners) > 0 {
-		parts = append(parts, fmt.Sprintf("test: %s", strings.Join(testOwners, ", ")))
-	}
-	if len(suiteOwners) > 0 {
-		parts = append(parts, fmt.Sprintf("suite: %s", strings.Join(suiteOwners, ", ")))
-	}
-	return strings.Join(parts, " | ")
 }
 
 func escapePipes(s string) string {
@@ -1832,6 +1623,27 @@ func buildTermsFilter(field string, values []string) map[string]any {
 	return map[string]any{"terms": map[string]any{field: values}}
 }
 
+func buildWorkflowRunMust(window reportWindow, repo string, events []string, extra ...any) []any {
+	must := []any{
+		buildRangeFilter(window.Since, window.Until),
+		buildTypeFilter("workflow_run"),
+		buildRepoTermFilter(repo),
+		buildEventTermsFilter(events),
+	}
+	return append(must, extra...)
+}
+
+func buildTestCaseFailureMust(window reportWindow, repo string, events, testStatus []string, extra ...any) []any {
+	must := []any{
+		buildRangeFilter(window.Since, window.Until),
+		buildTypeFilter("test_case"),
+		buildRepoTermFilter(repo),
+		buildEventTermsFilter(events),
+		buildTermsFilter("test_case_status", testStatus),
+	}
+	return append(must, extra...)
+}
+
 func buildWorkflowExclusionFilters() []any {
 	return []any{
 		map[string]any{"wildcard": map[string]any{"workflow_name.keyword": "Ariane*"}},
@@ -1891,21 +1703,6 @@ func getBuckets(resp map[string]any, name string) ([]map[string]any, error) {
 	return getBucketArray(agg)
 }
 
-func getTermKeys(resp map[string]any, name string) ([]string, error) {
-	buckets, err := getBuckets(resp, name)
-	if err != nil {
-		return nil, err
-	}
-	keys := make([]string, 0, len(buckets))
-	for _, bucket := range buckets {
-		key := getString(bucket, "key")
-		if key != "" {
-			keys = append(keys, key)
-		}
-	}
-	return uniqueSorted(keys), nil
-}
-
 func getBucketArray(agg map[string]any) ([]map[string]any, error) {
 	bucketsAny, ok := agg["buckets"].([]any)
 	if !ok {
@@ -1936,50 +1733,46 @@ func getStringFromMap(m map[string]any, key string) string {
 	return ""
 }
 
+func asInt(value any) int {
+	switch v := value.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	case int64:
+		return int(v)
+	default:
+		return 0
+	}
+}
+
+func asInt64(value any) int64 {
+	switch v := value.(type) {
+	case float64:
+		return int64(v)
+	case int64:
+		return v
+	case int:
+		return int64(v)
+	default:
+		return 0
+	}
+}
+
 func getIntFromMap(m map[string]any, key string) int {
-	if val, ok := m[key].(float64); ok {
-		return int(val)
-	}
-	if val, ok := m[key].(int); ok {
-		return val
-	}
-	if val, ok := m[key].(int64); ok {
-		return int(val)
-	}
-	return 0
+	return asInt(m[key])
 }
 
 func getInt64FromMap(m map[string]any, key string) int64 {
-	if val, ok := m[key].(float64); ok {
-		return int64(val)
-	}
-	if val, ok := m[key].(int64); ok {
-		return val
-	}
-	if val, ok := m[key].(int); ok {
-		return int64(val)
-	}
-	return 0
+	return asInt64(m[key])
 }
 
 func getInt(bucket map[string]any, key string) int {
-	if val, ok := bucket[key].(float64); ok {
-		return int(val)
-	}
-	if val, ok := bucket[key].(int); ok {
-		return val
-	}
-	return 0
+	return asInt(bucket[key])
 }
 
 func getInt64(bucket map[string]any, key string) int64 {
-	if val, ok := bucket[key].(float64); ok {
-		return int64(val)
-	}
-	if val, ok := bucket[key].(int64); ok {
-		return val
-	}
-	return 0
+	return asInt64(bucket[key])
 }
 
 func getMap(bucket map[string]any, key string) map[string]any {
@@ -1989,22 +1782,11 @@ func getMap(bucket map[string]any, key string) map[string]any {
 	return map[string]any{}
 }
 
-func extractLinksFromBucket(bucket map[string]any, maxLinks int) []reportLink {
-	hits := extractTopHits(bucket)
-	return extractLinksFromHits(hits, maxLinks)
-}
-
-func extractOwnersFromBucket(bucket map[string]any) ([]string, []string) {
-	hits := extractTopHits(bucket)
-	owners, suiteOwners, _ := extractOwnersFromHits(hits)
-	return owners, suiteOwners
-}
-
-func extractFailureGroupDetails(bucket map[string]any, maxLinks int) ([]reportLink, []string, []string) {
+func extractBucketDetails(bucket map[string]any, maxLinks int) ([]reportLink, []string, []string, []string) {
 	hits := extractTopHits(bucket)
 	links := extractLinksFromHits(hits, maxLinks)
-	owners, suiteOwners, _ := extractOwnersFromHits(hits)
-	return links, owners, suiteOwners
+	owners, suiteOwners, suites := extractOwnersFromHits(hits)
+	return links, owners, suiteOwners, suites
 }
 
 func extractTopHits(bucket map[string]any) []map[string]any {
@@ -2113,9 +1895,7 @@ func mergeLinks(existing, incoming []reportLink, limit int) []reportLink {
 }
 
 func mergeStrings(existing, incoming []string) []string {
-	result := append(existing[:0:0], existing...)
-	result = append(result, incoming...)
-	return result
+	return slices.Concat(existing, incoming)
 }
 
 func uniqueSorted(items []string) []string {
@@ -2132,15 +1912,6 @@ func uniqueSorted(items []string) []string {
 	}
 	sort.Strings(result)
 	return result
-}
-
-func contains(list []string, value string) bool {
-	for _, item := range list {
-		if item == value {
-			return true
-		}
-	}
-	return false
 }
 
 // Normalization
@@ -2185,16 +1956,6 @@ func parseRunID(link string) int64 {
 		return 0
 	}
 	return value
-}
-
-func componentFromRepo(repo string) string {
-	parts := strings.Split(repo, "/")
-	for i := len(parts) - 1; i >= 0; i-- {
-		if parts[i] != "" {
-			return parts[i]
-		}
-	}
-	return slugify(repo)
 }
 
 func reportOutputPath(outputDir, component string) string {

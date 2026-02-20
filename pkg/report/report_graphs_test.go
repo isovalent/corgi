@@ -119,7 +119,7 @@ func TestRenderSVGTemplateUsesErrorTemplateFallback(t *testing.T) {
 	if !strings.Contains(svg, `data-chart="error"`) {
 		t.Fatalf("expected error chart template marker in fallback svg output")
 	}
-	if !strings.Contains(svg, "can't index item") {
+	if !strings.Contains(svg, "error calling index:") || !strings.Contains(svg, "index item of type int") {
 		t.Fatalf("expected template execution error message in fallback output")
 	}
 }

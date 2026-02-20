@@ -79,56 +79,65 @@ func TestFormatFailureStat(t *testing.T) {
 	}
 }
 
-func TestRenderLinksUsesRunNumber(t *testing.T) {
-	links := []reportLink{{Workflow: "https://github.com/cilium/cilium/actions/runs/22174599299"}}
-	out := renderLinks(links)
-	expected := "[run#22174599299](https://github.com/cilium/cilium/actions/runs/22174599299)"
-	if out != expected {
-		t.Fatalf("unexpected markdown links output: got %q want %q", out, expected)
+func TestRenderLinks(t *testing.T) {
+	tests := []struct {
+		name  string
+		links []reportLink
+		want  string
+	}{
+		{
+			name:  "run id from workflow url",
+			links: []reportLink{{Workflow: "https://github.com/cilium/cilium/actions/runs/22174599299"}},
+			want:  "[run#22174599299](https://github.com/cilium/cilium/actions/runs/22174599299)",
+		},
+		{
+			name: "comma separated runs",
+			links: []reportLink{
+				{Workflow: "https://github.com/cilium/cilium/actions/runs/1"},
+				{Workflow: "https://github.com/cilium/cilium/actions/runs/2"},
+			},
+			want: "[run#1](https://github.com/cilium/cilium/actions/runs/1), [run#2](https://github.com/cilium/cilium/actions/runs/2)",
+		},
+		{
+			name:  "run and job",
+			links: []reportLink{{Workflow: "https://github.com/cilium/cilium/actions/runs/3", Job: "https://github.com/cilium/cilium/actions/jobs/9"}},
+			want:  "[run#3](https://github.com/cilium/cilium/actions/runs/3) / [job](https://github.com/cilium/cilium/actions/jobs/9)",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := renderLinks(tt.links); got != tt.want {
+				t.Fatalf("unexpected markdown links output: got %q want %q", got, tt.want)
+			}
+		})
 	}
 }
 
-func TestRenderLinksCommaSeparated(t *testing.T) {
-	links := []reportLink{
-		{Workflow: "https://github.com/cilium/cilium/actions/runs/1"},
-		{Workflow: "https://github.com/cilium/cilium/actions/runs/2"},
+func TestReportPaths(t *testing.T) {
+	tests := []struct {
+		name string
+		got  string
+		want string
+	}{
+		{
+			name: "report",
+			got:  reportOutputPath("/tmp/output", "cilium"),
+			want: "/tmp/output/cilium/README.md",
+		},
+		{
+			name: "branch report",
+			got:  branchReportOutputPath("/tmp/output", "tetragon", "feature/foo"),
+			want: "/tmp/output/tetragon/branch/feature-foo/README.md",
+		},
 	}
-	out := renderLinks(links)
-	expected := "[run#1](https://github.com/cilium/cilium/actions/runs/1), [run#2](https://github.com/cilium/cilium/actions/runs/2)"
-	if out != expected {
-		t.Fatalf("unexpected markdown links output: got %q want %q", out, expected)
-	}
-}
 
-func TestParseRunID(t *testing.T) {
-	id := parseRunID("https://github.com/cilium/cilium/actions/runs/22174599299")
-	if id != 22174599299 {
-		t.Fatalf("unexpected run id: %d", id)
-	}
-}
-
-func TestComponentFromRepo(t *testing.T) {
-	component := componentFromRepo("cilium/cilium")
-	if component != "cilium" {
-		t.Fatalf("unexpected component: %s", component)
-	}
-	component = componentFromRepo("cilium/tetragon")
-	if component != "tetragon" {
-		t.Fatalf("unexpected component: %s", component)
-	}
-}
-
-func TestReportOutputPath(t *testing.T) {
-	path := reportOutputPath("/tmp/output", "cilium")
-	if path != "/tmp/output/cilium/README.md" {
-		t.Fatalf("unexpected path: %s", path)
-	}
-}
-
-func TestBranchReportOutputPath(t *testing.T) {
-	path := branchReportOutputPath("/tmp/output", "tetragon", "feature/foo")
-	if path != "/tmp/output/tetragon/branch/feature-foo/README.md" {
-		t.Fatalf("unexpected path: %s", path)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.got != tt.want {
+				t.Fatalf("unexpected path: got %q want %q", tt.got, tt.want)
+			}
+		})
 	}
 }
 

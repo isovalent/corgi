@@ -662,6 +662,18 @@ func TestWriteReportCSSWritesFile(t *testing.T) {
 	if strings.Contains(rendered, "overflow-wrap: anywhere;") {
 		t.Fatalf("expected anywhere overflow wrapping to be removed from external css")
 	}
+	if !strings.Contains(rendered, "--report-page-gutter:") {
+		t.Fatalf("expected configurable page gutter in external css")
+	}
+	if !strings.Contains(rendered, "--report-page-gutter: clamp(1.5rem, 4vw, 4rem);") {
+		t.Fatalf("expected larger default page gutter in external css")
+	}
+	if !strings.Contains(rendered, ".page-content .wrapper") {
+		t.Fatalf("expected GitHub Pages wrapper width override in external css")
+	}
+	if !strings.Contains(rendered, "100vw - (2 * var(--report-page-gutter))") {
+		t.Fatalf("expected wide viewport-based page width in external css")
+	}
 }
 
 func TestReportTemplateIncludesGraphLayout(t *testing.T) {

@@ -650,6 +650,18 @@ func TestWriteReportCSSWritesFile(t *testing.T) {
 	if !strings.Contains(rendered, ".right") {
 		t.Fatalf("expected shared branch styles in external css")
 	}
+	if !strings.Contains(rendered, "table-layout: auto;") {
+		t.Fatalf("expected responsive auto table layout in external css")
+	}
+	if strings.Contains(rendered, "table-layout: fixed;") {
+		t.Fatalf("expected fixed table layout to be removed from external css")
+	}
+	if !strings.Contains(rendered, "overflow-wrap: break-word;") {
+		t.Fatalf("expected break-word overflow wrapping in external css")
+	}
+	if strings.Contains(rendered, "overflow-wrap: anywhere;") {
+		t.Fatalf("expected anywhere overflow wrapping to be removed from external css")
+	}
 }
 
 func TestReportTemplateIncludesGraphLayout(t *testing.T) {

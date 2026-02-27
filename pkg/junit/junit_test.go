@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -208,4 +209,36 @@ func TestFilterOwners(t *testing.T) {
 	wfOwners := filterWorkflowOwners(owners, tests)
 	assert.Contains(t, wfOwners, "@ci/owner2")
 	assert.Len(t, wfOwners, 1)
+}
+
+func TestParseDuration(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected time.Duration
+	}{
+		{
+			name:     "integer",
+			input:    "15",
+			expected: 15 * time.Second,
+		},
+		{
+			name:     "decimal",
+			input:    "0.154",
+			expected: 154 * time.Millisecond,
+		},
+		{
+			name:     "scientific-notation",
+			input:    "4.7539e-05",
+			expected: 47539 * time.Nanosecond,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseDuration(tt.input)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, got)
+		})
+	}
 }

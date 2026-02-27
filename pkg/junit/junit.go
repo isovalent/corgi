@@ -9,8 +9,10 @@ import (
 	"io/fs"
 	"log/slog"
 	"maps"
+	"math"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -109,6 +111,19 @@ func parseTime(timestamp string) (result time.Time, err error) {
 	return result, err
 }
 
+// parseDuration is wrapper for time.Duration that also supports parsing
+// scientific notation.
+func parseDuration(raw string) (time.Duration, error) {
+	seconds, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		return 0, err
+	}
+	if math.IsNaN(seconds) || math.IsInf(seconds, 0) {
+		seconds = 0
+	}
+	return time.Duration(seconds * float64(time.Second)), nil
+}
+
 func parseTestsuite(
 	suite *Testsuite,
 	run *types.WorkflowRun,
@@ -126,9 +141,9 @@ func parseTestsuite(
 	}
 
 	if suite.Time != "" {
-		duration, err := time.ParseDuration(fmt.Sprintf("%ss", suite.Time))
+		duration, err := parseDuration(suite.Time)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse duration '%ss': %w", suite.Time, err)
+			return nil, nil, fmt.Errorf("unable to parse duration '%s': %w", suite.Time, err)
 		}
 		s.Duration = duration
 	}
@@ -198,9 +213,9 @@ func parseTestsuite(
 		}
 
 		if testcase.Time != "" {
-			duration, err := time.ParseDuration(fmt.Sprintf("%ss", testcase.Time))
+			duration, err := parseDuration(testcase.Time)
 			if err != nil {
-				return nil, nil, fmt.Errorf("unable to parse duration '%ss': %w", testcase.Time, err)
+				return nil, nil, fmt.Errorf("unable to parse duration '%s': %w", testcase.Time, err)
 			}
 			tc.Duration = duration
 		}

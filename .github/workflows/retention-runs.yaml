@@ -1,0 +1,52 @@
+name: Trim old runs documents
+
+# Deletes documents older than RETENTION_DAYS from the runs index and reclaims
+# the freed disk, preventing the index from filling the OpenSearch data node and
+# tripping the flood-stage read-only block.
+# See .github/opensearch/README.md.
+
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+    inputs:
+      indices:
+        description: "Space-separated list of indices to trim"
+        required: false
+        type: string
+        default: "runs-oss"
+      retention-days:
+        description: "Delete documents older than this many days"
+        required: false
+        type: string
+        default: "190"
+      dry-run:
+        description: "Only count matching documents, do not delete"
+        required: false
+        type: boolean
+        default: false
+
+# The `inputs` context is only populated for workflow_dispatch, so the values
+# below are also what the scheduled run uses. Keep the fallbacks: without them
+# RETENTION_DAYS is empty on a schedule trigger and the cutoff becomes invalid.
+env:
+  TARGET_INDICES: ${{ inputs.indices || 'runs-oss' }}
+  RETENTION_DAYS: ${{ inputs.retention-days || '190' }}
+  DRY_RUN: ${{ inputs.dry-run || 'false' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  trim:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trim old documents and reclaim space
+        env:
+          OPENSEARCH_URL: ${{ secrets.OPENSEARCH_URL }}
+          OPENSEARCH_USER: ${{ secrets.OPENSEARCH_USER }}
+          OPENSEARCH_PASS: ${{ secrets.OPENSEARCH_PASS }}
+        run: |
+          ./.github/scripts/trim-runs-index.sh $TARGET_INDICES

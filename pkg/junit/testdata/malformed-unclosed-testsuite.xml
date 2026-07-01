@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuites tests="3" disabled="0" errors="0" failures="0" time="1.5">
+      <testsuite name="connectivity test" id="0" package="cilium" tests="3" errors="0" failures="0" skipped="0" time="1.5" timestamp="0001-01-01T00:00:00">
+          <testcase name="test-a" classname="connectivity test" status="passed" time="0.5"></testcase>
+          <testcase name="test-b" classname="connectivity test" status="passed" time="0.5"></testcase>
+          <testcase name="test-c" classname="connectivity test" status="passed" time="0.5">

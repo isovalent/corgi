@@ -24,6 +24,13 @@ var (
 	ErrInvalidFailureData = errors.New("unsupported format for testcase.failure.data")
 	ErrUnbalancedOwners   = errors.New("expected list of '@<owner> (<test>)'")
 
+	// ErrMalformedFile marks a JUnit file whose *content* is unparseable
+	// (invalid XML or invalid testsuite fields). Such a file is recoverable on
+	// a per-file basis, so callers skip it and continue with the remaining
+	// files. It deliberately does NOT wrap open/read errors, which are systemic
+	// and must still abort the scrape.
+	ErrMalformedFile = errors.New("malformed junit file")
+
 	metadataDelimiter   = ";metadata;"
 	reFailureDataOwners = regexp.MustCompile(`@[-a-zA-Z\/0-9]*`)
 	reFailureDataTests  = regexp.MustCompile(`\(([-a-zA-Z\/0-9.]*)\)`)
@@ -314,7 +321,7 @@ func parseFile(
 		s := Testsuite{}
 		if err2 := xml.Unmarshal(buf.Bytes(), &s); err2 != nil {
 			e := errors.Join(err, err2)
-			return nil, nil, fmt.Errorf("unable to unmarshal junit file '%s' in artifact to Testsuite or Testsuites object: %w", fil.FileInfo().Name(), e)
+			return nil, nil, fmt.Errorf("%w: unable to unmarshal junit file '%s' in artifact to Testsuite or Testsuites object: %w", ErrMalformedFile, fil.FileInfo().Name(), e)
 		}
 		toParse = append(toParse, s)
 	} else {
@@ -324,7 +331,7 @@ func parseFile(
 	for _, s := range toParse {
 		parsedSuite, parsedCases, err := parseTestsuite(&s, run, allowedTestConclusions, l)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse test suite in junit file '%s': %w", fil.FileInfo().Name(), err)
+			return nil, nil, fmt.Errorf("%w: unable to parse test suite in junit file '%s': %w", ErrMalformedFile, fil.FileInfo().Name(), err)
 		}
 
 		parsedSuite.JUnitFilename = fil.FileInfo().Name()
@@ -347,6 +354,14 @@ func ParseFiles[F file](
 	for _, f := range files {
 		s, c, err := parseFile(f, run, allowedTestConclusions, l)
 		if err != nil {
+			// A single malformed file (e.g. a JUnit report truncated because
+			// the upstream test run was interrupted mid-write) should not
+			// discard the remaining good files in the same artifact. Skip it
+			// and continue. Open/read errors are systemic and still abort.
+			if errors.Is(err, ErrMalformedFile) {
+				l.Warn("Skipping malformed JUnit file, continuing with remaining files", "file", f.FileInfo().Name(), "error", err)
+				continue
+			}
 			return nil, nil, err
 		}
 		suites = append(suites, s...)

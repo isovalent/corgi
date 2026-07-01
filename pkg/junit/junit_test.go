@@ -1,6 +1,7 @@
 package junit
 
 import (
+	"errors"
 	"io"
 	"log/slog"
 	"os"
@@ -124,6 +125,60 @@ func TestParseFile(t *testing.T) {
 		assert.Equal(t, tt.tests, len(cases))
 		assert.Equal(t, tt.failures, suites[0].TotalFailures)
 	}
+}
+
+func TestParseFileMalformed(t *testing.T) {
+	// A JUnit report truncated because the upstream test run was interrupted
+	// mid-write (unclosed <testsuite>) must be reported as ErrMalformedFile so
+	// that callers can skip it and keep the remaining files.
+	f, err := NewTestFile("testdata/malformed-unclosed-testsuite.xml")
+	assert.NoError(t, err)
+
+	_, _, err = parseFile(f, dummyWorkflowRun, dummyConclusions, logger)
+	assert.ErrorIs(t, err, ErrMalformedFile)
+}
+
+// errOpenFile is a file whose content is never reachable because Open fails.
+// It is used to prove open/read errors remain fatal (not skipped).
+type errOpenFile struct {
+	info os.FileInfo
+}
+
+func (e errOpenFile) FileInfo() os.FileInfo        { return e.info }
+func (e errOpenFile) Open() (io.ReadCloser, error) { return nil, errors.New("boom") }
+
+func TestParseFilesSkipsMalformed(t *testing.T) {
+	// A slice of [good, malformed, good] must parse successfully, skipping only
+	// the malformed file and preserving both good files' suites and cases.
+	good1, err := NewTestFile("testdata/connectivity-test.xml") // 1 suite, 119 cases
+	assert.NoError(t, err)
+	bad, err := NewTestFile("testdata/malformed-unclosed-testsuite.xml")
+	assert.NoError(t, err)
+	good2, err := NewTestFile("testdata/ci-eks-passed.xml") // 1 suite, 114 cases
+	assert.NoError(t, err)
+
+	suites, cases, err := ParseFiles(
+		[]testFile{good1, bad, good2},
+		dummyWorkflowRun, dummyConclusions, logger,
+	)
+	assert.NoError(t, err)
+	assert.Len(t, suites, 2)
+	assert.Len(t, cases, 119+114)
+}
+
+func TestParseFilesOpenErrorIsFatal(t *testing.T) {
+	// Open/read errors are systemic and must still abort, not be skipped.
+	good, err := NewTestFile("testdata/connectivity-test.xml")
+	assert.NoError(t, err)
+
+	suites, cases, err := ParseFiles(
+		[]file{good, errOpenFile{info: good.FileInfo()}},
+		dummyWorkflowRun, dummyConclusions, logger,
+	)
+	assert.Error(t, err)
+	assert.NotErrorIs(t, err, ErrMalformedFile)
+	assert.Nil(t, suites)
+	assert.Nil(t, cases)
 }
 
 func TestParseFailureData(t *testing.T) {

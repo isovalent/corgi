@@ -43,7 +43,7 @@ jobs:
           echo $INPUTS_JSON | jq -c '{ "include": [.] }' > /tmp/matrix.json
       - if: ${{ github.event_name == 'schedule' }}
         name: Clone scheduled inputs
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
             .github/scheduled.json
@@ -74,7 +74,7 @@ jobs:
       matrix: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Echo Matrix
         run: |
           echo '${{ toJSON(matrix) }}'

@@ -1,0 +1,21 @@
+name: GitHub Workflow Immortality
+
+on:
+  schedule:
+    # run once a month on the first day of the month at 00:20 UTC
+    - cron: '20 0 1 * *'
+  workflow_dispatch: {}
+
+jobs:
+  keepalive:
+    name: GitHub Workflow Immortality
+
+    runs-on: ubuntu-slim
+    permissions: {}
+
+    steps:
+      - name: Keep cronjob based triggers of GitHub workflows alive
+        uses: PhrozenByte/gh-workflow-immortality@39378c27dcacbc17e6fbf83057d1fc40c574000d @ v1.2.0
+        with:
+          secret: ${{ secrets.IMMORTALITY_TOKEN }}
+          repos: ${{ github.repository }}

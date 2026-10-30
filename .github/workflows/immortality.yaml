@@ -1,0 +1,67 @@
+name: Ensure Workflow Immortality
+
+on:
+  schedule:
+    - cron: "0 0 1 * *"  # Run at 00:00 UTC on the 1st of every month (roughly every 30 days)
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  toggle-workflow:
+    runs-on: ubuntu-slim
+    strategy:
+      matrix:
+        workflow:
+          - 'scrape-rates.yaml'
+          - 'scrape-runs.yaml'
+          - 'retention-runs.yaml'
+          - 'immortality.yaml'
+    steps:
+      - name: Disable Workflow - ${{ matrix.workflow }}
+        uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const workflowId = '${{ matrix.workflow }}';
+
+            console.log(`Disabling workflow: ${workflowId}`);
+            try {
+              await github.rest.actions.disableWorkflow({
+                owner,
+                repo,
+                workflow_id: workflowId
+              });
+              console.log('Workflow disabled successfully');
+            } catch (error) {
+              console.error(`Error disabling workflow: ${error.message}`);
+              throw error;
+            }
+
+      - name: Wait 1 Minute
+        run: sleep 60
+
+      - name: Enable Workflow - ${{ matrix.workflow }}
+        uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const workflowId = '${{ matrix.workflow }}';
+
+            console.log(`Enabling workflow: ${workflowId}`);
+            try {
+              await github.rest.actions.enableWorkflow({
+                owner,
+                repo,
+                workflow_id: workflowId
+              });
+              console.log('Workflow enabled successfully');
+            } catch (error) {
+              console.error(`Error enabling workflow: ${error.message}`);
+              throw error;
+            }

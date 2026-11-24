@@ -1,13 +1,18 @@
 package opensearch
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
-	"strings"
+	"unicode/utf8"
 
 	"github.com/isovalent/corgi/pkg/types"
 )
+
+// maxIDBytes is the longest _id OpenSearch accepts.
+const maxIDBytes = 512
 
 type BulkEntry struct {
 	Index string
@@ -21,16 +26,13 @@ func (b *BulkEntry) Write(target io.Writer) (int, error) {
 		return 0, nil
 	}
 
-	builder := strings.Builder{}
-	builder.WriteString("{ \"")
-	builder.WriteString(b.Verb)
-	builder.WriteString("\" : { \"_index\": \"")
-	builder.WriteString(b.Index)
-	builder.WriteString("\", \"_id\": \"")
-	builder.WriteString(b.ID)
-	builder.WriteString("\" } }\n")
-
-	total, err := target.Write([]byte(builder.String()))
+	action, err := json.Marshal(map[string]map[string]string{
+		b.Verb: {"_index": b.Index, "_id": b.ID},
+	})
+	if err != nil {
+		return 0, fmt.Errorf("unable to marshal bulk action for '%s': %v", b.ID, err)
+	}
+	total, err := target.Write(append(action, '\n'))
 	if err != nil {
 		return total, err
 	}
@@ -44,22 +46,31 @@ func (b *BulkEntry) Write(target io.Writer) (int, error) {
 	return total, err
 }
 
-func jsonEscapeString(i string) (string, error) {
-	if len(i) == 0 {
-		return "", nil
+// shortenID keeps an ID under maxIDBytes by replacing its tail with a hash of the whole ID.
+func shortenID(id string) string {
+	if len(id) <= maxIDBytes {
+		return id
 	}
-
-	b, err := json.Marshal(i)
-	if err != nil {
-		return "", fmt.Errorf("unable to escape string '%s': %v", i, err)
+	sum := sha256.Sum256([]byte(id))
+	suffix := "-" + hex.EncodeToString(sum[:])
+	prefix := id[:maxIDBytes-len(suffix)]
+	for !utf8.ValidString(prefix) {
+		prefix = prefix[:len(prefix)-1]
 	}
-	// Trim the beginning and trailing " character
-	return string(b[1 : len(b)-1]), nil
+	return prefix + suffix
 }
 
 // GetDocumentID returns a unique document ID for the given object.
 // Equal objects have the same ID.
 func GetDocumentID(obj any) (string, error) {
+	id, err := documentID(obj)
+	if err != nil {
+		return "", err
+	}
+	return shortenID(id), nil
+}
+
+func documentID(obj any) (string, error) {
 	switch o := obj.(type) {
 	case *types.WorkflowRun:
 		return fmt.Sprintf("%d-%d", o.ID, o.RunAttempt), nil
@@ -68,30 +79,18 @@ func GetDocumentID(obj any) (string, error) {
 	case types.StepRun:
 		return fmt.Sprintf("%d-%d-%d-%d", o.WorkflowRun.ID, o.RunAttempt, o.ID, o.Number), nil
 	case types.Testsuite:
-		junitFilename, err := jsonEscapeString(o.JUnitFilename)
-		if err != nil {
-			return "", fmt.Errorf("unable to get document id for Testsuite: %v", err)
-		}
-		return fmt.Sprintf("%d-%d-%s", o.ID, o.RunAttempt, junitFilename), nil
+		return fmt.Sprintf("%d-%d-%s", o.ID, o.RunAttempt, o.JUnitFilename), nil
 	case types.Testcase:
-		junitFilename, err := jsonEscapeString(o.JUnitFilename)
-		if err != nil {
-			return "", fmt.Errorf("unable to get document id for Testsuite in Testcase: %v", err)
-		}
 		return fmt.Sprintf(
 			"%d-%d-%s-%s",
-			o.ID, o.RunAttempt, junitFilename, o.Name,
+			o.ID, o.RunAttempt, o.JUnitFilename, o.Name,
 		), nil
 	case types.FailureRate:
-		docIdentifier, err := jsonEscapeString(o.DocumentIdentifier)
-		if err != nil {
-			return "", fmt.Errorf("unable to get document id for failure rate: %v", err)
-		}
 		return fmt.Sprintf(
 			"%d-%s-%s-%s-%s-%s",
 			o.Repository.ID, o.Event, o.HeadBranch,
 			o.Since.Format("2006-01-02"), o.Until.Format("2006-01-02"),
-			docIdentifier,
+			o.DocumentIdentifier,
 		), nil
 	}
 

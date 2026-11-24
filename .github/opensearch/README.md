@@ -8,9 +8,8 @@ with `cluster_block_exception`, the failure seen in
 [actions/runs/28184337085](https://github.com/isovalent/corgi/actions/runs/28184337085).
 
 To prevent recurrence without renaming the index or changing how corgi writes, a
-scheduled job trims documents older than the retention window and reclaims the
-freed space. The index stays a concrete `runs-oss`, so the scrape and rates
-pipelines are unchanged.
+scheduled job trims documents older than the retention window. The index stays
+a concrete `runs-oss`, so the scrape and rates pipelines are unchanged.
 
 The enterprise `runs-cee` index is scraped by the workflows in
 [isovalent/corgi-cee](https://github.com/isovalent/corgi-cee) and is trimmed by
@@ -28,12 +27,24 @@ therefore trims every document type cleanly, with no orphaned child docs.
 The [`.github/workflows/retention-runs.yaml`](../workflows/retention-runs.yaml)
 workflow runs daily and invokes
 [`.github/scripts/trim-runs-index.sh`](../scripts/trim-runs-index.sh), which for
-each index given on the command line:
+each index given on the command line repeats
+`POST <index>/_delete_by_query?conflicts=proceed&max_docs=<BATCH_SIZE>` for docs
+with `workflow_run_started_at < now-<RETENTION_DAYS>d` (default 190d) until a
+batch deletes fewer than `BATCH_SIZE` (default 50000, at least 1000) documents.
+The proxy in front of OpenSearch returns a 504 for any request that runs past
+300 seconds, and a typical day of about a million documents takes longer than
+that to delete in a single request.
 
-1. `POST <index>/_delete_by_query` for docs with
-   `workflow_run_started_at < now-<RETENTION_DAYS>d` (default 190d), then
-2. `POST <index>/_forcemerge?only_expunge_deletes=true` to reclaim disk from
-   the deleted docs (a delete only marks docs; space is freed on merge).
+OpenSearch denies the CI user `indices:admin/refresh` and
+`indices:monitor/settings/get`, so the script neither refreshes nor calls
+`_cat/indices`. A role built on the `crud` action group gives exactly those
+denials and also lacks `indices:admin/forcemerge`, so the script does not
+force-merge either. A delete only marks documents as deleted. The merges that
+the hourly scrapes trigger reclaim their disk, and the merge policy favours
+segments whose share of deleted documents exceeds
+`index.merge.policy.deletes_pct_allowed` (20% by default, 33% on OpenSearch
+1.x). An admin can reclaim it sooner with the force-merge in the manual run
+below.
 
 Adjust the `indices`, `retention-days` and `dry-run` inputs to run it ad hoc, or
 change the `env` defaults to trade history for disk. A failure on one index does

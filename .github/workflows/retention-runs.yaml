@@ -1,8 +1,8 @@
 name: Trim old runs documents
 
-# Deletes documents older than RETENTION_DAYS from the runs index and reclaims
-# the freed disk, preventing the index from filling the OpenSearch data node and
-# tripping the flood-stage read-only block.
+# Deletes documents older than RETENTION_DAYS from the runs index, preventing
+# the index from filling the OpenSearch data node and tripping the flood-stage
+# read-only block.
 # See .github/opensearch/README.md.
 
 on:
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Trim old documents and reclaim space
+      - name: Trim old documents
         env:
           OPENSEARCH_URL: ${{ secrets.OPENSEARCH_URL }}
           OPENSEARCH_USER: ${{ secrets.OPENSEARCH_USER }}

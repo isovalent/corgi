@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Trims documents older than a retention window from the given OpenSearch runs
-# indices and reclaims the freed disk space.
+# indices.
 #
 # Without retention these indices grow unbounded until the data node crosses its
 # flood-stage disk watermark, at which point OpenSearch marks the index
@@ -11,7 +11,7 @@
 # Usage:
 #   OPENSEARCH_URL=https://opensearch.example.com \
 #   OPENSEARCH_USER=user OPENSEARCH_PASS=pass \
-#   RETENTION_DAYS=190 [DRY_RUN=true] \
+#   RETENTION_DAYS=190 [BATCH_SIZE=50000] [DRY_RUN=true] \
 #     .github/scripts/trim-runs-index.sh runs-oss [more-indices...]
 #
 # DRY_RUN=true only counts the matching documents and deletes nothing, which is
@@ -24,6 +24,7 @@ set -uo pipefail
 : "${OPENSEARCH_PASS:?OPENSEARCH_PASS must be set}"
 : "${RETENTION_DAYS:?RETENTION_DAYS must be set}"
 DRY_RUN="${DRY_RUN:-false}"
+BATCH_SIZE="${BATCH_SIZE:-50000}"
 
 if [ "$#" -eq 0 ]; then
   echo "usage: $0 <index> [index...]" >&2
@@ -32,6 +33,12 @@ fi
 
 if ! [[ "$RETENTION_DAYS" =~ ^[0-9]+$ ]]; then
   echo "RETENTION_DAYS must be a positive integer, got '$RETENTION_DAYS'" >&2
+  exit 2
+fi
+
+# Below the default scroll_size of 1000, a batch can come back short while matches remain.
+if ! [[ "$BATCH_SIZE" =~ ^[0-9]+$ ]] || [ "$BATCH_SIZE" -lt 1000 ]; then
+  echo "BATCH_SIZE must be an integer of at least 1000, got '$BATCH_SIZE'" >&2
   exit 2
 fi
 
@@ -52,13 +59,20 @@ oscurl() {
     -H "Content-Type: application/json" "$@"
 }
 
+# Reduces a _delete_by_query response to its counts and distinct failure causes.
+summarize() {
+  jq -ce 'if .error then {status, error: (.error.reason? // .error)}
+    elif has("deleted") then {deleted, version_conflicts, timed_out,
+      failures: (.failures | length),
+      causes: ([.failures[]? | .cause.reason // .reason.reason] | unique)}
+    else error end' <<<"$1" 2>/dev/null ||
+    printf '%.2000s\n' "$1"
+}
+
 # Trims a single index. Returns non-zero on failure so the caller can record it
 # and still continue with the remaining indices.
 trim_index() {
   local index="$1"
-
-  echo "Index ${index} before trim:"
-  oscurl "${OPENSEARCH_URL}/_cat/indices/${index}?v&h=index,docs.count,docs.deleted,store.size" || true
 
   # Capture curl and jq separately so a failed request is never mistaken for a
   # document count.
@@ -83,35 +97,31 @@ trim_index() {
     return 0
   fi
 
-  # conflicts=proceed so a concurrent scrape rewriting a document does not abort
-  # the whole delete. Documents skipped that way are picked up by the next run.
-  echo "Deleting ${match} documents from ${index}..."
-  local delete_response
-  if ! delete_response=$(oscurl -XPOST \
-    "${OPENSEARCH_URL}/${index}/_delete_by_query?conflicts=proceed&refresh=true" \
-    -d "$query"); then
-    echo "delete_by_query failed for ${index}: ${delete_response}" >&2
-    return 1
-  fi
-  printf '%s' "$delete_response" | jq '{deleted, version_conflicts, failures}'
-
-  local failures
-  failures=$(printf '%s' "$delete_response" | jq -r '.failures | length')
-  if [ "$failures" != "0" ]; then
-    echo "delete_by_query reported failures for ${index}" >&2
-    return 1
-  fi
-
-  # A delete only marks documents deleted, the disk they occupy is reclaimed
-  # when the segments holding them are merged.
-  echo "Reclaiming space in ${index} (force-merge only_expunge_deletes)..."
-  if ! oscurl -XPOST "${OPENSEARCH_URL}/${index}/_forcemerge?only_expunge_deletes=true" >/dev/null; then
-    echo "force-merge failed for ${index}" >&2
-    return 1
-  fi
-
-  echo "Index ${index} after trim:"
-  oscurl "${OPENSEARCH_URL}/_cat/indices/${index}?v&h=index,docs.count,docs.deleted,store.size" || true
+  # Batched so that each request returns before the proxy's 300s timeout.
+  echo "Deleting ${match} documents from ${index} in batches of ${BATCH_SIZE}..."
+  local deleted=0 response batch failures
+  while :; do
+    if ! response=$(oscurl -XPOST \
+      "${OPENSEARCH_URL}/${index}/_delete_by_query?conflicts=proceed&max_docs=${BATCH_SIZE}" \
+      -d "$query"); then
+      echo "delete_by_query failed for ${index}: $(summarize "$response")" >&2
+      return 1
+    fi
+    if ! failures=$(jq -er '.failures | length' <<<"$response") ||
+      ! batch=$(jq -er '.deleted' <<<"$response"); then
+      echo "unexpected delete_by_query response for ${index}: $(summarize "$response")" >&2
+      return 1
+    fi
+    if [ "$failures" != "0" ]; then
+      echo "delete_by_query reported failures for ${index}: $(summarize "$response")" >&2
+      return 1
+    fi
+    deleted=$((deleted + batch))
+    echo "Deleted ${deleted} of ${match} documents from ${index}"
+    if [ "$batch" -lt "$BATCH_SIZE" ]; then
+      return 0
+    fi
+  done
 }
 
 rc=0

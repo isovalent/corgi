@@ -76,5 +76,6 @@ runs:
             exit 1
           fi
         done
-        cat *.json | jq --exit-status '.errors | not'
-        cat *.json | jq --exit-status '.error | not'
+        jq -r '.items[]? | .[] | .error // empty | "\(.type): \(.reason)"' *-response.json | sort | uniq -c
+        jq -c '.error // empty' *-response.json
+        jq --slurp --exit-status 'all(.[]; (.errors | not) and (.error | not))' *-response.json

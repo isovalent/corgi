@@ -87,24 +87,67 @@ POST runs-oss/_forcemerge?only_expunge_deletes=true
 
 ## Recovering if the index is already read-only (flood-stage block)
 
-If writes are currently rejected with `cluster_block_exception`:
+If writes are currently rejected with `cluster_block_exception`, check the disk,
+the watermarks in force and the blocks set on each index:
 
 ```
-# See which node is over the watermark and whether the block is set.
 GET _cat/allocation?v&h=node,disk.percent,disk.avail
-GET runs-oss/_settings/index.blocks.read_only_allow_delete
+GET _cat/indices/runs-oss,runs-cee,rates-oss?v&h=index,docs.count,docs.deleted,store.size
+GET _cluster/settings?flat_settings
+GET runs-oss,runs-cee,rates-oss/_settings/index.blocks.*
+```
 
-# Deletes ARE allowed under the read-only-allow-delete block, so free space
-# first (this is the same trim query as above).
-POST runs-oss/_delete_by_query?conflicts=proceed&wait_for_completion=false
-{ "query": { "range": { "workflow_run_started_at": { "lt": "now-90d/d" } } } }
-POST runs-oss/_forcemerge?only_expunge_deletes=true
+`index.blocks.read_only_allow_delete`, reported as `TOO_MANY_REQUESTS/12/disk
+usage exceeded flood-stage watermark`, rejects document deletes along with every
+other write, so the trim cannot run under it. It only allows deleting a whole
+index. The disk monitor sets it on every index of a node above the flood-stage
+watermark that does not already have `index.blocks.write`, sets it again on its
+next check (every 30 seconds by default) after anyone clears it by hand, and
+removes it once the node drops below the high watermark.
 
-# Clear the block with null (returns control to the disk monitor). On
-# OpenSearch / ES >= 7.4 the block also auto-releases once disk drops below the
-# HIGH watermark, so freeing space alone may suffice; this is a safety belt.
-PUT runs-oss/_settings
-{ "index.blocks.read_only_allow_delete": null }
+`index.blocks.write`, reported as `FORBIDDEN/8/index write (api)`, rejects
+deletes too. The OpenSearch disk monitor does not set it, but on this cluster
+something else sets it together with the flood-stage block and lifts it on its
+own some time after disk usage drops, at times hours after the disk monitor
+releases `read_only_allow_delete`. A manual clear may not last while disk usage
+is still high. On OpenSearch 2.x and later, a request that clears it while the
+index still has `read_only_allow_delete` gets a 429.
+
+The trim frees no disk by itself. Each delete adds a tombstone and a translog
+entry, and the space comes back only after a merge rewrites the segments, which
+needs room for the new segments while the old ones are still on disk. Free disk
+without document deletes first, by growing the volume or by deleting a whole
+index, which both blocks allow. If neither is possible and the node still has
+headroom, raise the high and flood-stage watermarks above the current usage
+while the trim and the merges run. Transient settings override persistent ones,
+so if `_cluster/settings` shows transient watermarks, set those instead:
+
+```
+PUT _cluster/settings
+{ "persistent": {
+    "cluster.routing.allocation.disk.watermark.high": "96%",
+    "cluster.routing.allocation.disk.watermark.flood_stage": "97%" } }
+```
+
+Once the disk monitor has released `read_only_allow_delete`, check whether
+`index.blocks.write` is still set and clear it:
+
+```
+PUT runs-oss,runs-cee,rates-oss/_settings
+{ "index.blocks.write": null }
+```
+
+Run the trim with the `retention-runs.yaml` workflow or the delete in the manual
+run above. A force-merge can need free disk up to the `store.size` of the index
+while it runs, so compare that with `disk.avail` first. Once `_cat/allocation`
+shows usage below the original high watermark, set the watermarks back to the
+values `_cluster/settings` showed before, or to `null` if it showed none:
+
+```
+PUT _cluster/settings
+{ "persistent": {
+    "cluster.routing.allocation.disk.watermark.high": null,
+    "cluster.routing.allocation.disk.watermark.flood_stage": null } }
 ```
 
 Then re-run any failed scrape jobs via `workflow_dispatch`. Re-indexing is

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	ratelimit "github.com/gofri/go-github-ratelimit/github_ratelimit"
@@ -19,55 +20,139 @@ func GetGitHubAuthToken() string {
 	return os.Getenv("GITHUB_TOKEN")
 }
 
-func WrapWithRateLimitRetry[T any](
+func WrapWithGitHubRetry[T any](
 	ctx context.Context,
 	logger *slog.Logger,
 	target func() (*T, *github.Response, error),
 ) (*T, *github.Response, error) {
-	result, resp, err := target()
+	retries := 0
+	for {
+		result, response, err := target()
+		retryAfter, rateLimitType, rateLimited, rateLimitHeaderErr := githubRateLimitRetry(err, response)
+		if rateLimitHeaderErr != nil {
+			return result, response, rateLimitHeaderErr
+		}
+		if rateLimited {
+			l := logger.With("err", err, "resp", response, "type", rateLimitType, "sleepTime", retryAfter)
+			l.Warn("Hit GitHub rate limit, waiting it out")
+			if !waitForRetry(ctx, retryAfter) {
+				return nil, response, errors.Join(err, ctx.Err())
+			}
+			l.Info("GitHub rate limit sleep completed, retrying request")
+			continue
+		}
 
+		reason := ""
+		if response != nil && response.StatusCode >= http.StatusInternalServerError {
+			reason = "GitHub server error"
+		} else {
+			reason = githubRetryReason(ctx, response, err)
+		}
+		if reason == "" {
+			return result, response, err
+		}
+		if retries >= maxRetryAttempts || ctx.Err() != nil {
+			if ctx.Err() != nil {
+				return nil, response, errors.Join(err, ctx.Err())
+			}
+			if err == nil && response != nil && response.StatusCode >= http.StatusInternalServerError {
+				err = fmt.Errorf("GitHub returned server error %s", response.Status)
+			}
+			return result, response, err
+		}
+
+		if err == nil && response != nil {
+			err = fmt.Errorf("GitHub returned server error %s", response.Status)
+		}
+		delay := time.Second << retries
+		logger.Warn(
+			"Retrying GitHub request",
+			"reason", reason,
+			"error", err,
+			"retry", retries+1,
+			"max-retries", maxRetryAttempts,
+			"sleep-time", delay,
+		)
+		if response != nil {
+			discardHTTPResponse(logger, response.Response)
+		}
+		if !waitForRetry(ctx, delay) {
+			return nil, response, errors.Join(err, ctx.Err())
+		}
+		retries++
+	}
+}
+
+const maxRetryAttempts = 5
+
+func githubRetryReason(ctx context.Context, response *github.Response, err error) string {
+	if response != nil {
+		return ""
+	}
 	if err == nil {
-		return result, resp, err
+		return ""
 	}
+	if isHTTP2PeerCancel(err) {
+		return "HTTP/2 peer CANCEL"
+	}
+	shouldRetry, _ := retryablehttp.ErrorPropagatedRetryPolicy(ctx, nil, err)
+	if shouldRetry {
+		return "transient transport error"
+	}
+	return ""
+}
 
-	var retryAfter time.Duration
-	var typ string
-
+func githubRateLimitRetry(err error, response *github.Response) (time.Duration, string, bool, error) {
 	if rateLimitErr, ok := err.(*github.AbuseRateLimitError); ok {
-		retryAfter = *rateLimitErr.RetryAfter
-		typ = "secondary"
-	} else if _, ok := err.(*github.RateLimitError); ok {
-		// Give an extra minute for padding
-		retryAfter = time.Until(resp.Rate.Reset.Time) + time.Minute
-		typ = "primary"
-	} else if resp.StatusCode == 403 {
-		retryAfterHeader := resp.Header.Get("X-Ratelimit-Reset")
-		if retryAfterHeader == "" {
-			return result, resp, err
+		if rateLimitErr.RetryAfter == nil {
+			return 0, "", false, nil
 		}
-
-		retryAfterSec, e := strconv.ParseInt(retryAfterHeader, 10, 64)
-		if e != nil {
-			err = errors.Join(err, e)
-			return result, resp, err
+		return *rateLimitErr.RetryAfter, "secondary", true, nil
+	}
+	if _, ok := err.(*github.RateLimitError); ok {
+		if response == nil {
+			return 0, "", false, nil
 		}
-
-		retryAfter = time.Until(time.Unix(retryAfterSec, 0))
-		typ = "primary"
-	} else {
-		return result, resp, err
+		// Give an extra minute for padding.
+		return time.Until(response.Rate.Reset.Time) + time.Minute, "primary", true, nil
+	}
+	if err == nil || response == nil || response.StatusCode != http.StatusForbidden {
+		return 0, "", false, nil
 	}
 
-	l := logger.With("err", err, "resp", resp, "type", typ, "sleepTime", retryAfter)
-	l.Warn("Hit GitHub rate limit, waiting it out")
+	retryAfterHeader := response.Header.Get("X-Ratelimit-Reset")
+	if retryAfterHeader == "" {
+		return 0, "", false, nil
+	}
+	retryAfterSec, parseErr := strconv.ParseInt(retryAfterHeader, 10, 64)
+	if parseErr != nil {
+		return 0, "", false, errors.Join(err, parseErr)
+	}
+	return time.Until(time.Unix(retryAfterSec, 0)), "primary", true, nil
+}
+
+func isHTTP2PeerCancel(err error) bool {
+	// The standard library's HTTP/2 stream error type is internal, so identify its peer CANCEL message.
+	return err != nil && strings.Contains(err.Error(), "; CANCEL; received from peer")
+}
+
+func discardHTTPResponse(logger *slog.Logger, response *http.Response) {
+	if response != nil && response.Body != nil {
+		if err := response.Body.Close(); err != nil {
+			logger.Debug("Failed to close response body before retrying request", "error", err)
+		}
+	}
+}
+
+func waitForRetry(ctx context.Context, delay time.Duration) bool {
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
 
 	select {
-	case <-time.After(retryAfter):
-		l.Info("GitHub rate limit sleep completed, retrying request")
-
-		return WrapWithRateLimitRetry[T](ctx, logger, target)
+	case <-timer.C:
+		return true
 	case <-ctx.Done():
-		return nil, nil, ctx.Err()
+		return false
 	}
 }
 

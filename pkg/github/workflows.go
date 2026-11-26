@@ -81,7 +81,7 @@ func GetWorkflowRuns(
 			err     error
 		)
 		if workflowID != 0 {
-			runs, runResp, err = WrapWithRateLimitRetry(
+			runs, runResp, err = WrapWithGitHubRetry(
 				ctx, l, func() (*github.WorkflowRuns, *github.Response, error) {
 					return client.Actions.ListWorkflowRunsByID(
 						ctx, repoOwner, repoName, workflowID, &github.ListWorkflowRunsOptions{
@@ -101,7 +101,7 @@ func GetWorkflowRuns(
 				},
 			)
 		} else {
-			runs, runResp, err = WrapWithRateLimitRetry[github.WorkflowRuns](
+			runs, runResp, err = WrapWithGitHubRetry[github.WorkflowRuns](
 				ctx, l,
 				func() (*github.WorkflowRuns, *github.Response, error) {
 					return client.Actions.ListRepositoryWorkflowRuns(
@@ -167,7 +167,7 @@ func GetWorkflowRunDuration(
 
 	l.Debug("Pulling run duration for workflow")
 
-	usage, _, err := WrapWithRateLimitRetry[github.WorkflowRunUsage](
+	usage, _, err := WrapWithGitHubRetry[github.WorkflowRunUsage](
 		ctx, l,
 		func() (*github.WorkflowRunUsage, *github.Response, error) {
 			return client.Actions.GetWorkflowRunUsageByID(ctx, run.Repository.Owner.Login, run.Repository.Name, run.ID)
@@ -199,7 +199,7 @@ func GetTestsForWorkflowRun(
 
 	// Don't expect more than 10 artifacts per workflow run. Cilium
 	// runs normally have one to two.
-	artifacts, _, err := WrapWithRateLimitRetry[github.ArtifactList](
+	artifacts, _, err := WrapWithGitHubRetry[github.ArtifactList](
 		ctx, l,
 		func() (*github.ArtifactList, *github.Response, error) {
 			return client.Actions.ListWorkflowRunArtifacts(
@@ -245,7 +245,7 @@ func GetTestsForWorkflowRun(
 
 	l.Info("Junit artifact found for workflow run, downloading", "url", junitArtifact.GetURL())
 
-	downloadURL, downloadURLResp, err := WrapWithRateLimitRetry[url.URL](
+	downloadURL, downloadURLResp, err := WrapWithGitHubRetry[url.URL](
 		ctx, l,
 		func() (*url.URL, *github.Response, error) {
 			return client.Actions.DownloadArtifact(
@@ -274,8 +274,21 @@ func GetTestsForWorkflowRun(
 
 	l.Debug("Downloading cilium-junits artifact", "url", downloadURL, "dest", tmpFilePath)
 
-	resp, err := http.Get(downloadURL.String())
-	if err != nil {
+	resp, _, err := WrapWithGitHubRetry[http.Response](
+		ctx, l,
+		func() (*http.Response, *github.Response, error) {
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL.String(), nil)
+			if err != nil {
+				return nil, nil, err
+			}
+			resp, err := http.DefaultClient.Do(req)
+			if resp == nil {
+				return nil, nil, err
+			}
+			return resp, &github.Response{Response: resp}, err
+		},
+	)
+	if err != nil && (resp == nil || resp.StatusCode < http.StatusInternalServerError) {
 		return nil, nil, fmt.Errorf("unable to download cilium-junits artifact from %s: %w", downloadURL, err)
 	}
 	defer func() {
@@ -285,8 +298,16 @@ func GetTestsForWorkflowRun(
 	}()
 
 	if resp.StatusCode != http.StatusOK {
+		body, readErr := io.ReadAll(io.LimitReader(resp.Body, 4*1024))
+		if readErr != nil {
+			return nil, nil, fmt.Errorf(
+				"unable to download cilium-junits artifact from %s, bad http code: %s (failed to read response body: %w)",
+				downloadURL, resp.Status, readErr,
+			)
+		}
 		return nil, nil, fmt.Errorf(
-			"unable to download cilium-junits artifact from %s, bad http code: %s", downloadURL, resp.Status,
+			"unable to download cilium-junits artifact from %s, bad http code: %s, response body: %q",
+			downloadURL, resp.Status, strings.TrimSpace(string(body)),
 		)
 	}
 
@@ -322,7 +343,7 @@ func GetLogsForJob(
 	l := logger.With("job-id", jobID)
 	l.Info("Pulling logs for job")
 
-	logURL, logURLResp, err := WrapWithRateLimitRetry[url.URL](
+	logURL, logURLResp, err := WrapWithGitHubRetry[url.URL](
 		ctx, logger,
 		func() (*url.URL, *github.Response, error) {
 			return client.Actions.GetWorkflowJobLogs(
@@ -342,8 +363,21 @@ func GetLogsForJob(
 		return "", fmt.Errorf("unable to get log URL for job with ID %d: %w", jobID, err)
 	}
 
-	resp, err := http.Get(logURL.String())
-	if err != nil {
+	resp, _, err := WrapWithGitHubRetry[http.Response](
+		ctx, l,
+		func() (*http.Response, *github.Response, error) {
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, logURL.String(), nil)
+			if err != nil {
+				return nil, nil, err
+			}
+			resp, err := http.DefaultClient.Do(req)
+			if resp == nil {
+				return nil, nil, err
+			}
+			return resp, &github.Response{Response: resp}, err
+		},
+	)
+	if err != nil && (resp == nil || resp.StatusCode < http.StatusInternalServerError) {
 		return "", fmt.Errorf("unable to download logs for job with ID %d: %w", jobID, err)
 	}
 	defer func() {
@@ -351,6 +385,19 @@ func GetLogsForJob(
 			l.Debug("Failed to close HTTP connection while fetching job", "job", jobID, "error", err2)
 		}
 	}()
+	if resp.StatusCode != http.StatusOK {
+		body, readErr := io.ReadAll(io.LimitReader(resp.Body, 4*1024))
+		if readErr != nil {
+			return "", fmt.Errorf(
+				"unable to download logs for job with ID %d, bad http code: %s (failed to read response body: %w)",
+				jobID, resp.Status, readErr,
+			)
+		}
+		return "", fmt.Errorf(
+			"unable to download logs for job with ID %d, bad http code: %s, response body: %q",
+			jobID, resp.Status, strings.TrimSpace(string(body)),
+		)
+	}
 
 	buf := bytes.Buffer{}
 	_, err = io.Copy(&buf, resp.Body)
@@ -472,7 +519,7 @@ func GetJobsAndStepsForRun(
 	stepRuns := []types.StepRun{}
 
 	for {
-		jobs, jobResp, err := WrapWithRateLimitRetry[github.Jobs](
+		jobs, jobResp, err := WrapWithGitHubRetry[github.Jobs](
 			ctx, l,
 			func() (*github.Jobs, *github.Response, error) {
 				return client.Actions.ListWorkflowJobsAttempt(

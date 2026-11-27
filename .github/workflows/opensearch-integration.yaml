@@ -1,0 +1,87 @@
+name: OpenSearch Integration
+
+on:
+  pull_request: 
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: Test Corgi pipelines against OpenSearch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      OPENSEARCH_URL: https://localhost:9200
+      OPENSEARCH_USER: admin
+      OPENSEARCH_PASS: Corgi-local-opensearch-123!
+      TARGET_REPOSITORY: cilium/cilium
+      TARGET_BRANCH: main
+      TARGET_RUNS_INDEX: corgi-integration-runs
+      TARGET_RATES_INDEX: corgi-integration-rates
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Start OpenSearch and Corgi container
+        run: docker compose up --detach corgi
+
+      - name: Trust OpenSearch CA for host-side indexing
+        run: |
+          docker compose exec --no-TTY opensearch-node \
+            cat /usr/share/opensearch/config/root-ca.pem \
+            > "$RUNNER_TEMP/opensearch-root-ca.crt"
+          sudo cp "$RUNNER_TEMP/opensearch-root-ca.crt" \
+            /usr/local/share/ca-certificates/opensearch-local.crt
+          sudo update-ca-certificates
+
+      - name: Build Corgi in the Go container
+        run: docker compose exec --no-TTY corgi bash ./.github/scripts/validate-integration-tests.sh build
+
+      - name: Scrape a Cilium main run, including logs and artifacts
+        run: docker compose exec --no-TTY corgi bash ./.github/scripts/validate-integration-tests.sh scrape-runs
+
+      - name: Export workflow runs through the shared index action
+        uses: ./.github/actions/index
+        with:
+          artifact-name: corgi-integration-runs
+          bulk-file: runs-results.json
+          temp-dir: /tmp
+          opensearch-url: ${{ env.OPENSEARCH_URL }}
+          opensearch-user: ${{ env.OPENSEARCH_USER }}
+          opensearch-pass: ${{ env.OPENSEARCH_PASS }}
+
+      - name: Validate workflow run documents in OpenSearch
+        run: docker compose exec --no-TTY corgi bash ./.github/scripts/validate-integration-tests.sh validate-runs
+
+      - name: Calculate failure rates
+        run: docker compose exec --no-TTY corgi bash ./.github/scripts/validate-integration-tests.sh failure-rates
+
+      - name: Cleanup temporary files
+        run: rm -rf /tmp/splits
+  
+      - name: Export failure rates through the shared index action
+        uses: ./.github/actions/index
+        with:
+          artifact-name: corgi-integration-rates
+          bulk-file: rates-results.json
+          temp-dir: /tmp
+          opensearch-url: ${{ env.OPENSEARCH_URL }}
+          opensearch-user: ${{ env.OPENSEARCH_USER }}
+          opensearch-pass: ${{ env.OPENSEARCH_PASS }}
+
+      - name: Validate failure-rate documents in OpenSearch
+        run: docker compose exec --no-TTY corgi bash ./.github/scripts/validate-integration-tests.sh validate-rates
+
+      - name: Run and validate retention against the test index
+        env:
+          RETENTION_DAYS: "190"
+        run: docker compose exec --no-TTY --env RETENTION_DAYS="$RETENTION_DAYS" corgi bash ./.github/scripts/validate-integration-tests.sh retention
+
+      - name: Show OpenSearch logs on failure
+        if: failure()
+        run: docker compose logs opensearch-node

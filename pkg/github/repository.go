@@ -18,7 +18,7 @@ func GetRepository(
 
 	l.Info("Querying GitHub repository")
 
-	repo, _, err := WrapWithRateLimitRetry[github.Repository](
+	repo, _, err := WrapWithGitHubRetry[github.Repository](
 		ctx, l,
 		func() (*github.Repository, *github.Response, error) {
 			return client.Repositories.Get(ctx, repoOwner, repoName)
